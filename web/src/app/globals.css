@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --electric-purple: #8B5CF6;
+  --cyber-blue: #06B6D4;
+  --neon-green: #10B981;
+  --deep-space: #0F0F23;
+  --midnight: #1A1A2E;
+  --pure-white: #FFFFFF;
+  --silver: #E2E8F0;
+  --muted: #64748B;
+}
+
+body {
+  background-color: var(--deep-space);
+  color: var(--pure-white);
+}
+
+.glass-card {
+  background: rgba(139, 92, 246, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
