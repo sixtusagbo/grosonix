@@ -19,7 +19,9 @@
     "postcss": "^8.4.33",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "chart.js": "^4.4.1",
+    "react-chartjs-2": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
