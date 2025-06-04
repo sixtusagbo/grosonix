@@ -25,6 +25,7 @@
 - [ ] Environment setup and deployment pipeline
 
 #### Deliverables
+- Basic home page
 - Working authentication flow
 - Basic dashboard skeleton
 - Database structure ready
