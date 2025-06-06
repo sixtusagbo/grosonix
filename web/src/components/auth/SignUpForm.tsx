@@ -1,18 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
+import toast from "react-hot-toast";
 
 export function SignUpForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,26 +23,30 @@ export function SignUpForm() {
 
     try {
       // Sign up the user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
+      const { data: authData, error: signUpError } = await supabase.auth.signUp(
+        {
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
           },
-        },
-      });
+        }
+      );
 
       if (signUpError) throw signUpError;
 
       if (authData.user) {
-        toast.success('Account created successfully!');
-        router.push('/dashboard');
+        toast.success("Account created successfully!");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch (error: any) {
-      console.error('Sign up error:', error);
-      toast.error(error.message || 'Failed to create account. Please try again.');
+      console.error("Sign up error:", error);
+      toast.error(
+        error.message || "Failed to create account. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -48,7 +55,9 @@ export function SignUpForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-silver">
+        <label
+          htmlFor="fullName"
+          className="block text-sm font-medium text-silver">
           Full Name
         </label>
         <input
@@ -62,7 +71,9 @@ export function SignUpForm() {
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-silver">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-silver">
           Email
         </label>
         <input
@@ -76,7 +87,9 @@ export function SignUpForm() {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-silver">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-silver">
           Password
         </label>
         <input
@@ -93,14 +106,15 @@ export function SignUpForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-electric-purple text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-electric-purple disabled:opacity-50 transition-all"
-      >
-        {loading ? 'Creating account...' : 'Create account'}
+        className="w-full py-2 px-4 bg-electric-purple text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-electric-purple disabled:opacity-50 transition-all">
+        {loading ? "Creating account..." : "Create account"}
       </button>
 
       <p className="text-center text-sm text-silver">
-        Already have an account?{' '}
-        <Link href="/auth/login" className="text-cyber-blue hover:text-opacity-80">
+        Already have an account?{" "}
+        <Link
+          href="/auth/login"
+          className="text-cyber-blue hover:text-opacity-80">
           Sign in
         </Link>
       </p>

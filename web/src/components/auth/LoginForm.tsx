@@ -1,17 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
+import toast from "react-hot-toast";
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +28,14 @@ export function LoginForm() {
 
       if (error) throw error;
 
-      toast.success('Signed in successfully!');
-      router.push('/dashboard');
+      toast.success("Signed in successfully!");
+      router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      console.error('Sign in error:', error);
-      toast.error(error.message || 'Failed to sign in. Please check your credentials.');
+      console.error("Sign in error:", error);
+      toast.error(
+        error.message || "Failed to sign in. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
@@ -39,7 +44,9 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-silver">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-silver">
           Email
         </label>
         <input
@@ -53,7 +60,9 @@ export function LoginForm() {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-silver">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-silver">
           Password
         </label>
         <input
@@ -69,14 +78,15 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-electric-purple text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-electric-purple disabled:opacity-50 transition-all"
-      >
-        {loading ? 'Signing in...' : 'Sign in'}
+        className="w-full py-2 px-4 bg-electric-purple text-white rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-electric-purple disabled:opacity-50 transition-all">
+        {loading ? "Signing in..." : "Sign in"}
       </button>
 
       <p className="text-center text-sm text-silver">
-        Don&apos;t have an account?{' '}
-        <Link href="/auth/signup" className="text-cyber-blue hover:text-opacity-80">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/auth/signup"
+          className="text-cyber-blue hover:text-opacity-80">
           Sign up
         </Link>
       </p>
