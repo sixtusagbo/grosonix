@@ -1,8 +1,7 @@
 import { TwitterService } from './twitter';
 import { InstagramService } from './instagram';
-import { LinkedInService } from './linkedin';
 
-export type SocialPlatform = 'twitter' | 'instagram' | 'linkedin';
+export type SocialPlatform = 'twitter' | 'instagram';
 
 export interface SocialMetrics {
   platform: SocialPlatform;
@@ -48,22 +47,8 @@ export class SocialMediaManager {
           };
           break;
           
-        case 'linkedin':
-          const linkedinService = new LinkedInService(accessToken);
-          const linkedinMetrics = await linkedinService.getMetrics();
-          metrics = {
-            platform,
-            followers_count: linkedinMetrics.followers_count,
-            following_count: linkedinMetrics.following_count,
-            posts_count: linkedinMetrics.posts_count,
-            engagement_rate: linkedinMetrics.engagement_rate,
-            growth_rate: linkedinMetrics.growth_rate,
-            last_updated: linkedinMetrics.last_updated,
-          };
-          break;
-          
         default:
-          throw new Error(`Unsupported platform: ${platform}`);
+          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter, Instagram`);
       }
       
       return metrics;
@@ -84,12 +69,8 @@ export class SocialMediaManager {
           const instagramService = new InstagramService(accessToken);
           return await instagramService.getUserData();
           
-        case 'linkedin':
-          const linkedinService = new LinkedInService(accessToken);
-          return await linkedinService.getUserData();
-          
         default:
-          throw new Error(`Unsupported platform: ${platform}`);
+          throw new Error(`Platform ${platform} not yet supported`);
       }
     } catch (error) {
       console.error(`Error fetching ${platform} user data:`, error);
@@ -108,12 +89,8 @@ export class SocialMediaManager {
           const instagramService = new InstagramService(accessToken);
           return await instagramService.getRecentMedia(count);
           
-        case 'linkedin':
-          const linkedinService = new LinkedInService(accessToken);
-          return await linkedinService.getRecentPosts(count);
-          
         default:
-          throw new Error(`Unsupported platform: ${platform}`);
+          throw new Error(`Platform ${platform} not yet supported`);
       }
     } catch (error) {
       console.error(`Error fetching ${platform} content:`, error);
@@ -124,4 +101,3 @@ export class SocialMediaManager {
 
 export * from './twitter';
 export * from './instagram';
-export * from './linkedin';

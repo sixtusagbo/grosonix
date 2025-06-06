@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { getTwitterAuthUrl, getInstagramAuthUrl, getLinkedInAuthUrl } from '@/lib/social';
+import { getTwitterAuthUrl, getInstagramAuthUrl } from '@/lib/social';
 
 /**
  * @swagger
  * /api/social/connect:
  *   post:
  *     summary: Initiate social media connection
- *     description: Get OAuth URL for connecting a social media platform
+ *     description: Get OAuth URL for connecting a social media platform (Twitter or Instagram)
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -22,7 +22,7 @@ import { getTwitterAuthUrl, getInstagramAuthUrl, getLinkedInAuthUrl } from '@/li
  *             properties:
  *               platform:
  *                 type: string
- *                 enum: [twitter, instagram, linkedin]
+ *                 enum: [twitter, instagram]
  *                 description: Social media platform to connect
  *     responses:
  *       200:
@@ -79,9 +79,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { platform } = body;
 
-    if (!platform || !['twitter', 'instagram', 'linkedin'].includes(platform)) {
+    if (!platform || !['twitter', 'instagram'].includes(platform)) {
       return Response.json(
-        { error: 'Bad request', message: 'Valid platform is required (twitter, instagram, linkedin)' },
+        { error: 'Bad request', message: 'Valid platform is required (twitter, instagram). LinkedIn coming soon!' },
         { status: 400 }
       );
     }
@@ -95,12 +95,9 @@ export async function POST(request: NextRequest) {
       case 'instagram':
         authUrl = getInstagramAuthUrl();
         break;
-      case 'linkedin':
-        authUrl = getLinkedInAuthUrl();
-        break;
       default:
         return Response.json(
-          { error: 'Bad request', message: 'Unsupported platform' },
+          { error: 'Bad request', message: 'Platform not yet supported. Currently available: Twitter, Instagram' },
           { status: 400 }
         );
     }

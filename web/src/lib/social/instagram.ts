@@ -47,7 +47,7 @@ export class InstagramService {
       // First get basic user data
       const userData = await this.getUserData();
       
-      // For business accounts, we can get follower metrics
+      // For business accounts, we can get follower metrics using Instagram Graph API
       const response = await axios.get(`${this.baseUrl}/${userData.id}`, {
         params: {
           fields: 'followers_count,follows_count,media_count',
@@ -131,7 +131,7 @@ export class InstagramService {
   }
 }
 
-// OAuth helper functions
+// OAuth helper functions for Instagram Basic Display API
 export function getInstagramAuthUrl(): string {
   const clientId = process.env.INSTAGRAM_CLIENT_ID;
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/instagram/callback`;
@@ -152,7 +152,7 @@ export async function exchangeInstagramCode(code: string): Promise<{ access_toke
   const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/instagram/callback`;
 
-  // Step 1: Exchange code for short-lived token
+  // Step 1: Exchange code for short-lived token (Instagram Basic Display API)
   const shortTokenResponse = await axios.post('https://api.instagram.com/oauth/access_token', {
     client_id: clientId,
     client_secret: clientSecret,
@@ -163,7 +163,7 @@ export async function exchangeInstagramCode(code: string): Promise<{ access_toke
 
   const shortToken = shortTokenResponse.data.access_token;
 
-  // Step 2: Exchange short-lived token for long-lived token
+  // Step 2: Exchange short-lived token for long-lived token (60 days)
   const longTokenResponse = await axios.get('https://graph.instagram.com/access_token', {
     params: {
       grant_type: 'ig_exchange_token',
@@ -176,3 +176,9 @@ export async function exchangeInstagramCode(code: string): Promise<{ access_toke
     access_token: longTokenResponse.data.access_token,
   };
 }
+
+// Note: For Instagram Graph API (Business/Creator accounts), you would use:
+// - Different OAuth flow through Facebook Login
+// - Access to more detailed insights and metrics
+// - Ability to publish content programmatically
+// - Advanced analytics and audience insights

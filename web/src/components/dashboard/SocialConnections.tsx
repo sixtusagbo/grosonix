@@ -21,22 +21,25 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       id: "twitter",
       name: "Twitter",
       color: "text-cyber-blue",
-      description: "Connect your Twitter account to track followers and engagement",
+      description: "Connect Twitter to track followers, engagement, and get AI-powered content suggestions",
       icon: "🐦",
+      available: true,
     },
     {
       id: "instagram",
       name: "Instagram", 
       color: "text-social-pink",
-      description: "Link Instagram to analyze your visual content performance",
+      description: "Link Instagram to analyze your visual content performance and growth metrics",
       icon: "📸",
+      available: true,
     },
     {
       id: "linkedin",
       name: "LinkedIn",
       color: "text-linkedin-blue", 
-      description: "Connect LinkedIn for professional content insights",
+      description: "Professional network integration - Coming Soon!",
       icon: "💼",
+      available: false,
     },
   ];
 
@@ -130,35 +133,54 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
           return (
             <div
               key={platform.id}
-              className="bg-midnight rounded-lg p-4 border border-electric-purple/20 hover:border-electric-purple/40 transition-all">
+              className={`bg-midnight rounded-lg p-4 border transition-all ${
+                platform.available 
+                  ? 'border-electric-purple/20 hover:border-electric-purple/40' 
+                  : 'border-muted/20 opacity-60'
+              }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <span className="text-2xl">{platform.icon}</span>
-                  <span className={`font-medium ${platform.color}`}>
-                    {platform.name}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`font-medium ${platform.color}`}>
+                      {platform.name}
+                    </span>
+                    {!platform.available && (
+                      <span className="px-2 py-1 text-xs bg-warning-orange/20 text-warning-orange rounded-full">
+                        Coming Soon
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {isConnected ? (
-                  <button
-                    onClick={() => handleDisconnect(platform.id)}
-                    disabled={isLoading}
-                    className="text-danger-red hover:text-danger-red/80 text-sm disabled:opacity-50 transition-colors">
-                    {isLoading ? "Disconnecting..." : "Disconnect"}
-                  </button>
+                {platform.available ? (
+                  isConnected ? (
+                    <button
+                      onClick={() => handleDisconnect(platform.id)}
+                      disabled={isLoading}
+                      className="text-danger-red hover:text-danger-red/80 text-sm disabled:opacity-50 transition-colors">
+                      {isLoading ? "Disconnecting..." : "Disconnect"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnect(platform.id)}
+                      disabled={isLoading}
+                      className="px-4 py-2 bg-electric-purple text-white rounded-md hover:bg-electric-purple/90 text-sm disabled:opacity-50 transition-all">
+                      {isLoading ? "Connecting..." : "Connect"}
+                    </button>
+                  )
                 ) : (
                   <button
-                    onClick={() => handleConnect(platform.id)}
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-electric-purple text-white rounded-md hover:bg-electric-purple/90 text-sm disabled:opacity-50 transition-all">
-                    {isLoading ? "Connecting..." : "Connect"}
+                    disabled
+                    className="px-4 py-2 bg-muted/20 text-muted rounded-md text-sm cursor-not-allowed">
+                    Coming Soon
                   </button>
                 )}
               </div>
 
               <p className="text-sm text-silver">{platform.description}</p>
 
-              {isConnected && (
+              {isConnected && platform.available && (
                 <div className="mt-2 flex items-center space-x-2">
                   <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
                   <span className="text-xs text-neon-green">Connected & Active</span>
@@ -181,7 +203,25 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
               Real Social Media Integration
             </p>
             <p className="text-xs text-silver mt-1">
-              Connect your accounts to start tracking real follower growth, engagement metrics, and get AI-powered content suggestions based on your actual posting history.
+              Connect your Twitter and Instagram accounts to start tracking real follower growth, engagement metrics, and get AI-powered content suggestions. LinkedIn integration coming soon!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 p-4 bg-electric-purple/10 rounded-lg border border-electric-purple/20">
+        <div className="flex items-start space-x-3">
+          <div className="w-8 h-8 bg-electric-purple/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-electric-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm text-electric-purple font-medium">
+              Instagram API Options
+            </p>
+            <p className="text-xs text-silver mt-1">
+              We support both Instagram Basic Display API (for personal accounts) and Instagram Graph API (for business/creator accounts) to provide comprehensive analytics and insights.
             </p>
           </div>
         </div>
