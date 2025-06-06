@@ -26,18 +26,11 @@ export async function GET(request: NextRequest) {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-      },
-    }
-  );
-
-  // Create service role client for profile creation (bypasses RLS)
-  const supabaseAdmin = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: "", ...options });
         },
       },
     }
@@ -50,7 +43,7 @@ export async function GET(request: NextRequest) {
       return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/auth/login`);
     }
 
-    // Ensure user profile exists before creating social account
+    // Check if profile exists first
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('id')
@@ -59,6 +52,26 @@ export async function GET(request: NextRequest) {
 
     if (!existingProfile) {
       console.log('Creating profile for user:', user.id);
+      
+      // Create service role client with proper cookie handling
+      const supabaseAdmin = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+            set(name: string, value: string, options: any) {
+              // Service role doesn't need to set cookies
+            },
+            remove(name: string, options: any) {
+              // Service role doesn't need to remove cookies
+            },
+          },
+        }
+      );
+
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
