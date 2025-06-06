@@ -54,6 +54,11 @@ export function DashboardNav({ user }: DashboardNavProps) {
                 className="text-silver hover:text-white transition-colors">
                 Settings
               </Link>
+              <Link
+                href="/docs"
+                className="text-cyber-blue hover:text-cyber-blue/80 transition-colors">
+                API Docs
+              </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
