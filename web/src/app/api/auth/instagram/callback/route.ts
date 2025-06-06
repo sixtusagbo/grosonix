@@ -37,6 +37,29 @@ export async function GET(request: NextRequest) {
       return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/auth/login`);
     }
 
+    // Ensure user profile exists before creating social account
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (!existingProfile) {
+      console.log('Creating profile for user:', user.id);
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || null,
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=profile_creation_failed`);
+      }
+    }
+
     // Exchange code for access token
     const tokens = await exchangeInstagramCode(code);
 

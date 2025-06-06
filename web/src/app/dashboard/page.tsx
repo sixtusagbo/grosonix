@@ -39,7 +39,8 @@ export default async function DashboardPage() {
 
   // If profile doesn't exist, create it
   if (!profile) {
-    const { data: newProfile } = await supabase
+    console.log('Creating profile for user on dashboard:', user.id);
+    const { data: newProfile, error: createError } = await supabase
       .from("profiles")
       .insert([
         {
@@ -51,7 +52,11 @@ export default async function DashboardPage() {
       .select()
       .single();
 
-    profile = newProfile;
+    if (createError) {
+      console.error('Error creating profile on dashboard:', createError);
+    } else {
+      profile = newProfile;
+    }
   }
 
   const { data: socialAccounts } = await supabase
