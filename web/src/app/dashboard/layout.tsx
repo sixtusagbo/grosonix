@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { redirect } from 'next/navigation';
 import { DashboardNav } from '@/components/dashboard/DashboardNav';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardLayout({
   children,

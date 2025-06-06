@@ -14,16 +14,36 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
+  if (!user) {
+    return null;
+  }
+
+  // Get or create profile
+  let { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user?.id)
+    .eq('id', user.id)
     .single();
+
+  // If profile doesn't exist, create it
+  if (!profile) {
+    const { data: newProfile } = await supabase
+      .from('profiles')
+      .insert([{
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || null,
+      }])
+      .select()
+      .single();
+    
+    profile = newProfile;
+  }
 
   const { data: socialAccounts } = await supabase
     .from('social_accounts')
     .select('*')
-    .eq('user_id', user?.id);
+    .eq('user_id', user.id);
 
   return (
     <div className="space-y-6">
