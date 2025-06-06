@@ -53,26 +53,8 @@ export async function GET(request: NextRequest) {
     if (!existingProfile) {
       console.log('Creating profile for user:', user.id);
       
-      // Create service role client with proper cookie handling
-      const supabaseAdmin = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-          cookies: {
-            get(name: string) {
-              return cookieStore.get(name)?.value;
-            },
-            set(name: string, value: string, options: any) {
-              // Service role doesn't need to set cookies
-            },
-            remove(name: string, options: any) {
-              // Service role doesn't need to remove cookies
-            },
-          },
-        }
-      );
-
-      const { error: profileError } = await supabaseAdmin
+      // Create profile using authenticated client (now that we have INSERT policy)
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: user.id,

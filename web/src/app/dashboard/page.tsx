@@ -22,19 +22,6 @@ export default async function DashboardPage() {
     }
   );
 
-  // Create service role client for profile creation (bypasses RLS)
-  const supabaseAdmin = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -50,10 +37,10 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  // If profile doesn't exist, create it using service role
+  // If profile doesn't exist, create it using authenticated client (now that we have INSERT policy)
   if (!profile) {
     console.log('Creating profile for user on dashboard:', user.id);
-    const { data: newProfile, error: createError } = await supabaseAdmin
+    const { data: newProfile, error: createError } = await supabase
       .from("profiles")
       .insert([
         {
