@@ -121,8 +121,12 @@ export class TwitterService {
 // OAuth helper functions
 export function getTwitterAuthUrl(): string {
   const clientId = process.env.TWITTER_CLIENT_ID;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/twitter/callback`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4001';
+  const redirectUri = `${baseUrl}/api/auth/twitter/callback`;
   const scopes = 'tweet.read users.read follows.read offline.access';
+  
+  // Generate a proper code challenge for PKCE
+  const codeVerifier = 'grosonix_twitter_auth_challenge_2024';
   
   const params = new URLSearchParams({
     response_type: 'code',
@@ -130,9 +134,12 @@ export function getTwitterAuthUrl(): string {
     redirect_uri: redirectUri,
     scope: scopes,
     state: 'twitter_auth',
-    code_challenge: 'challenge',
+    code_challenge: codeVerifier,
     code_challenge_method: 'plain',
   });
+
+  console.log('Twitter OAuth URL:', `https://twitter.com/i/oauth2/authorize?${params.toString()}`);
+  console.log('Redirect URI:', redirectUri);
 
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }
@@ -140,7 +147,11 @@ export function getTwitterAuthUrl(): string {
 export async function exchangeTwitterCode(code: string): Promise<{ access_token: string; refresh_token?: string }> {
   const clientId = process.env.TWITTER_CLIENT_ID;
   const clientSecret = process.env.TWITTER_CLIENT_SECRET;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/twitter/callback`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4001';
+  const redirectUri = `${baseUrl}/api/auth/twitter/callback`;
+  const codeVerifier = 'grosonix_twitter_auth_challenge_2024';
+
+  console.log('Exchanging Twitter code with redirect URI:', redirectUri);
 
   const response = await fetch('https://api.twitter.com/2/oauth2/token', {
     method: 'POST',
@@ -152,12 +163,14 @@ export async function exchangeTwitterCode(code: string): Promise<{ access_token:
       grant_type: 'authorization_code',
       code,
       redirect_uri: redirectUri,
-      code_verifier: 'challenge',
+      code_verifier: codeVerifier,
     }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to exchange Twitter authorization code');
+    const errorText = await response.text();
+    console.error('Twitter token exchange error:', errorText);
+    throw new Error(`Failed to exchange Twitter authorization code: ${errorText}`);
   }
 
   const data = await response.json();

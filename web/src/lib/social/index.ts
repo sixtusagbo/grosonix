@@ -99,5 +99,9 @@ export class SocialMediaManager {
   }
 }
 
+// Export OAuth URL generators
+export { getTwitterAuthUrl } from './twitter';
+export { getInstagramAuthUrl } from './instagram';
+
 export * from './twitter';
 export * from './instagram';
