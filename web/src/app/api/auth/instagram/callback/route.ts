@@ -30,6 +30,19 @@ export async function GET(request: NextRequest) {
     }
   );
 
+  // Create service role client for profile creation (bypasses RLS)
+  const supabaseAdmin = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -46,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     if (!existingProfile) {
       console.log('Creating profile for user:', user.id);
-      const { error: profileError } = await supabase
+      const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
           id: user.id,
