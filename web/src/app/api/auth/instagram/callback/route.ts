@@ -1,18 +1,19 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { exchangeInstagramCode } from '@/lib/social/instagram';
+import { exchangeInstagramCode, checkInstagramBusinessAccount } from '@/lib/social/instagram';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const state = searchParams.get('state');
 
   if (error) {
     return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=instagram_auth_failed`);
   }
 
-  if (!code) {
+  if (!code || state !== 'instagram_auth') {
     return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=invalid_instagram_callback`);
   }
 
@@ -38,6 +39,13 @@ export async function GET(request: NextRequest) {
 
     // Exchange code for access token
     const tokens = await exchangeInstagramCode(code);
+
+    // Check if user has Instagram Business account
+    const hasBusinessAccount = await checkInstagramBusinessAccount(tokens.access_token);
+    
+    if (!hasBusinessAccount) {
+      return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=instagram_business_required`);
+    }
 
     // Store the social account connection
     const { error: insertError } = await supabase

@@ -24,22 +24,25 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       description: "Connect Twitter to track followers, engagement, and get AI-powered content suggestions",
       icon: "🐦",
       available: true,
+      requirements: "Personal, Business, or Creator account",
     },
     {
       id: "instagram",
       name: "Instagram", 
       color: "text-social-pink",
-      description: "Link Instagram to analyze your visual content performance and growth metrics",
+      description: "Link Instagram Business/Creator account for comprehensive analytics and insights",
       icon: "📸",
       available: true,
+      requirements: "Business or Creator account required",
     },
     {
       id: "linkedin",
       name: "LinkedIn",
       color: "text-linkedin-blue", 
-      description: "Professional network integration - Coming Soon!",
+      description: "Professional network integration - Coming in Phase 3!",
       icon: "💼",
       available: false,
+      requirements: "Coming Soon",
     },
   ];
 
@@ -65,7 +68,11 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
     }
 
     if (error) {
-      toast.error(`Connection failed: ${error.replace(/_/g, ' ')}`);
+      let errorMessage = error.replace(/_/g, ' ');
+      if (error.includes('instagram')) {
+        errorMessage = 'Instagram connection failed. Please ensure you have a Business or Creator account.';
+      }
+      toast.error(`Connection failed: ${errorMessage}`);
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
     }
@@ -147,7 +154,7 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
                     </span>
                     {!platform.available && (
                       <span className="px-2 py-1 text-xs bg-warning-orange/20 text-warning-orange rounded-full">
-                        Coming Soon
+                        Phase 3
                       </span>
                     )}
                   </div>
@@ -178,7 +185,10 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
                 )}
               </div>
 
-              <p className="text-sm text-silver">{platform.description}</p>
+              <p className="text-sm text-silver mb-1">{platform.description}</p>
+              <p className="text-xs text-muted">
+                <strong>Requirements:</strong> {platform.requirements}
+              </p>
 
               {isConnected && platform.available && (
                 <div className="mt-2 flex items-center space-x-2">
@@ -203,7 +213,7 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
               Real Social Media Integration
             </p>
             <p className="text-xs text-silver mt-1">
-              Connect your Twitter and Instagram accounts to start tracking real follower growth, engagement metrics, and get AI-powered content suggestions. LinkedIn integration coming soon!
+              Connect your Twitter and Instagram Business/Creator accounts to start tracking real follower growth, engagement metrics, and get AI-powered content suggestions. LinkedIn integration coming soon!
             </p>
           </div>
         </div>
@@ -218,10 +228,10 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
           </div>
           <div>
             <p className="text-sm text-electric-purple font-medium">
-              Instagram API Options
+              Instagram Graph API Integration
             </p>
             <p className="text-xs text-silver mt-1">
-              We support both Instagram Basic Display API (for personal accounts) and Instagram Graph API (for business/creator accounts) to provide comprehensive analytics and insights.
+              We use Instagram Graph API (the successor to Basic Display API) for comprehensive business analytics, detailed insights, and advanced metrics for Business and Creator accounts.
             </p>
           </div>
         </div>
