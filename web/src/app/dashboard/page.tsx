@@ -1,10 +1,9 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
-import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import { SocialAccounts } from "@/components/dashboard/SocialAccounts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { GrowthChart } from "@/components/dashboard/GrowthChart";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 
 export default async function DashboardPage() {
@@ -70,8 +69,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <StatsGrid socialAccounts={socialAccounts} />
-          <GrowthChart />
+          <DashboardMetrics socialAccounts={socialAccounts} />
         </div>
 
         <div className="space-y-6">

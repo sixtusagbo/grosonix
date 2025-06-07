@@ -1,18 +1,44 @@
-import { GrowthChart } from '@/components/dashboard/GrowthChart';
-import { StatsGrid } from '@/components/dashboard/StatsGrid';
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 
-export default function AnalyticsPage() {
+export default async function AnalyticsPage() {
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  // Get user's social accounts
+  const { data: { user } } = await supabase.auth.getUser();
+  let socialAccounts = null;
+
+  if (user) {
+    const { data } = await supabase
+      .from("social_accounts")
+      .select("*")
+      .eq("user_id", user.id);
+    socialAccounts = data;
+  }
+
   return (
     <div className="space-y-6">
       <div className="glass-card p-6">
         <h1 className="text-2xl font-bold text-white mb-2">Analytics Dashboard</h1>
         <p className="text-silver">
-          Track your social media growth and engagement metrics.
+          Track your social media growth and engagement metrics across all platforms.
         </p>
       </div>
 
-      <StatsGrid socialAccounts={[]} />
-      <GrowthChart />
+      <DashboardMetrics socialAccounts={socialAccounts} />
 
       <div className="glass-card p-6">
         <div className="text-center py-12">

@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
 
   if (error) {
+    console.log(error)
     return Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=linkedin_auth_failed`);
   }
 

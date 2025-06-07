@@ -1,7 +1,9 @@
 import { TwitterService } from './twitter';
-import { InstagramService } from './instagram';
+// import { InstagramService } from './instagram'; // Temporarily disabled
+// import { LinkedInService } from './linkedin'; // Temporarily disabled
 
-export type SocialPlatform = 'twitter' | 'instagram';
+export type SocialPlatform = 'twitter' | 'instagram' | 'linkedin';
+export type PlatformFilter = SocialPlatform | 'overview';
 
 export interface SocialMetrics {
   platform: SocialPlatform;
@@ -34,21 +36,15 @@ export class SocialMediaManager {
           break;
           
         case 'instagram':
-          const instagramService = new InstagramService(accessToken);
-          const instagramMetrics = await instagramService.getMetrics();
-          metrics = {
-            platform,
-            followers_count: instagramMetrics.followers_count,
-            following_count: instagramMetrics.following_count,
-            posts_count: instagramMetrics.media_count,
-            engagement_rate: instagramMetrics.engagement_rate,
-            growth_rate: instagramMetrics.growth_rate,
-            last_updated: instagramMetrics.last_updated,
-          };
-          break;
-          
+          // Temporarily disabled
+          throw new Error('Instagram metrics temporarily disabled');
+
+        case 'linkedin':
+          // Temporarily disabled
+          throw new Error('LinkedIn metrics temporarily disabled');
+
         default:
-          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter, Instagram`);
+          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter only`);
       }
       
       return metrics;
@@ -66,9 +62,11 @@ export class SocialMediaManager {
           return await twitterService.getUserData();
           
         case 'instagram':
-          const instagramService = new InstagramService(accessToken);
-          return await instagramService.getUserData();
-          
+          throw new Error('Instagram temporarily disabled');
+
+        case 'linkedin':
+          throw new Error('LinkedIn temporarily disabled');
+
         default:
           throw new Error(`Platform ${platform} not yet supported`);
       }
@@ -86,9 +84,11 @@ export class SocialMediaManager {
           return await twitterService.getRecentTweets(count);
           
         case 'instagram':
-          const instagramService = new InstagramService(accessToken);
-          return await instagramService.getRecentMedia(count);
-          
+          throw new Error('Instagram temporarily disabled');
+
+        case 'linkedin':
+          throw new Error('LinkedIn temporarily disabled');
+
         default:
           throw new Error(`Platform ${platform} not yet supported`);
       }
@@ -102,6 +102,8 @@ export class SocialMediaManager {
 // Export OAuth URL generators
 export { getTwitterAuthUrl } from './twitter';
 export { getInstagramAuthUrl } from './instagram';
+export { getLinkedInAuthUrl } from './linkedin';
 
 export * from './twitter';
 export * from './instagram';
+export * from './linkedin';

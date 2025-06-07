@@ -147,3 +147,91 @@ CREATE TRIGGER set_subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION handle_updated_at();
+
+-- Create metrics_cache table for caching social media metrics
+CREATE TABLE IF NOT EXISTS metrics_cache (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  platform text NOT NULL,
+  metrics_data jsonb NOT NULL,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, platform)
+);
+
+-- Enable RLS on metrics_cache
+ALTER TABLE metrics_cache ENABLE ROW LEVEL SECURITY;
+
+-- Metrics cache policies
+CREATE POLICY "Users can read own metrics cache"
+  ON metrics_cache
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own metrics cache"
+  ON metrics_cache
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own metrics cache"
+  ON metrics_cache
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own metrics cache"
+  ON metrics_cache
+  FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Create trigger for metrics_cache updated_at
+CREATE TRIGGER set_metrics_cache_updated_at
+  BEFORE UPDATE ON metrics_cache
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_updated_at();
+
+-- Create rate_limit_tracking table for API rate limit management
+CREATE TABLE IF NOT EXISTS rate_limit_tracking (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  platform text NOT NULL,
+  endpoint text NOT NULL,
+  request_count integer DEFAULT 0,
+  window_start timestamptz DEFAULT now(),
+  reset_at timestamptz NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, platform, endpoint)
+);
+
+-- Enable RLS on rate_limit_tracking
+ALTER TABLE rate_limit_tracking ENABLE ROW LEVEL SECURITY;
+
+-- Rate limit tracking policies
+CREATE POLICY "Users can read own rate limits"
+  ON rate_limit_tracking
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own rate limits"
+  ON rate_limit_tracking
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own rate limits"
+  ON rate_limit_tracking
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Create trigger for rate_limit_tracking updated_at
+CREATE TRIGGER set_rate_limit_tracking_updated_at
+  BEFORE UPDATE ON rate_limit_tracking
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_updated_at();

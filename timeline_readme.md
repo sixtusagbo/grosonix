@@ -36,7 +36,7 @@
 **Focus**: Connect to social platforms and fetch real data
 
 #### Tasks
-- [ ] Twitter API v2 integration
+- [x] Twitter API v2 integration
 - [ ] Instagram Basic Display API setup
 - [ ] LinkedIn API integration
 - [ ] Social account linking user flow

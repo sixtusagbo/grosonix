@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { getTwitterAuthUrl, getInstagramAuthUrl } from '@/lib/social';
+import { getTwitterAuthUrl, getInstagramAuthUrl, getLinkedInAuthUrl } from '@/lib/social';
 
 /**
  * @swagger
@@ -22,7 +22,7 @@ import { getTwitterAuthUrl, getInstagramAuthUrl } from '@/lib/social';
  *             properties:
  *               platform:
  *                 type: string
- *                 enum: [twitter, instagram]
+ *                 enum: [twitter, instagram, linkedin]
  *                 description: Social media platform to connect
  *     responses:
  *       200:
@@ -53,7 +53,7 @@ import { getTwitterAuthUrl, getInstagramAuthUrl } from '@/lib/social';
  */
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
-  
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -63,12 +63,26 @@ export async function POST(request: NextRequest) {
           return cookieStore.get(name)?.value;
         },
       },
+      global: {
+        fetch: (url, options = {}) => {
+          return fetch(url, {
+            ...options,
+            // Add timeout to prevent hanging requests
+            signal: AbortSignal.timeout(10000), // 10 second timeout
+          });
+        },
+      },
     }
   );
 
   try {
+    // Parse request body first
+    const body = await request.json();
+    const { platform } = body;
+
+    // Then check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return Response.json(
         { error: 'Unauthorized', message: 'Authentication required' },
@@ -76,12 +90,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { platform } = body;
-
-    if (!platform || !['twitter', 'instagram'].includes(platform)) {
+    if (!platform || !['twitter', 'instagram', 'linkedin'].includes(platform)) {
       return Response.json(
-        { error: 'Bad request', message: 'Valid platform is required (twitter, instagram). LinkedIn coming soon!' },
+        { error: 'Bad request', message: 'Valid platform is required (twitter, instagram, linkedin)' },
         { status: 400 }
       );
     }
@@ -95,9 +106,12 @@ export async function POST(request: NextRequest) {
       case 'instagram':
         authUrl = getInstagramAuthUrl();
         break;
+      case 'linkedin':
+        authUrl = getLinkedInAuthUrl();
+        break;
       default:
         return Response.json(
-          { error: 'Bad request', message: 'Platform not yet supported. Currently available: Twitter, Instagram' },
+          { error: 'Bad request', message: 'Platform not yet supported. Currently available: Twitter, Instagram, LinkedIn' },
           { status: 400 }
         );
     }

@@ -38,11 +38,11 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
     {
       id: "linkedin",
       name: "LinkedIn",
-      color: "text-linkedin-blue", 
-      description: "Professional network integration - Coming in Phase 3!",
+      color: "text-linkedin-blue",
+      description: "Connect your professional network for comprehensive analytics and insights",
       icon: "💼",
-      available: false,
-      requirements: "Coming Soon",
+      available: true,
+      requirements: "Personal, Business, or Creator account",
     },
   ];
 
@@ -82,25 +82,36 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
     setLoading(platformId);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch('/api/social/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ platform: platformId }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Failed to get auth URL');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.message || 'Failed to get auth URL');
       }
 
       const data = await response.json();
-      
+
       // Redirect to OAuth URL
       window.location.href = data.auth_url;
     } catch (error) {
       console.error('Connection error:', error);
-      toast.error(`Failed to connect ${platformId}`);
+      if (error.name === 'AbortError') {
+        toast.error('Connection timeout. Please check your internet connection and try again.');
+      } else {
+        toast.error(`Failed to connect ${platformId}. Please try again.`);
+      }
       setLoading(null);
     }
   };

@@ -27,22 +27,20 @@ export class LinkedInService {
 
   async getUserData(): Promise<LinkedInUserData> {
     try {
-      const response = await axios.get(`${this.baseUrl}/people/~`, {
+      // Use OpenID Connect userinfo endpoint - most reliable
+      const response = await axios.get(`${this.baseUrl}/userinfo`, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
-        },
-        params: {
-          projection: '(id,firstName,lastName,profilePicture(displayImage~:playableStreams),headline)',
         },
       });
 
       const data = response.data;
       return {
-        id: data.id,
-        firstName: data.firstName?.localized?.en_US || '',
-        lastName: data.lastName?.localized?.en_US || '',
-        headline: data.headline?.localized?.en_US,
-        profilePicture: data.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier,
+        id: data.sub, // OpenID Connect standard
+        firstName: data.given_name || '',
+        lastName: data.family_name || '',
+        headline: '', // Not available with basic OpenID scope
+        profilePicture: data.picture || '',
       };
     } catch (error) {
       console.error('LinkedIn API error:', error);
@@ -98,9 +96,18 @@ export class LinkedInService {
 // OAuth helper functions
 export function getLinkedInAuthUrl(): string {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/linkedin/callback`;
-  const scopes = 'r_liteprofile r_emailaddress w_member_social';
-  
+  const redirectUri = process.env.LINKEDIN_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/linkedin`;
+  // Try OpenID Connect first, fallback to legacy if needed
+  const scopes = process.env.LINKEDIN_SCOPES || 'openid profile email';
+
+  // Debug logging
+  console.log('LinkedIn OAuth Debug:', {
+    clientId,
+    redirectUri,
+    LINKEDIN_REDIRECT_URI: process.env.LINKEDIN_REDIRECT_URI,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
+  });
+
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId!,
@@ -109,21 +116,25 @@ export function getLinkedInAuthUrl(): string {
     state: 'linkedin_auth',
   });
 
-  return `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+
+  return authUrl;
 }
 
 export async function exchangeLinkedInCode(code: string): Promise<{ access_token: string }> {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/linkedin/callback`;
+  const redirectUri = process.env.LINKEDIN_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/linkedin/callback`;
 
-  const response = await axios.post('https://www.linkedin.com/oauth/v2/accessToken', {
+  const params = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
     redirect_uri: redirectUri,
-    client_id: clientId,
-    client_secret: clientSecret,
-  }, {
+    client_id: clientId!,
+    client_secret: clientSecret!,
+  });
+
+  const response = await axios.post('https://www.linkedin.com/oauth/v2/accessToken', params, {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },

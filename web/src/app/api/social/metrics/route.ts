@@ -105,13 +105,94 @@ export async function GET(request: Request) {
     // Fetch metrics for each connected account
     for (const account of accounts || []) {
       try {
-        const platformMetrics = await SocialMediaManager.getMetrics(
-          account.platform as any,
-          account.access_token
-        );
-        metrics.push(platformMetrics);
+        // Only handle Twitter for now
+        if (account.platform === 'twitter') {
+          console.log(`Fetching real-time metrics for ${account.platform}...`);
+          console.log(`Token info:`, {
+            platform: account.platform,
+            token_length: account.access_token?.length || 0,
+            token_start: account.access_token?.substring(0, 10) + '...',
+            expires_at: account.expires_at,
+            created_at: account.created_at,
+            has_refresh_token: !!account.refresh_token
+          });
+
+          try {
+            const platformMetrics = await SocialMediaManager.getMetrics(
+              account.platform as any,
+              account.access_token
+            );
+            console.log(`${account.platform} metrics:`, platformMetrics);
+            metrics.push(platformMetrics);
+          } catch (error) {
+            // If we get a token invalid error and have a refresh token, try to refresh
+            if (error.message === 'TWITTER_TOKEN_INVALID' && account.refresh_token) {
+              console.log('Attempting to refresh Twitter token...');
+
+              try {
+                // Call our refresh token API
+                const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/social/refresh-token`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': request.headers.get('cookie') || '',
+                  },
+                  body: JSON.stringify({ platform: 'twitter' }),
+                });
+
+                if (refreshResponse.ok) {
+                  console.log('Token refreshed successfully, retrying metrics...');
+
+                  // Get the updated account with new token
+                  const { data: updatedAccount } = await supabase
+                    .from('social_accounts')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .eq('platform', 'twitter')
+                    .single();
+
+                  if (updatedAccount) {
+                    const platformMetrics = await SocialMediaManager.getMetrics(
+                      account.platform as any,
+                      updatedAccount.access_token
+                    );
+                    console.log(`${account.platform} metrics after refresh:`, platformMetrics);
+                    metrics.push(platformMetrics);
+                  }
+                } else {
+                  throw error; // Fall through to error handling below
+                }
+              } catch (refreshError) {
+                console.error('Token refresh failed:', refreshError);
+                throw error; // Fall through to error handling below
+              }
+            } else {
+              throw error; // Fall through to error handling below
+            }
+          }
+        } else {
+          // Skip other platforms for now
+          console.log(`Skipping ${account.platform} - temporarily disabled`);
+          metrics.push({
+            platform: account.platform,
+            followers_count: 0,
+            following_count: 0,
+            posts_count: 0,
+            engagement_rate: 0,
+            growth_rate: 0,
+            last_updated: new Date().toISOString(),
+            error: 'Platform temporarily disabled',
+          });
+        }
       } catch (error) {
         console.error(`Error fetching ${account.platform} metrics:`, error);
+
+        // Handle specific error types
+        let errorMessage = 'Failed to fetch real-time data';
+        if (error.message === 'TWITTER_TOKEN_INVALID') {
+          errorMessage = 'Please reconnect Twitter account';
+        }
+
         // Add placeholder metrics if API call fails
         metrics.push({
           platform: account.platform,
@@ -121,7 +202,7 @@ export async function GET(request: Request) {
           engagement_rate: 0,
           growth_rate: 0,
           last_updated: new Date().toISOString(),
-          error: 'Failed to fetch real-time data',
+          error: errorMessage,
         });
       }
     }
@@ -130,15 +211,17 @@ export async function GET(request: Request) {
     const summary = {
       total_followers: metrics.reduce((sum, m) => sum + m.followers_count, 0),
       total_posts: metrics.reduce((sum, m) => sum + m.posts_count, 0),
-      avg_engagement_rate: metrics.length > 0 
-        ? metrics.reduce((sum, m) => sum + m.engagement_rate, 0) / metrics.length 
+      avg_engagement_rate: metrics.length > 0
+        ? metrics.reduce((sum, m) => sum + m.engagement_rate, 0) / metrics.length
         : 0,
       connected_platforms: metrics.length,
+      platform_filter: platform || 'overview',
     };
 
     return Response.json({
       metrics,
       summary,
+      platform_filter: platform || 'overview',
     });
   } catch (error) {
     console.error('Social metrics error:', error);
