@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { ProfileSettings } from "@/components/dashboard/ProfileSettings";
 import { SocialConnections } from "@/components/dashboard/SocialConnections";
+import { CacheManager } from "@/components/dashboard/CacheManager";
 
 export default async function SettingsPage() {
   const cookieStore = cookies();
@@ -46,6 +47,9 @@ export default async function SettingsPage() {
         <ProfileSettings profile={profile} />
         <SocialConnections accounts={socialAccounts} />
       </div>
+
+      {/* Cache Management */}
+      <CacheManager />
     </div>
   );
 }

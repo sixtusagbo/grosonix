@@ -1,4 +1,5 @@
 import { TwitterService } from './twitter';
+import { TwitterServiceWithCache } from './TwitterServiceWithCache';
 // import { InstagramService } from './instagram'; // Temporarily disabled
 // import { LinkedInService } from './linkedin'; // Temporarily disabled
 
@@ -19,7 +20,7 @@ export class SocialMediaManager {
   static async getMetrics(platform: SocialPlatform, accessToken: string): Promise<SocialMetrics> {
     try {
       let metrics;
-      
+
       switch (platform) {
         case 'twitter':
           const twitterService = new TwitterService(accessToken);
@@ -34,7 +35,7 @@ export class SocialMediaManager {
             last_updated: twitterMetrics.last_updated,
           };
           break;
-          
+
         case 'instagram':
           // Temporarily disabled
           throw new Error('Instagram metrics temporarily disabled');
@@ -46,10 +47,56 @@ export class SocialMediaManager {
         default:
           throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter only`);
       }
-      
+
       return metrics;
     } catch (error) {
       console.error(`Error fetching ${platform} metrics:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get metrics with caching and rate limiting (recommended method)
+   */
+  static async getMetricsWithCache(
+    platform: SocialPlatform,
+    accessToken: string,
+    userId: string,
+    forceRefresh: boolean = false
+  ): Promise<SocialMetrics> {
+    try {
+      let metrics;
+
+      switch (platform) {
+        case 'twitter':
+          const twitterService = new TwitterServiceWithCache(accessToken, userId);
+          const twitterMetrics = await twitterService.getMetrics(forceRefresh);
+          metrics = {
+            platform,
+            followers_count: twitterMetrics.followers_count,
+            following_count: twitterMetrics.following_count,
+            posts_count: twitterMetrics.tweet_count,
+            engagement_rate: twitterMetrics.engagement_rate,
+            growth_rate: twitterMetrics.growth_rate,
+            last_updated: twitterMetrics.last_updated,
+          };
+          break;
+
+        case 'instagram':
+          // Temporarily disabled
+          throw new Error('Instagram metrics temporarily disabled');
+
+        case 'linkedin':
+          // Temporarily disabled
+          throw new Error('LinkedIn metrics temporarily disabled');
+
+        default:
+          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter only`);
+      }
+
+      return metrics;
+    } catch (error) {
+      console.error(`Error fetching ${platform} metrics with cache:`, error);
       throw error;
     }
   }

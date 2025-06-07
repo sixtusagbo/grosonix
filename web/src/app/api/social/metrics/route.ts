@@ -118,9 +118,11 @@ export async function GET(request: Request) {
           });
 
           try {
-            const platformMetrics = await SocialMediaManager.getMetrics(
+            const platformMetrics = await SocialMediaManager.getMetricsWithCache(
               account.platform as any,
-              account.access_token
+              account.access_token,
+              user.id,
+              refresh
             );
             console.log(`${account.platform} metrics:`, platformMetrics);
             metrics.push(platformMetrics);
@@ -152,9 +154,11 @@ export async function GET(request: Request) {
                     .single();
 
                   if (updatedAccount) {
-                    const platformMetrics = await SocialMediaManager.getMetrics(
+                    const platformMetrics = await SocialMediaManager.getMetricsWithCache(
                       account.platform as any,
-                      updatedAccount.access_token
+                      updatedAccount.access_token,
+                      user.id,
+                      true // Force refresh after token refresh
                     );
                     console.log(`${account.platform} metrics after refresh:`, platformMetrics);
                     metrics.push(platformMetrics);
