@@ -42,11 +42,11 @@
 #### Tasks
 
 - [x] Twitter API v2 integration
-- [ ] Instagram Basic Display API setup
-- [ ] LinkedIn API integration
-- [ ] Social account linking user flow
-- [ ] Real-time metrics fetching (followers, engagement)
-- [ ] Data sync and storage optimization
+- [x] Instagram Basic Display API setup
+- [x] LinkedIn API integration
+- [x] Social account linking user flow
+- [x] Real-time metrics fetching (followers, engagement)
+- [x] Data sync and storage optimization
 
 #### Deliverables
 
@@ -56,7 +56,7 @@
 
 ---
 
-### Day 5-6: AI Content Engine
+### Day 5-6: AI Content Engine - Sixtus
 
 **Focus**: Core AI functionality for content generation
 
@@ -77,7 +77,7 @@
 
 ---
 
-### Day 7: Dashboard & Analytics
+### Day 7: Dashboard & Analytics - Mark
 
 **Focus**: Core metrics and visualization
 
@@ -100,7 +100,7 @@
 
 ## 🎯 Week 2: Smart Features & Subscription
 
-### Day 8-9: Content Intelligence
+### Day 8-9: Content Intelligence - Elizabeth
 
 **Focus**: Advanced content features and UI polish
 
@@ -121,7 +121,7 @@
 
 ---
 
-### Day 10-11: Scheduling & Gamification
+### Day 10-11: Scheduling & Gamification - Andrea
 
 **Focus**: Smart scheduling and user engagement
 
@@ -142,7 +142,7 @@
 
 ---
 
-### Day 12-13: Cross-Platform Adaptation & Limits
+### Day 12-13: Cross-Platform Adaptation & Limits - Andrea & Elizabeth
 
 **Focus**: Platform optimization and usage restrictions
 
@@ -163,7 +163,7 @@
 
 ---
 
-### Day 14: Subscription Integration
+### Day 14: Subscription Integration - Sixtus
 
 **Focus**: Monetization and RevenueCat setup
 

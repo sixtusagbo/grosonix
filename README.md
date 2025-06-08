@@ -18,12 +18,14 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 ## 🎯 Subscription Tiers
 
 ### Free Tier
+
 - Basic dashboard and analytics
 - 5 AI content suggestions per day
 - Current week analytics view
 - Basic progress tracking
 
 ### Pro ($9.99/month)
+
 - Unlimited content suggestions
 - Cross-platform content adaptation
 - Full analytics history
@@ -31,6 +33,7 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 - Advanced AI recommendations
 
 ### Agency ($29.99/month)
+
 - Multiple account management
 - Team collaboration tools
 - Priority customer support
@@ -40,6 +43,7 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 ## 🛠 Tech Stack
 
 ### Web Application
+
 - **Frontend**: Next.js 14 with TypeScript
 - **Styling**: Tailwind CSS with Glassmorphism design
 - **Backend**: Next.js API Routes
@@ -51,6 +55,7 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 - **Deployment**: Vercel
 
 ### Mobile Application
+
 - **Framework**: Flutter
 - **State Management**: Riverpod
 - **HTTP Client**: Dio
@@ -61,6 +66,7 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 Our brand revolves around a futuristic, AI-powered aesthetic with glassmorphism elements and smooth animations.
 
 ### Color Palette
+
 - **Primary**: Electric Purple (`#8B5CF6`)
 - **Secondary**: Cyber Blue (`#06B6D4`)
 - **Success**: Neon Green (`#10B981`)
