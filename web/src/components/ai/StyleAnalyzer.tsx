@@ -72,7 +72,15 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to analyze style";
 
-      if (
+      if (errorMessage.includes("rate limit")) {
+        toast.error(
+          "Twitter API rate limit reached. Please wait 15 minutes and try again."
+        );
+      } else if (errorMessage.includes("token has expired")) {
+        toast.error(
+          "Twitter connection expired. Please reconnect your account in Settings."
+        );
+      } else if (
         errorMessage.includes("No posts available") ||
         errorMessage.includes("token may have expired")
       ) {
@@ -82,14 +90,6 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
       } else if (errorMessage.includes("No social accounts")) {
         toast.error(
           "Please connect your Twitter account in Settings to analyze your writing style."
-        );
-      } else if (errorMessage.includes("token has expired")) {
-        toast.error(
-          "Twitter connection expired. Please reconnect your account in Settings."
-        );
-      } else if (errorMessage.includes("rate limit")) {
-        toast.error(
-          "Twitter API rate limit reached. Please wait 15 minutes and try again."
         );
       } else {
         toast.error(errorMessage);

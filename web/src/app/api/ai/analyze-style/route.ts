@@ -213,10 +213,10 @@ export async function POST(request: NextRequest) {
         {
           error: "No posts available",
           message:
-            "Unable to fetch posts from your connected accounts. Your Twitter token may have expired. Please reconnect your Twitter account in Settings to continue.",
+            "Unable to fetch posts from your connected accounts. This might be due to Twitter API rate limits or connection issues. Please wait 15 minutes and try again.",
           connected_platforms: platforms,
           suggestion:
-            "Go to Settings → Social Connections → Disconnect and reconnect your Twitter account.",
+            "If the issue persists after waiting, try reconnecting your Twitter account in Settings.",
         },
         { status: 400 }
       );
