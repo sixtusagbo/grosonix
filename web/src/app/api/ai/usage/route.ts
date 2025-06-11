@@ -1,7 +1,7 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { NextRequest } from 'next/server';
-import { RateLimiter } from '@/lib/ai/rate-limiter';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
+import { RateLimiter } from "@/lib/ai/rate-limiter";
 
 /**
  * @swagger
@@ -64,8 +64,8 @@ import { RateLimiter } from '@/lib/ai/rate-limiter';
 export async function GET(request: NextRequest) {
   const cookieStore = cookies();
   const { searchParams } = new URL(request.url);
-  const days = parseInt(searchParams.get('days') || '7');
-  
+  const days = parseInt(searchParams.get("days") || "7");
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -79,11 +79,14 @@ export async function GET(request: NextRequest) {
   );
 
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       return Response.json(
-        { error: 'Unauthorized', message: 'Authentication required' },
+        { error: "Unauthorized", message: "Authentication required" },
         { status: 401 }
       );
     }
@@ -94,10 +97,16 @@ export async function GET(request: NextRequest) {
     const subscriptionTier = await rateLimiter.getUserSubscriptionTier(user.id);
 
     // Get current quotas for all features
-    const currentQuotas = await rateLimiter.getAllUsageQuotas(user.id, subscriptionTier);
+    const currentQuotas = await rateLimiter.getAllUsageQuotas(
+      user.id,
+      subscriptionTier
+    );
 
     // Get usage history
-    const usageHistory = await rateLimiter.getUsageStats(user.id, Math.min(days, 30));
+    const usageHistory = await rateLimiter.getUsageStats(
+      user.id,
+      Math.min(days, 30)
+    );
 
     // Get upgrade suggestions
     const upgradeSuggestions = await rateLimiter.getUpgradeSuggestions(user.id);
@@ -121,20 +130,42 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {} as Record<string, number>);
 
+    // Transform quotas into the expected format
+    const contentGenerationQuota = currentQuotas.find(
+      (q) => q.feature_type === "content_generation"
+    );
+    const adaptationQuota = currentQuotas.find(
+      (q) => q.feature_type === "cross_platform_adaptation"
+    );
+
+    // Get today's usage from the summary
+    const today = new Date().toISOString().split("T")[0];
+    const todayUsage = dailyUsageSummary[today] || {};
+
     return Response.json({
+      daily_generations: todayUsage.content_generation || 0,
+      daily_limit: contentGenerationQuota?.limit || 5,
+      daily_adaptations: todayUsage.cross_platform_adaptation || 0,
+      adaptation_limit: adaptationQuota?.limit || 0,
+      subscription_tier: subscriptionTier,
+      reset_time:
+        contentGenerationQuota?.resets_at ||
+        new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      // Additional data for debugging/future use
       current_quotas: currentQuotas,
       usage_history: usageHistory,
       daily_usage_summary: dailyUsageSummary,
       total_usage_by_feature: totalUsageByFeature,
-      subscription_tier: subscriptionTier,
       upgrade_suggestions: upgradeSuggestions,
       stats_period_days: days,
     });
-
   } catch (error) {
-    console.error('Usage statistics error:', error);
+    console.error("Usage statistics error:", error);
     return Response.json(
-      { error: 'Internal server error', message: 'Failed to retrieve usage statistics' },
+      {
+        error: "Internal server error",
+        message: "Failed to retrieve usage statistics",
+      },
       { status: 500 }
     );
   }
@@ -158,7 +189,7 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const cookieStore = cookies();
-  
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -172,19 +203,25 @@ export async function DELETE(request: NextRequest) {
   );
 
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       return Response.json(
-        { error: 'Unauthorized', message: 'Authentication required' },
+        { error: "Unauthorized", message: "Authentication required" },
         { status: 401 }
       );
     }
 
     // Only allow in development or for testing
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       return Response.json(
-        { error: 'Forbidden', message: 'Usage reset not allowed in production' },
+        {
+          error: "Forbidden",
+          message: "Usage reset not allowed in production",
+        },
         { status: 403 }
       );
     }
@@ -193,14 +230,13 @@ export async function DELETE(request: NextRequest) {
     await rateLimiter.resetDailyUsage(user.id);
 
     return Response.json({
-      message: 'Daily usage reset successfully',
+      message: "Daily usage reset successfully",
       reset_at: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Usage reset error:', error);
+    console.error("Usage reset error:", error);
     return Response.json(
-      { error: 'Internal server error', message: 'Failed to reset usage' },
+      { error: "Internal server error", message: "Failed to reset usage" },
       { status: 500 }
     );
   }
