@@ -72,13 +72,20 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to analyze style";
 
-      if (errorMessage.includes("No posts available")) {
+      if (
+        errorMessage.includes("No posts available") ||
+        errorMessage.includes("token may have expired")
+      ) {
         toast.error(
-          "Unable to fetch your posts. Please check your Twitter connection in Settings."
+          "Your Twitter token has expired. Please reconnect your Twitter account in Settings."
         );
       } else if (errorMessage.includes("No social accounts")) {
         toast.error(
           "Please connect your Twitter account in Settings to analyze your writing style."
+        );
+      } else if (errorMessage.includes("token has expired")) {
+        toast.error(
+          "Twitter connection expired. Please reconnect your account in Settings."
         );
       } else {
         toast.error(errorMessage);

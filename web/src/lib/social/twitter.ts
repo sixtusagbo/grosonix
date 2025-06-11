@@ -160,8 +160,17 @@ export class TwitterService {
         `[TwitterService] Successfully fetched ${tweetData.length} tweets`
       );
       return tweetData;
-    } catch (error) {
+    } catch (error: any) {
       console.error("[TwitterService] Twitter tweets error:", error);
+
+      // If it's a 401 error, the token has expired
+      if (error.code === 401) {
+        console.log(
+          "[TwitterService] Token expired (401), throwing specific error"
+        );
+        throw new Error("TWITTER_TOKEN_EXPIRED");
+      }
+
       throw new Error(`Failed to fetch recent tweets: ${error.message}`);
     }
   }
