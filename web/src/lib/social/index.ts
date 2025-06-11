@@ -163,6 +163,13 @@ export class SocialMediaManager {
         );
       }
 
+      // If it's a rate limit error, provide a helpful message
+      if (error.message === "TWITTER_RATE_LIMITED") {
+        throw new Error(
+          "Twitter API rate limit reached. Please wait 15 minutes before trying again."
+        );
+      }
+
       throw error;
     }
   }

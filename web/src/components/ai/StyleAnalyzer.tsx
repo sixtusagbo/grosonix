@@ -87,6 +87,10 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
         toast.error(
           "Twitter connection expired. Please reconnect your account in Settings."
         );
+      } else if (errorMessage.includes("rate limit")) {
+        toast.error(
+          "Twitter API rate limit reached. Please wait 15 minutes and try again."
+        );
       } else {
         toast.error(errorMessage);
       }

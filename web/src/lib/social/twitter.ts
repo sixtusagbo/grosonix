@@ -171,6 +171,14 @@ export class TwitterService {
         throw new Error("TWITTER_TOKEN_EXPIRED");
       }
 
+      // If it's a 429 error, we've hit rate limits
+      if (error.code === 429) {
+        console.log(
+          "[TwitterService] Rate limit hit (429), throwing specific error"
+        );
+        throw new Error("TWITTER_RATE_LIMITED");
+      }
+
       throw new Error(`Failed to fetch recent tweets: ${error.message}`);
     }
   }
