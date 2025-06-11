@@ -214,9 +214,20 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    // Get updated quota
+    const { quota: updatedQuota } = await rateLimiter.checkUsageQuota(
+      user.id,
+      "cross_platform_adaptation",
+      subscriptionTier
+    );
+
     return Response.json({
-      ...adaptedContent,
-      adaptations: validatedAdaptations,
+      adaptation: {
+        ...adaptedContent,
+        adaptations: validatedAdaptations,
+      },
+      remaining_quota: updatedQuota.remaining,
+      subscription_tier: subscriptionTier,
       user_style_applied: !!userStyle,
     });
   } catch (error) {
