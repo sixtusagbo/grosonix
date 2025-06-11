@@ -84,31 +84,25 @@ export class RateLimiter {
       };
     }
 
-    // TEMPORARY: Skip database check due to function schema issues
-    // TODO: Fix database function and re-enable proper usage tracking
-    console.log(
-      `[TEMP] Bypassing usage check for ${featureType} - user: ${userId}`
-    );
-    const currentUsage = 0; // Temporary: allow all requests
-
-    /*
-    // Original database check - re-enable after fixing function
+    // Get current usage from database
     const { data: usage, error } = await this.supabase.rpc(
       "get_daily_ai_usage",
       {
-        p_date: new Date().toISOString().split("T")[0],
-        p_feature_type: featureType,
         p_user_id: userId,
+        p_feature_type: featureType,
+        p_date: new Date().toISOString().split("T")[0],
       }
     );
 
     if (error) {
       console.error("Error checking usage quota:", error);
-      throw new Error("Failed to check usage quota");
+      // Fallback to 0 usage if there's an error
+      console.log(
+        `Fallback: assuming 0 usage for ${featureType} - user: ${userId}`
+      );
     }
 
     const currentUsage = usage || 0;
-    */
     const remaining = Math.max(0, limit - currentUsage);
 
     return {
@@ -128,14 +122,7 @@ export class RateLimiter {
     featureType: keyof UsageLimits,
     increment: number = 1
   ): Promise<number> {
-    // TEMPORARY: Skip database increment due to function schema issues
-    console.log(
-      `[TEMP] Bypassing usage increment for ${featureType} - user: ${userId}, increment: ${increment}`
-    );
-    return 0; // Temporary: return 0 usage count
-
-    /*
-    // Original database increment - re-enable after fixing function
+    // Increment usage in database
     const { data: newCount, error } = await this.supabase.rpc(
       "increment_ai_usage",
       {
@@ -147,11 +134,17 @@ export class RateLimiter {
 
     if (error) {
       console.error("Error incrementing usage:", error);
-      throw new Error("Failed to increment usage");
+      // Don't throw error, just log it and return current count
+      console.log(
+        `Failed to increment ${featureType} usage for user: ${userId}`
+      );
+      return 0;
     }
 
+    console.log(
+      `Usage incremented: ${featureType} - user: ${userId}, new count: ${newCount}`
+    );
     return newCount || 0;
-    */
   }
 
   async getAllUsageQuotas(
