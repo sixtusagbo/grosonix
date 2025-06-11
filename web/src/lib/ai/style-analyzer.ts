@@ -1,5 +1,5 @@
-import { OpenAIService } from './openai';
-import { SocialMediaManager } from '../social';
+import { OpenAIService } from "./openai";
+import { SocialMediaManager } from "../social";
 
 export interface UserStyleProfile {
   user_id: string;
@@ -7,10 +7,10 @@ export interface UserStyleProfile {
   topics: string[];
   writing_patterns: string[];
   engagement_strategies: string[];
-  vocabulary_level: 'casual' | 'professional' | 'academic' | 'mixed';
-  emoji_usage: 'none' | 'minimal' | 'moderate' | 'heavy';
+  vocabulary_level: "casual" | "professional" | "academic" | "mixed";
+  emoji_usage: "none" | "minimal" | "moderate" | "heavy";
   hashtag_style: string;
-  content_length_preference: 'short' | 'medium' | 'long' | 'mixed';
+  content_length_preference: "short" | "medium" | "long" | "mixed";
   analyzed_posts_count: number;
   last_analyzed: string;
   confidence_score: number;
@@ -37,7 +37,7 @@ export class StyleAnalyzer {
   async analyzeUserStyle(
     userId: string,
     posts: PostAnalysis[],
-    subscription_tier: 'free' | 'pro' | 'agency' = 'free'
+    subscription_tier: "free" | "pro" | "agency" = "free"
   ): Promise<UserStyleProfile> {
     // Limit posts based on subscription tier
     const maxPosts = this.getMaxPostsForTier(subscription_tier);
@@ -50,7 +50,7 @@ export class StyleAnalyzer {
     try {
       const styleAnalysis = await this.performDeepStyleAnalysis(postsToAnalyze);
       const engagementPatterns = this.analyzeEngagementPatterns(postsToAnalyze);
-      
+
       return {
         user_id: userId,
         tone: styleAnalysis.tone,
@@ -63,10 +63,13 @@ export class StyleAnalyzer {
         content_length_preference: styleAnalysis.content_length_preference,
         analyzed_posts_count: postsToAnalyze.length,
         last_analyzed: new Date().toISOString(),
-        confidence_score: this.calculateConfidenceScore(postsToAnalyze.length, styleAnalysis),
+        confidence_score: this.calculateConfidenceScore(
+          postsToAnalyze.length,
+          styleAnalysis
+        ),
       };
     } catch (error) {
-      console.error('Style analysis failed:', error);
+      console.error("Style analysis failed:", error);
       return this.createDefaultStyleProfile(userId);
     }
   }
@@ -78,18 +81,33 @@ export class StyleAnalyzer {
   ): Promise<PostAnalysis[]> {
     const allPosts: PostAnalysis[] = [];
 
+    console.log(
+      `[StyleAnalyzer] Fetching posts for user ${userId} from platforms:`,
+      platforms
+    );
+
     for (const platform of platforms) {
-      if (!accessTokens[platform]) continue;
+      if (!accessTokens[platform]) {
+        console.log(
+          `[StyleAnalyzer] No access token for platform: ${platform}`
+        );
+        continue;
+      }
 
       try {
+        console.log(`[StyleAnalyzer] Fetching content from ${platform}...`);
         const posts = await SocialMediaManager.getRecentContent(
           platform as any,
           accessTokens[platform],
           20 // Fetch up to 20 recent posts per platform
         );
 
+        console.log(
+          `[StyleAnalyzer] Fetched ${posts.length} posts from ${platform}`
+        );
+
         const formattedPosts: PostAnalysis[] = posts.map((post: any) => ({
-          content: post.text || post.content || '',
+          content: post.text || post.content || "",
           platform,
           engagement_metrics: {
             likes: post.public_metrics?.like_count || 0,
@@ -99,28 +117,38 @@ export class StyleAnalyzer {
           created_at: post.created_at || new Date().toISOString(),
         }));
 
+        console.log(
+          `[StyleAnalyzer] Formatted ${formattedPosts.length} posts from ${platform}`
+        );
         allPosts.push(...formattedPosts);
       } catch (error) {
-        console.error(`Failed to fetch posts from ${platform}:`, error);
+        console.error(
+          `[StyleAnalyzer] Failed to fetch posts from ${platform}:`,
+          error
+        );
       }
     }
 
-    return allPosts.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    console.log(`[StyleAnalyzer] Total posts collected: ${allPosts.length}`);
+    return allPosts.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }
 
   private async performDeepStyleAnalysis(posts: PostAnalysis[]) {
-    const postTexts = posts.map(p => p.content).filter(content => content.length > 0);
-    
+    const postTexts = posts
+      .map((p) => p.content)
+      .filter((content) => content.length > 0);
+
     if (postTexts.length === 0) {
-      throw new Error('No valid post content to analyze');
+      throw new Error("No valid post content to analyze");
     }
 
     const analysisPrompt = `Analyze the following social media posts and provide a detailed style profile:
 
 Posts to analyze:
-${postTexts.map((text, i) => `${i + 1}. ${text}`).join('\n\n')}
+${postTexts.map((text, i) => `${i + 1}. ${text}`).join("\n\n")}
 
 Please analyze and respond in this exact format:
 TONE: [dominant tone - professional/casual/humorous/inspirational/educational/mixed]
@@ -135,8 +163,8 @@ Focus on identifying unique characteristics that can be replicated in future con
 
     const response = await this.openaiService.generateContent({
       prompt: analysisPrompt,
-      platform: 'twitter', // Use twitter as default for analysis
-      tone: 'professional',
+      platform: "twitter", // Use twitter as default for analysis
+      tone: "professional",
       maxTokens: 400,
     });
 
@@ -144,41 +172,43 @@ Focus on identifying unique characteristics that can be replicated in future con
   }
 
   private parseStyleAnalysis(analysisText: string) {
-    const lines = analysisText.split('\n');
+    const lines = analysisText.split("\n");
     const result = {
-      tone: 'mixed',
+      tone: "mixed",
       topics: [] as string[],
       writing_patterns: [] as string[],
-      vocabulary_level: 'mixed' as const,
-      emoji_usage: 'minimal' as const,
-      hashtag_style: 'moderate usage',
-      content_length_preference: 'mixed' as const,
+      vocabulary_level: "mixed" as const,
+      emoji_usage: "minimal" as const,
+      hashtag_style: "moderate usage",
+      content_length_preference: "mixed" as const,
     };
 
     for (const line of lines) {
-      const [key, value] = line.split(':').map(s => s.trim());
-      
+      const [key, value] = line.split(":").map((s) => s.trim());
+
       switch (key?.toUpperCase()) {
-        case 'TONE':
-          result.tone = value || 'mixed';
+        case "TONE":
+          result.tone = value || "mixed";
           break;
-        case 'TOPICS':
-          result.topics = value ? value.split(',').map(t => t.trim()) : [];
+        case "TOPICS":
+          result.topics = value ? value.split(",").map((t) => t.trim()) : [];
           break;
-        case 'PATTERNS':
-          result.writing_patterns = value ? value.split(',').map(p => p.trim()) : [];
+        case "PATTERNS":
+          result.writing_patterns = value
+            ? value.split(",").map((p) => p.trim())
+            : [];
           break;
-        case 'VOCABULARY':
-          result.vocabulary_level = (value as any) || 'mixed';
+        case "VOCABULARY":
+          result.vocabulary_level = (value as any) || "mixed";
           break;
-        case 'EMOJIS':
-          result.emoji_usage = (value as any) || 'minimal';
+        case "EMOJIS":
+          result.emoji_usage = (value as any) || "minimal";
           break;
-        case 'HASHTAGS':
-          result.hashtag_style = value || 'moderate usage';
+        case "HASHTAGS":
+          result.hashtag_style = value || "moderate usage";
           break;
-        case 'LENGTH':
-          result.content_length_preference = (value as any) || 'mixed';
+        case "LENGTH":
+          result.content_length_preference = (value as any) || "mixed";
           break;
       }
     }
@@ -188,37 +218,48 @@ Focus on identifying unique characteristics that can be replicated in future con
 
   private analyzeEngagementPatterns(posts: PostAnalysis[]) {
     const strategies: string[] = [];
-    
+
     // Analyze posts with engagement metrics
-    const postsWithMetrics = posts.filter(p => p.engagement_metrics);
-    
+    const postsWithMetrics = posts.filter((p) => p.engagement_metrics);
+
     if (postsWithMetrics.length > 0) {
-      const avgEngagement = postsWithMetrics.reduce((sum, post) => {
-        const total = (post.engagement_metrics?.likes || 0) + 
-                     (post.engagement_metrics?.comments || 0) + 
-                     (post.engagement_metrics?.shares || 0);
-        return sum + total;
-      }, 0) / postsWithMetrics.length;
+      const avgEngagement =
+        postsWithMetrics.reduce((sum, post) => {
+          const total =
+            (post.engagement_metrics?.likes || 0) +
+            (post.engagement_metrics?.comments || 0) +
+            (post.engagement_metrics?.shares || 0);
+          return sum + total;
+        }, 0) / postsWithMetrics.length;
 
       // Find high-performing posts (above average engagement)
-      const highPerformingPosts = postsWithMetrics.filter(post => {
-        const total = (post.engagement_metrics?.likes || 0) + 
-                     (post.engagement_metrics?.comments || 0) + 
-                     (post.engagement_metrics?.shares || 0);
+      const highPerformingPosts = postsWithMetrics.filter((post) => {
+        const total =
+          (post.engagement_metrics?.likes || 0) +
+          (post.engagement_metrics?.comments || 0) +
+          (post.engagement_metrics?.shares || 0);
         return total > avgEngagement;
       });
 
       // Analyze patterns in high-performing content
       if (highPerformingPosts.length > 0) {
-        const hasQuestions = highPerformingPosts.some(p => p.content.includes('?'));
-        const hasCallToAction = highPerformingPosts.some(p => 
-          /\b(share|comment|like|follow|click|visit|check out)\b/i.test(p.content)
+        const hasQuestions = highPerformingPosts.some((p) =>
+          p.content.includes("?")
         );
-        const hasEmojis = highPerformingPosts.some(p => /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u.test(p.content));
+        const hasCallToAction = highPerformingPosts.some((p) =>
+          /\b(share|comment|like|follow|click|visit|check out)\b/i.test(
+            p.content
+          )
+        );
+        const hasEmojis = highPerformingPosts.some((p) =>
+          /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u.test(
+            p.content
+          )
+        );
 
-        if (hasQuestions) strategies.push('Uses engaging questions');
-        if (hasCallToAction) strategies.push('Includes call-to-action');
-        if (hasEmojis) strategies.push('Strategic emoji usage');
+        if (hasQuestions) strategies.push("Uses engaging questions");
+        if (hasCallToAction) strategies.push("Includes call-to-action");
+        if (hasEmojis) strategies.push("Strategic emoji usage");
       }
     }
 
@@ -227,11 +268,11 @@ Focus on identifying unique characteristics that can be replicated in future con
 
   private getMaxPostsForTier(tier: string): number {
     switch (tier) {
-      case 'free':
+      case "free":
         return 10;
-      case 'pro':
+      case "pro":
         return 50;
-      case 'agency':
+      case "agency":
         return 100;
       default:
         return 10;
@@ -240,31 +281,31 @@ Focus on identifying unique characteristics that can be replicated in future con
 
   private calculateConfidenceScore(postCount: number, analysis: any): number {
     let score = 0;
-    
+
     // Base score from post count
     score += Math.min(postCount * 5, 50); // Max 50 points from post count
-    
+
     // Additional points for detailed analysis
     if (analysis.topics.length > 0) score += 10;
     if (analysis.writing_patterns.length > 0) score += 10;
-    if (analysis.tone !== 'mixed') score += 10;
-    if (analysis.vocabulary_level !== 'mixed') score += 10;
-    if (analysis.content_length_preference !== 'mixed') score += 10;
-    
+    if (analysis.tone !== "mixed") score += 10;
+    if (analysis.vocabulary_level !== "mixed") score += 10;
+    if (analysis.content_length_preference !== "mixed") score += 10;
+
     return Math.min(score, 100);
   }
 
   private createDefaultStyleProfile(userId: string): UserStyleProfile {
     return {
       user_id: userId,
-      tone: 'professional',
-      topics: ['general'],
-      writing_patterns: ['standard'],
-      engagement_strategies: ['basic'],
-      vocabulary_level: 'professional',
-      emoji_usage: 'minimal',
-      hashtag_style: 'moderate usage',
-      content_length_preference: 'medium',
+      tone: "professional",
+      topics: ["general"],
+      writing_patterns: ["standard"],
+      engagement_strategies: ["basic"],
+      vocabulary_level: "professional",
+      emoji_usage: "minimal",
+      hashtag_style: "moderate usage",
+      content_length_preference: "medium",
       analyzed_posts_count: 0,
       last_analyzed: new Date().toISOString(),
       confidence_score: 25, // Low confidence for default profile
@@ -272,10 +313,14 @@ Focus on identifying unique characteristics that can be replicated in future con
   }
 
   generateStyleSummary(profile: UserStyleProfile): string {
-    return `Writing Style: ${profile.tone} tone with ${profile.vocabulary_level} vocabulary. 
-    Focuses on: ${profile.topics.slice(0, 3).join(', ')}. 
-    Patterns: ${profile.writing_patterns.slice(0, 2).join(', ')}. 
-    Prefers ${profile.content_length_preference} content with ${profile.emoji_usage} emoji usage.`;
+    return `Writing Style: ${profile.tone} tone with ${
+      profile.vocabulary_level
+    } vocabulary. 
+    Focuses on: ${profile.topics.slice(0, 3).join(", ")}. 
+    Patterns: ${profile.writing_patterns.slice(0, 2).join(", ")}. 
+    Prefers ${profile.content_length_preference} content with ${
+      profile.emoji_usage
+    } emoji usage.`;
   }
 }
 
