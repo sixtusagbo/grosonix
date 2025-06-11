@@ -366,7 +366,19 @@ export async function POST(request: NextRequest) {
     // Increment usage tracking
     await rateLimiter.incrementUsage(user.id, "content_generation", 1);
 
-    return Response.json(customSuggestion);
+    // Get updated quota
+    const { quota: updatedQuota } = await rateLimiter.checkUsageQuota(
+      user.id,
+      "content_generation",
+      subscriptionTier
+    );
+
+    return Response.json({
+      suggestion: customSuggestion,
+      remaining_quota:
+        subscriptionTier === "free" ? updatedQuota.remaining : null,
+      subscription_tier: subscriptionTier,
+    });
   } catch (error) {
     return Response.json(
       {

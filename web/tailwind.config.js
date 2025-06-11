@@ -11,6 +11,7 @@ module.exports = {
         'cyber-blue': '#06B6D4',
         'neon-green': '#10B981',
         'deep-space': '#0F0F23',
+        'dark-purple': '#1A1A2E',
         'midnight': '#1A1A2E',
         'pure-white': '#FFFFFF',
         'silver': '#E2E8F0',
