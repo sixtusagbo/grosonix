@@ -129,33 +129,9 @@ export async function POST(request: NextRequest) {
       .eq("user_id", user.id);
 
     if (!socialAccounts || socialAccounts.length === 0) {
-      return Response.json(
-        {
-          error: "No social accounts",
-          message:
-            "Please connect at least one social media account to analyze your style.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Fetch user's posts for analysis
-    const accessTokens: Record<string, string> = {};
-    socialAccounts.forEach((account) => {
-      accessTokens[account.platform] = account.access_token;
-    });
-
-    const platforms = socialAccounts.map((account) => account.platform);
-    const posts = await styleAnalyzer.fetchUserPostsForAnalysis(
-      user.id,
-      platforms,
-      accessTokens
-    );
-
-    if (posts.length === 0) {
-      // For demo purposes, create a sample style profile when no posts are available
+      // No social accounts connected - create demo profile
       console.log(
-        "No posts found, creating demo style profile for user:",
+        "No social accounts connected, creating demo style profile for user:",
         user.id
       );
 
@@ -178,7 +154,7 @@ export async function POST(request: NextRequest) {
         hashtag_style: "moderate usage",
         content_length_preference: "medium",
         analyzed_posts_count: 0,
-        confidence_score: 50, // Lower confidence since it's demo data
+        confidence_score: 30, // Lower confidence since it's demo data
         last_analyzed: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -202,11 +178,48 @@ export async function POST(request: NextRequest) {
         style_profile: demoStyleProfile,
         analysis_summary:
           analysisSummary +
-          " (Note: This is a demo profile. Connect your social accounts for personalized analysis.)",
+          " (Note: This is a demo profile. Connect your Twitter account in Settings for personalized analysis.)",
         posts_analyzed: 0,
         from_cache: false,
         is_demo: true,
+        message:
+          "Connect your Twitter account to get personalized style analysis based on your actual posts.",
       });
+    }
+
+    // Fetch user's posts for analysis
+    const accessTokens: Record<string, string> = {};
+    socialAccounts.forEach((account) => {
+      accessTokens[account.platform] = account.access_token;
+    });
+
+    const platforms = socialAccounts.map((account) => account.platform);
+    const posts = await styleAnalyzer.fetchUserPostsForAnalysis(
+      user.id,
+      platforms,
+      accessTokens
+    );
+
+    if (posts.length === 0) {
+      // Connected accounts but no posts fetched - likely API issue
+      console.log(
+        "Connected accounts found but no posts fetched for user:",
+        user.id,
+        "Platforms:",
+        platforms
+      );
+
+      return Response.json(
+        {
+          error: "No posts available",
+          message:
+            "Unable to fetch posts from your connected accounts. This might be due to API rate limits or connection issues. Please try again later or check your account connections in Settings.",
+          connected_platforms: platforms,
+          suggestion:
+            "Try reconnecting your Twitter account in Settings if the issue persists.",
+        },
+        { status: 400 }
+      );
     }
 
     // Perform style analysis
