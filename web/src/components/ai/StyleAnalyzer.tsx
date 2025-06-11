@@ -48,7 +48,7 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
   const handleAnalyzeStyle = async () => {
     setIsAnalyzing(true);
     try {
-      const result = await aiApiClient.analyzeStyle({});
+      const result = await aiApiClient.analyzeStyle({ force_refresh: true });
       setStyleProfile(result.style_profile);
       setAnalysisSummary(result.analysis_summary);
 

@@ -73,6 +73,7 @@ export interface StyleAnalysisRequest {
       comments: number;
     };
   }>;
+  force_refresh?: boolean;
 }
 
 export interface ContentAdaptationRequest {
