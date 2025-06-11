@@ -142,12 +142,66 @@ export async function GET(request: NextRequest) {
     const today = new Date().toISOString().split("T")[0];
     const todayUsage = dailyUsageSummary[today] || {};
 
+    // Handle unlimited quotas (-1) properly for display
+    const getDisplayLimit = (limit: number, tier: string, feature: string) => {
+      if (limit === -1) {
+        // For unlimited plans, show a high number for display purposes
+        if (tier === "pro") {
+          return feature === "content_generation" ? 50 : 25;
+        } else if (tier === "agency") {
+          return feature === "content_generation" ? 200 : 100;
+        }
+        return 999; // Fallback for unlimited
+      }
+      return limit;
+    };
+
+    const getDisplayRemaining = (
+      used: number,
+      limit: number,
+      tier: string,
+      feature: string
+    ) => {
+      if (limit === -1) {
+        // For unlimited plans, show remaining as the display limit minus used
+        const displayLimit = getDisplayLimit(limit, tier, feature);
+        return Math.max(0, displayLimit - used);
+      }
+      return Math.max(0, limit - used);
+    };
+
+    const dailyGenerations = todayUsage.content_generation || 0;
+    const dailyAdaptations = todayUsage.cross_platform_adaptation || 0;
+    const generationLimit = contentGenerationQuota?.limit || 5;
+    const adaptationLimit = adaptationQuota?.limit || 0;
+
     return Response.json({
-      daily_generations: todayUsage.content_generation || 0,
-      daily_limit: contentGenerationQuota?.limit || 5,
-      daily_adaptations: todayUsage.cross_platform_adaptation || 0,
-      adaptation_limit: adaptationQuota?.limit || 0,
+      daily_generations: dailyGenerations,
+      daily_limit: getDisplayLimit(
+        generationLimit,
+        subscriptionTier,
+        "content_generation"
+      ),
+      daily_adaptations: dailyAdaptations,
+      adaptation_limit: getDisplayLimit(
+        adaptationLimit,
+        subscriptionTier,
+        "cross_platform_adaptation"
+      ),
+      remaining_generations: getDisplayRemaining(
+        dailyGenerations,
+        generationLimit,
+        subscriptionTier,
+        "content_generation"
+      ),
+      remaining_adaptations: getDisplayRemaining(
+        dailyAdaptations,
+        adaptationLimit,
+        subscriptionTier,
+        "cross_platform_adaptation"
+      ),
       subscription_tier: subscriptionTier,
+      is_unlimited: generationLimit === -1,
       reset_time:
         contentGenerationQuota?.resets_at ||
         new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),

@@ -1,7 +1,7 @@
 export interface ContentSuggestion {
   id: string;
   content: string;
-  platform: 'twitter' | 'instagram' | 'linkedin';
+  platform: "twitter" | "instagram" | "linkedin";
   hashtags: string[];
   engagement_score: number;
   created_at: string;
@@ -14,10 +14,10 @@ export interface StyleProfile {
   topics: string[];
   writing_patterns: string[];
   engagement_strategies: string[];
-  vocabulary_level: 'simple' | 'intermediate' | 'advanced' | 'mixed';
-  emoji_usage: 'minimal' | 'moderate' | 'heavy';
+  vocabulary_level: "simple" | "intermediate" | "advanced" | "mixed";
+  emoji_usage: "minimal" | "moderate" | "heavy";
   hashtag_style: string;
-  content_length_preference: 'short' | 'medium' | 'long' | 'mixed';
+  content_length_preference: "short" | "medium" | "long" | "mixed";
   analyzed_posts_count: number;
   confidence_score: number;
   last_analyzed: string;
@@ -26,7 +26,7 @@ export interface StyleProfile {
 }
 
 export interface PlatformContent {
-  platform: 'twitter' | 'instagram' | 'linkedin';
+  platform: "twitter" | "instagram" | "linkedin";
   content: string;
   hashtags: string[];
   character_count: number;
@@ -44,14 +44,22 @@ export interface UsageStats {
   daily_limit: number;
   daily_adaptations: number;
   adaptation_limit: number;
-  subscription_tier: 'free' | 'pro' | 'agency';
+  remaining_generations?: number;
+  remaining_adaptations?: number;
+  subscription_tier: "free" | "pro" | "agency";
+  is_unlimited?: boolean;
   reset_time: string;
 }
 
 export interface ContentGenerationRequest {
   prompt: string;
-  platform: 'twitter' | 'instagram' | 'linkedin';
-  tone?: 'professional' | 'casual' | 'humorous' | 'inspirational' | 'educational';
+  platform: "twitter" | "instagram" | "linkedin";
+  tone?:
+    | "professional"
+    | "casual"
+    | "humorous"
+    | "inspirational"
+    | "educational";
   topic?: string;
 }
 
@@ -69,7 +77,7 @@ export interface StyleAnalysisRequest {
 
 export interface ContentAdaptationRequest {
   content: string;
-  target_platforms: ('twitter' | 'instagram' | 'linkedin')[];
+  target_platforms: ("twitter" | "instagram" | "linkedin")[];
 }
 
 export const PLATFORM_LIMITS = {
@@ -95,17 +103,17 @@ export const SUBSCRIPTION_FEATURES = {
     daily_generations: 5,
     daily_adaptations: 0,
     style_analysis: 1,
-    features: ['Basic content generation', 'Limited style analysis'],
+    features: ["Basic content generation", "Limited style analysis"],
   },
   pro: {
     daily_generations: 50,
     daily_adaptations: 25,
     style_analysis: 10,
     features: [
-      'Advanced content generation',
-      'Cross-platform adaptation',
-      'Detailed style analysis',
-      'Priority support',
+      "Advanced content generation",
+      "Cross-platform adaptation",
+      "Detailed style analysis",
+      "Priority support",
     ],
   },
   agency: {
@@ -113,11 +121,11 @@ export const SUBSCRIPTION_FEATURES = {
     daily_adaptations: 100,
     style_analysis: 50,
     features: [
-      'Unlimited content generation',
-      'Advanced cross-platform adaptation',
-      'Team collaboration',
-      'Custom AI training',
-      'Priority processing',
+      "Unlimited content generation",
+      "Advanced cross-platform adaptation",
+      "Team collaboration",
+      "Custom AI training",
+      "Priority processing",
     ],
   },
 } as const;
