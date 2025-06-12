@@ -211,7 +211,7 @@ export class TwitterServiceWithCache {
         ttl
       );
 
-      console.log("Fresh Twitter metrics calculated and cached:", metrics);
+      console.log("Fresh Twitter metrics calculated and cached:", metricsData);
       return metrics;
     } catch (error) {
       console.error("Twitter metrics error:", error);
