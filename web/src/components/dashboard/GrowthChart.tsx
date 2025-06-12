@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Line } from 'react-chartjs-2';
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js';
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -26,13 +26,13 @@ ChartJS.register(
 
 export function GrowthChart() {
   const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
-        label: 'Followers Growth',
+        label: "Followers Growth",
         data: [0, 0, 0, 0, 0, 0],
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderColor: "#8B5CF6",
+        backgroundColor: "rgba(139, 92, 246, 0.1)",
         fill: true,
         tension: 0.4,
       },
@@ -46,10 +46,10 @@ export function GrowthChart() {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1A1A2E',
-        titleColor: '#E2E8F0',
-        bodyColor: '#E2E8F0',
-        borderColor: 'rgba(139, 92, 246, 0.2)',
+        backgroundColor: "#1A1A2E",
+        titleColor: "#E2E8F0",
+        bodyColor: "#E2E8F0",
+        borderColor: "rgba(139, 92, 246, 0.2)",
         borderWidth: 1,
         padding: 12,
       },
@@ -58,18 +58,18 @@ export function GrowthChart() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(226, 232, 240, 0.1)',
+          color: "rgba(226, 232, 240, 0.1)",
         },
         ticks: {
-          color: '#E2E8F0',
+          color: "#E2E8F0",
         },
       },
       x: {
         grid: {
-          color: 'rgba(226, 232, 240, 0.1)',
+          color: "rgba(226, 232, 240, 0.1)",
         },
         ticks: {
-          color: '#E2E8F0',
+          color: "#E2E8F0",
         },
       },
     },
@@ -77,7 +77,9 @@ export function GrowthChart() {
 
   return (
     <div className="glass-card p-6">
-      <h2 className="text-xl font-semibold mb-6">Growth Trends</h2>
+      <h2 className="text-xl font-semibold text-text-primary mb-6">
+        Growth Trends
+      </h2>
       <Line data={data} options={options} />
     </div>
   );

@@ -104,7 +104,7 @@ export function PlatformSelector({
       {/* Dropdown */}
       <div
         ref={dropdownRef}
-        className="fixed bg-midnight border border-electric-purple/20 rounded-lg shadow-2xl z-[9999] backdrop-blur-sm"
+        className="fixed bg-surface border border-electric-purple/20 rounded-lg shadow-2xl z-[9999] backdrop-blur-sm"
         style={{
           top: buttonRect.bottom + window.scrollY + 8,
           left: buttonRect.left + window.scrollX,
@@ -148,18 +148,18 @@ export function PlatformSelector({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 bg-midnight border border-electric-purple/20 rounded-lg px-4 py-3 hover:border-electric-purple/40 transition-all min-w-[200px]">
+        className="flex items-center space-x-3 bg-surface border border-electric-purple/20 rounded-lg px-4 py-3 hover:border-electric-purple/40 transition-all min-w-[200px]">
         <span className="text-xl">{selectedPlatformData?.icon}</span>
         <div className="flex-1 text-left">
           <div className={`font-medium ${selectedPlatformData?.color}`}>
             {selectedPlatformData?.name}
           </div>
-          <div className="text-xs text-silver">
+          <div className="text-xs text-text-muted">
             {selectedPlatformData?.description}
           </div>
         </div>
         <ChevronDownIcon
-          className={`w-4 h-4 text-silver transition-transform ${
+          className={`w-4 h-4 text-text-muted transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />

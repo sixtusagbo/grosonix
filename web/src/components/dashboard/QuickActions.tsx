@@ -49,7 +49,7 @@ export function QuickActions() {
           <Link
             key={action.name}
             href={action.href}
-            className="group bg-midnight rounded-lg p-4 border border-electric-purple/20 hover:border-electric-purple/40 transition-all duration-300 hover:transform hover:scale-105">
+            className="group bg-surface rounded-lg p-4 border border-electric-purple/20 hover:border-electric-purple/40 transition-all duration-300 hover:transform hover:scale-105">
             <div className="flex items-start space-x-3">
               <div
                 className={`${action.color} p-2 rounded-lg group-hover:scale-110 transition-transform`}>
