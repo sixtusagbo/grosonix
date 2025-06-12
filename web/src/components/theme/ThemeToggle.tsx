@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useTheme } from './ThemeProvider';
-import { Sun, Moon, Monitor } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from "./ThemeProvider";
+import { Sun, Moon, Monitor } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const getIcon = () => {
     switch (theme) {
-      case 'light':
+      case "light":
         return <Sun className="h-4 w-4" />;
-      case 'dark':
+      case "dark":
         return <Moon className="h-4 w-4" />;
-      case 'system':
+      case "system":
         return <Monitor className="h-4 w-4" />;
       default:
         return <Monitor className="h-4 w-4" />;
@@ -28,14 +28,14 @@ export function ThemeToggle() {
 
   const getThemeLabel = (themeValue: string) => {
     switch (themeValue) {
-      case 'light':
-        return 'Light';
-      case 'dark':
-        return 'Dark';
-      case 'system':
-        return 'System';
+      case "light":
+        return "Light";
+      case "dark":
+        return "Dark";
+      case "system":
+        return "System";
       default:
-        return 'System';
+        return "System";
     }
   };
 
@@ -45,49 +45,50 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200"
-        >
+          className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200">
           {getIcon()}
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="glass-card border-emerald-500/20 bg-slate-surface-800/90 backdrop-blur-xl"
-      >
+      <DropdownMenuContent
+        align="end"
+        className="glass-card border-emerald-500/20 bg-surface/90 backdrop-blur-xl">
         <DropdownMenuItem
-          onClick={() => setTheme('light')}
+          onClick={() => setTheme("light")}
           className={`flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10 ${
-            theme === 'light' ? 'bg-emerald-500/20 text-emerald-400' : 'text-silver'
-          }`}
-        >
+            theme === "light"
+              ? "bg-emerald-500/20 text-emerald-400"
+              : "text-text-secondary"
+          }`}>
           <Sun className="h-4 w-4" />
           <span>Light</span>
-          {theme === 'light' && (
+          {theme === "light" && (
             <div className="ml-auto h-2 w-2 rounded-full bg-emerald-400" />
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme('dark')}
+          onClick={() => setTheme("dark")}
           className={`flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10 ${
-            theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400' : 'text-silver'
-          }`}
-        >
+            theme === "dark"
+              ? "bg-emerald-500/20 text-emerald-400"
+              : "text-text-secondary"
+          }`}>
           <Moon className="h-4 w-4" />
           <span>Dark</span>
-          {theme === 'dark' && (
+          {theme === "dark" && (
             <div className="ml-auto h-2 w-2 rounded-full bg-emerald-400" />
           )}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme('system')}
+          onClick={() => setTheme("system")}
           className={`flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10 ${
-            theme === 'system' ? 'bg-emerald-500/20 text-emerald-400' : 'text-silver'
-          }`}
-        >
+            theme === "system"
+              ? "bg-emerald-500/20 text-emerald-400"
+              : "text-text-secondary"
+          }`}>
           <Monitor className="h-4 w-4" />
           <span>System</span>
-          {theme === 'system' && (
+          {theme === "system" && (
             <div className="ml-auto h-2 w-2 rounded-full bg-emerald-400" />
           )}
         </DropdownMenuItem>
@@ -100,7 +101,7 @@ export function ThemeToggleCompact() {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const cycleTheme = () => {
-    const themes = ['system', 'light', 'dark'];
+    const themes = ["system", "light", "dark"];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex] as any);
@@ -111,11 +112,10 @@ export function ThemeToggleCompact() {
       variant="ghost"
       size="sm"
       onClick={cycleTheme}
-      className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200 glow-emerald"
-    >
-      {theme === 'light' && <Sun className="h-4 w-4" />}
-      {theme === 'dark' && <Moon className="h-4 w-4" />}
-      {theme === 'system' && <Monitor className="h-4 w-4" />}
+      className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all duration-200 glow-emerald">
+      {theme === "light" && <Sun className="h-4 w-4" />}
+      {theme === "dark" && <Moon className="h-4 w-4" />}
+      {theme === "system" && <Monitor className="h-4 w-4" />}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );

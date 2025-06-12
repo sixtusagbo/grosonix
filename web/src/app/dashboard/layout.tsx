@@ -33,14 +33,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-charcoal-900 flex">
+    <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardNav user={user} />
-        <main className="flex-1 p-6 bg-gradient-to-br from-charcoal-900 via-slate-surface-800 to-charcoal-900">
+        <main className="flex-1 p-6 bg-background">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

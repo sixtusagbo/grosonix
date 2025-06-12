@@ -84,6 +84,17 @@ module.exports = {
         'linkedin': '#0077B5',
         'tiktok': '#000000',
 
+        // Theme-aware colors using CSS variables
+        'background': 'var(--background)',
+        'foreground': 'var(--foreground)',
+        'surface': 'var(--surface)',
+        'surface-hover': 'var(--surface-hover)',
+        'border': 'var(--border)',
+        'border-hover': 'var(--border-hover)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+
         // Legacy Support (for gradual migration)
         'electric-purple': '#8B5CF6',
         'cyber-blue': '#06B6D4',

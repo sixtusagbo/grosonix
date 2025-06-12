@@ -93,7 +93,7 @@ body {
 }
 
 .glass-input {
-  background: rgba(45, 55, 72, 0.6);
+  background: var(--surface);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   color: var(--text-primary);
@@ -201,5 +201,5 @@ body {
 
 /* Input Placeholder Styling */
 .glass-input::placeholder {
-  color: rgba(226, 232, 240, 0.6);
+  color: var(--text-muted);
 }

@@ -34,13 +34,13 @@ export function DashboardNav({ user }: DashboardNavProps) {
   };
 
   return (
-    <nav className="bg-charcoal-900/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-40">
+    <nav className="bg-surface/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-40">
       <div className="px-6">
         <div className="flex items-center justify-between h-16">
           {/* Search Bar */}
           <div className="flex-1 max-w-md">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search content, analytics, settings..."
@@ -75,7 +75,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
                     <div className="w-6 h-6 bg-hero-gradient rounded-full flex items-center justify-center">
                       <UserIcon className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-silver">
+                    <span className="text-sm font-medium text-text-secondary">
                       {user.email?.split("@")[0]}
                     </span>
                   </div>
@@ -83,7 +83,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-56 glass-card border-emerald-500/20 bg-slate-surface-800/90 backdrop-blur-xl">
+                className="w-56 glass-card border-emerald-500/20 bg-surface/90 backdrop-blur-xl">
                 <DropdownMenuLabel className="text-emerald-400">
                   My Account
                 </DropdownMenuLabel>
