@@ -14,9 +14,9 @@ const buttonVariants = cva(
         outline:
           "border-2 border-emerald-500/50 bg-transparent text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500",
         secondary:
-          "bg-slate-surface-800 text-white hover:bg-slate-surface-700 border border-emerald-500/20",
+          "bg-surface text-text-primary hover:bg-surface-hover border border-emerald-500/20",
         ghost:
-          "hover:bg-emerald-500/10 text-silver hover:text-emerald-400 transition-all duration-200",
+          "hover:bg-emerald-500/10 text-text-secondary hover:text-emerald-400 transition-all duration-200",
         link: "text-emerald-400 underline-offset-4 hover:underline hover:text-emerald-300",
         neo: "neo-brutal-button",
         energy:

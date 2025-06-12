@@ -85,29 +85,29 @@ export function CacheManager() {
       {/* Cache Statistics */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-midnight/50 rounded-lg p-3">
-            <div className="text-2xl font-bold text-white">
+          <div className="bg-surface/50 rounded-lg p-3">
+            <div className="text-2xl font-bold text-text-primary">
               {stats.cached_platforms}
             </div>
-            <div className="text-xs text-silver">Cached</div>
+            <div className="text-xs text-text-secondary">Cached</div>
           </div>
-          <div className="bg-midnight/50 rounded-lg p-3">
+          <div className="bg-surface/50 rounded-lg p-3">
             <div className="text-2xl font-bold text-warning-orange">
               {stats.expired_platforms}
             </div>
-            <div className="text-xs text-silver">Expired</div>
+            <div className="text-xs text-text-secondary">Expired</div>
           </div>
-          <div className="bg-midnight/50 rounded-lg p-3">
+          <div className="bg-surface/50 rounded-lg p-3">
             <div className="text-2xl font-bold text-danger-red">
               {stats.rate_limited_platforms}
             </div>
-            <div className="text-xs text-silver">Rate Limited</div>
+            <div className="text-xs text-text-secondary">Rate Limited</div>
           </div>
-          <div className="bg-midnight/50 rounded-lg p-3">
-            <div className="text-2xl font-bold text-cyber-blue">
+          <div className="bg-surface/50 rounded-lg p-3">
+            <div className="text-2xl font-bold text-neon-cyan-400">
               {stats.total_platforms}
             </div>
-            <div className="text-xs text-silver">Total</div>
+            <div className="text-xs text-text-secondary">Total</div>
           </div>
         </div>
       )}
