@@ -192,6 +192,26 @@ export class TwitterServiceWithCache {
         last_updated: new Date().toISOString(),
       };
 
+      // Cache the calculated metrics data
+      const metricsData = {
+        platform: "twitter",
+        followers_count: metrics.followers_count,
+        following_count: metrics.following_count,
+        posts_count: metrics.tweet_count,
+        engagement_rate: metrics.engagement_rate,
+        growth_rate: metrics.growth_rate,
+        last_updated: metrics.last_updated,
+      };
+
+      const ttl = MetricsCache.getCacheTTL("twitter", "metrics");
+      await this.cache.setCachedMetrics(
+        this.userId,
+        "twitter",
+        metricsData,
+        ttl
+      );
+
+      console.log("Fresh Twitter metrics calculated and cached:", metrics);
       return metrics;
     } catch (error) {
       console.error("Twitter metrics error:", error);
