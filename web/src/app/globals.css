@@ -69,6 +69,11 @@
   border-color: var(--border);
 }
 
+/* Default to dark theme to prevent flash */
+html {
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);

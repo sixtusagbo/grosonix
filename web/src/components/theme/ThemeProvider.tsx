@@ -1,70 +1,91 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = "dark" | "light" | "system";
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: 'dark' | 'light';
+  resolvedTheme: "dark" | "light";
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
+// Helper function to get resolved theme
+function getResolvedTheme(theme: Theme): "dark" | "light" {
+  if (typeof window === "undefined") return "dark";
 
+  if (theme === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
+  return theme;
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Start with system theme to avoid hydration mismatch
+  const [theme, setTheme] = useState<Theme>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+  const [mounted, setMounted] = useState(false);
+
+  // Load theme from localStorage after mount
   useEffect(() => {
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem('grosonix-theme') as Theme;
-    if (savedTheme && ['dark', 'light', 'system'].includes(savedTheme)) {
-      setTheme(savedTheme);
+    setMounted(true);
+
+    try {
+      const savedTheme = localStorage.getItem("grosonix-theme") as Theme;
+      if (savedTheme && ["dark", "light", "system"].includes(savedTheme)) {
+        setTheme(savedTheme);
+      }
+    } catch (error) {
+      console.warn("Failed to read theme from localStorage:", error);
     }
   }, []);
 
+  // Apply theme to DOM and save to localStorage
   useEffect(() => {
+    if (!mounted) return;
+
     const root = window.document.documentElement;
-    
+    const effectiveTheme = getResolvedTheme(theme);
+
     // Remove existing theme classes
-    root.classList.remove('light', 'dark');
-    
-    let effectiveTheme: 'dark' | 'light';
-    
-    if (theme === 'system') {
-      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches 
-        ? 'dark' 
-        : 'light';
-    } else {
-      effectiveTheme = theme;
-    }
-    
+    root.classList.remove("light", "dark");
     // Apply theme class
     root.classList.add(effectiveTheme);
-    setResolvedTheme(effectiveTheme);
-    
-    // Save to localStorage
-    localStorage.setItem('grosonix-theme', theme);
-  }, [theme]);
 
+    setResolvedTheme(effectiveTheme);
+
+    // Save to localStorage
+    try {
+      localStorage.setItem("grosonix-theme", theme);
+    } catch (error) {
+      console.warn("Failed to save theme to localStorage:", error);
+    }
+  }, [theme, mounted]);
+
+  // Listen for system theme changes
   useEffect(() => {
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+    if (!mounted) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
     const handleChange = () => {
-      if (theme === 'system') {
-        const newTheme = mediaQuery.matches ? 'dark' : 'light';
+      if (theme === "system") {
+        const newTheme = mediaQuery.matches ? "dark" : "light";
         const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
+        root.classList.remove("light", "dark");
         root.classList.add(newTheme);
         setResolvedTheme(newTheme);
       }
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme, mounted]);
 
   const value = {
     theme,
@@ -73,16 +94,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 }
