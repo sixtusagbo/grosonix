@@ -86,6 +86,28 @@
 
 ---
 
+### Day 5-6b: Dashboard Design - Sixtus
+
+**Focus**: Modern, professional dashboard UI with theme system
+
+#### Tasks
+
+- [ ] Stunning modern dashboard layout with sidebar and top navigation
+- [ ] Theme mode toggle system (dark, light, system)
+- [ ] Professional glassmorphism design elements
+- [ ] Responsive layout with modern flex components
+- [ ] Navigation structure and routing
+- [ ] Theme persistence and system preference detection
+
+#### Deliverables
+
+- ✅ Professional dashboard with sidebar and top nav
+- ✅ Complete theme system with 3 modes
+- ✅ Modern, stunning UI components
+- ✅ Responsive design across all devices
+
+---
+
 ### Day 7: Dashboard & Analytics - Mark
 
 **Focus**: Core metrics and visualization
@@ -193,7 +215,33 @@
 
 ---
 
-## 📱 Week 3: Mobile App Development
+## � Post-Subscription Features / V2
+
+### Post Scheduling System
+
+**Focus**: Advanced content scheduling and automation
+
+#### Tasks
+
+- [ ] Content calendar with drag-and-drop scheduling
+- [ ] Optimal posting time AI recommendations
+- [ ] Bulk scheduling interface
+- [ ] Auto-posting to connected social platforms
+- [ ] Scheduled post preview and editing
+- [ ] Timezone-aware scheduling
+- [ ] Recurring post templates
+- [ ] Schedule analytics and performance tracking
+
+#### Deliverables
+
+- Advanced scheduling system
+- Calendar interface with drag-and-drop
+- Automated posting capabilities
+- Schedule optimization recommendations
+
+---
+
+## �📱 Week 3: Mobile App Development
 
 ### Day 15-17: Mobile Foundation
 
