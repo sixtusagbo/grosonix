@@ -47,6 +47,8 @@ export function ContentGenerator({
     platform: "twitter",
     tone: "professional",
     topic: "",
+    use_voice_style: true,
+    ignore_tone: false,
   });
 
   const handleGenerate = async () => {
@@ -215,6 +217,52 @@ export function ContentGenerator({
               }
               className="glass-input min-h-[100px]"
             />
+          </div>
+
+          {/* Voice & Style Options */}
+          <div className="space-y-4 p-4 bg-dark-purple/30 rounded-lg border border-electric-purple/20">
+            <h4 className="font-medium text-white">Voice & Style Options</h4>
+
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.use_voice_style}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      use_voice_style: e.target.checked,
+                    })
+                  }
+                  className="rounded border-electric-purple/30 bg-dark-purple/50 text-electric-purple focus:ring-electric-purple"
+                />
+                <span className="text-sm text-silver">
+                  Use my voice & style
+                </span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.ignore_tone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, ignore_tone: e.target.checked })
+                  }
+                  className="rounded border-electric-purple/30 bg-dark-purple/50 text-electric-purple focus:ring-electric-purple"
+                />
+                <span className="text-sm text-silver">
+                  Ignore tone setting (use only my voice)
+                </span>
+              </label>
+            </div>
+
+            <p className="text-xs text-silver/70">
+              {formData.use_voice_style
+                ? formData.ignore_tone
+                  ? "Content will be generated using only your personal voice and style, ignoring the tone setting above."
+                  : "Content will be generated using your personal voice and style combined with the selected tone."
+                : "Content will be generated using the selected tone without your personal voice and style."}
+            </p>
           </div>
 
           <div className="flex gap-3">

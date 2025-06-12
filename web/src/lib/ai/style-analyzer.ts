@@ -312,12 +312,125 @@ Focus on identifying unique characteristics that can be replicated in future con
     };
   }
 
+  async analyzeUserStyleFromSamples(
+    userId: string,
+    voiceSamples: Array<{
+      content: string;
+      platform: string;
+      additional_instructions?: string;
+    }>,
+    subscriptionTier: string = "free",
+    defaultTone?: string
+  ): Promise<UserStyleProfile> {
+    if (voiceSamples.length === 0) {
+      return this.createDefaultStyleProfile(userId);
+    }
+
+    try {
+      // Prepare content for analysis
+      const contentForAnalysis = voiceSamples
+        .map((sample, index) => {
+          let content = `Post ${index + 1} (${sample.platform}):\n${
+            sample.content
+          }`;
+          if (sample.additional_instructions) {
+            content += `\nAdditional context: ${sample.additional_instructions}`;
+          }
+          return content;
+        })
+        .join("\n\n---\n\n");
+
+      // Create analysis prompt
+      const analysisPrompt = `Analyze the writing style from these ${
+        voiceSamples.length
+      } social media posts.
+      ${defaultTone ? `The user prefers a ${defaultTone} tone by default.` : ""}
+
+      Content to analyze:
+      ${contentForAnalysis}
+
+      Please provide a detailed analysis in the following JSON format:
+      {
+        "tone": "primary tone (professional/casual/humorous/inspirational/educational)",
+        "topics": ["main topics discussed"],
+        "writing_patterns": ["key writing patterns observed"],
+        "engagement_strategies": ["how they engage with audience"],
+        "vocabulary_level": "simple/intermediate/advanced/mixed",
+        "emoji_usage": "minimal/moderate/heavy",
+        "hashtag_style": "description of hashtag usage",
+        "content_length_preference": "short/medium/long/mixed"
+      }`;
+
+      const analysis = await this.openAIService.analyzeContentStructure(
+        analysisPrompt
+      );
+
+      let parsedAnalysis;
+      try {
+        parsedAnalysis = JSON.parse(analysis);
+      } catch (parseError) {
+        console.error(
+          "Failed to parse AI analysis, using fallback:",
+          parseError
+        );
+        parsedAnalysis = this.createFallbackAnalysis(voiceSamples, defaultTone);
+      }
+
+      const confidenceScore = this.calculateConfidenceScore(
+        voiceSamples.length,
+        parsedAnalysis
+      );
+
+      const styleProfile: UserStyleProfile = {
+        user_id: userId,
+        tone: parsedAnalysis.tone || defaultTone || "professional",
+        topics: Array.isArray(parsedAnalysis.topics)
+          ? parsedAnalysis.topics
+          : ["general"],
+        writing_patterns: Array.isArray(parsedAnalysis.writing_patterns)
+          ? parsedAnalysis.writing_patterns
+          : ["standard"],
+        engagement_strategies: Array.isArray(
+          parsedAnalysis.engagement_strategies
+        )
+          ? parsedAnalysis.engagement_strategies
+          : ["basic"],
+        vocabulary_level: parsedAnalysis.vocabulary_level || "professional",
+        emoji_usage: parsedAnalysis.emoji_usage || "minimal",
+        hashtag_style: parsedAnalysis.hashtag_style || "moderate usage",
+        content_length_preference:
+          parsedAnalysis.content_length_preference || "medium",
+        analyzed_posts_count: voiceSamples.length,
+        confidence_score: confidenceScore,
+        last_analyzed: new Date().toISOString(),
+      };
+
+      return styleProfile;
+    } catch (error) {
+      console.error("Error analyzing style from voice samples:", error);
+      return this.createDefaultStyleProfile(userId);
+    }
+  }
+
+  private createFallbackAnalysis(voiceSamples: any[], defaultTone?: string) {
+    return {
+      tone: defaultTone || "professional",
+      topics: ["general"],
+      writing_patterns: ["clear communication"],
+      engagement_strategies: ["direct approach"],
+      vocabulary_level: "professional",
+      emoji_usage: "minimal",
+      hashtag_style: "moderate usage",
+      content_length_preference: "medium",
+    };
+  }
+
   generateStyleSummary(profile: UserStyleProfile): string {
     return `Writing Style: ${profile.tone} tone with ${
       profile.vocabulary_level
-    } vocabulary. 
-    Focuses on: ${profile.topics.slice(0, 3).join(", ")}. 
-    Patterns: ${profile.writing_patterns.slice(0, 2).join(", ")}. 
+    } vocabulary.
+    Focuses on: ${profile.topics.slice(0, 3).join(", ")}.
+    Patterns: ${profile.writing_patterns.slice(0, 2).join(", ")}.
     Prefers ${profile.content_length_preference} content with ${
       profile.emoji_usage
     } emoji usage.`;

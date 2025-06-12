@@ -287,7 +287,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { prompt, platform, tone = "professional" } = body;
+    const {
+      prompt,
+      platform,
+      tone = "professional",
+      use_voice_style = true,
+      ignore_tone = false,
+    } = body;
 
     if (!prompt || !platform) {
       return Response.json(
@@ -320,7 +326,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's style profile for personalization
+    // Get user's style profile and voice samples for personalization
     const { data: styleProfile } = await supabase
       .from("user_style_profiles")
       .select("*")
@@ -328,16 +334,56 @@ export async function POST(request: NextRequest) {
       .single();
 
     let userStyle: string | undefined;
-    if (styleProfile) {
-      userStyle = styleAnalyzer.generateStyleSummary(styleProfile);
+    let effectiveTone = tone;
+
+    if (use_voice_style && styleProfile) {
+      // Get user's voice samples for more detailed style analysis
+      const { data: voiceSamples } = await supabase
+        .from("user_voice_samples")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (voiceSamples && voiceSamples.length > 0) {
+        // Create detailed style context from voice samples
+        const voiceContext = voiceSamples
+          .map(
+            (sample, index) =>
+              `Sample ${index + 1} (${sample.platform}): ${sample.content}${
+                sample.additional_instructions
+                  ? ` [Context: ${sample.additional_instructions}]`
+                  : ""
+              }`
+          )
+          .join("\n\n");
+
+        userStyle = `User's Voice & Style Analysis:
+${styleAnalyzer.generateStyleSummary(styleProfile)}
+
+Voice Samples:
+${voiceContext}
+
+Please generate content that matches this specific voice and writing style.`;
+      } else {
+        // Fallback to basic style profile
+        userStyle = styleAnalyzer.generateStyleSummary(styleProfile);
+      }
+
+      // Handle tone preferences
+      if (ignore_tone) {
+        effectiveTone = styleProfile.tone; // Use the analyzed tone from style profile
+      } else {
+        // Use default tone if set, otherwise use the requested tone
+        effectiveTone = styleProfile.default_tone || tone;
+      }
     }
 
     // Generate custom AI content
     const generatedContent = await openaiService.generateContent({
       prompt,
       platform: platform as any,
-      tone: tone as any,
-      userStyle,
+      tone: effectiveTone as any,
+      userStyle: use_voice_style ? userStyle : undefined,
       maxTokens: 200,
       subscriptionTier,
       priority: subscriptionTier === "agency" ? "high" : "standard",

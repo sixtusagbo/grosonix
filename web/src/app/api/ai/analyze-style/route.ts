@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { force_refresh = false } = body;
+    const { force_refresh = false, voice_samples, default_tone } = body;
 
     // Initialize services
     const rateLimiter = new RateLimiter();
@@ -122,22 +122,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get user's connected social accounts
-    const { data: socialAccounts } = await supabase
-      .from("social_accounts")
-      .select("platform, access_token")
-      .eq("user_id", user.id);
+    // Check if we have voice samples to analyze
+    let postsToAnalyze: any[] = [];
 
-    if (!socialAccounts || socialAccounts.length === 0) {
-      // No social accounts connected - create demo profile
+    if (voice_samples && voice_samples.length > 0) {
+      // Use provided voice samples
+      postsToAnalyze = voice_samples.map((sample: any) => ({
+        content: sample.content,
+        platform: sample.platform,
+        additional_instructions: sample.additional_instructions,
+      }));
+    } else {
+      // Get user's stored voice samples
+      const { data: storedSamples } = await supabase
+        .from("user_voice_samples")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (storedSamples && storedSamples.length > 0) {
+        postsToAnalyze = storedSamples.map((sample) => ({
+          content: sample.content,
+          platform: sample.platform,
+          additional_instructions: sample.additional_instructions,
+        }));
+      }
+    }
+
+    if (postsToAnalyze.length === 0) {
+      // No voice samples available - create demo profile
       console.log(
-        "No social accounts connected, creating demo style profile for user:",
+        "No voice samples available, creating demo style profile for user:",
         user.id
       );
 
       const demoStyleProfile: UserStyleProfile = {
         user_id: user.id,
-        tone: "professional",
+        tone: default_tone || "professional",
         topics: ["technology", "business", "innovation", "productivity"],
         writing_patterns: [
           "clear and concise",
@@ -176,55 +197,21 @@ export async function POST(request: NextRequest) {
         style_profile: demoStyleProfile,
         analysis_summary:
           analysisSummary +
-          " (Note: This is a demo profile. Connect your Twitter account in Settings for personalized analysis.)",
+          " (Note: This is a demo profile. Add your favorite posts in the Style tab for personalized analysis.)",
         posts_analyzed: 0,
         from_cache: false,
         is_demo: true,
         message:
-          "Connect your Twitter account to get personalized style analysis based on your actual posts.",
+          "Add your favorite posts in the Style tab to get personalized style analysis based on your actual writing.",
       });
     }
 
-    // Fetch user's posts for analysis
-    const accessTokens: Record<string, string> = {};
-    socialAccounts.forEach((account) => {
-      accessTokens[account.platform] = account.access_token;
-    });
-
-    const platforms = socialAccounts.map((account) => account.platform);
-    const posts = await styleAnalyzer.fetchUserPostsForAnalysis(
+    // Perform style analysis using voice samples
+    const styleProfile = await styleAnalyzer.analyzeUserStyleFromSamples(
       user.id,
-      platforms,
-      accessTokens
-    );
-
-    if (posts.length === 0) {
-      // Connected accounts but no posts fetched - likely API issue
-      console.log(
-        "Connected accounts found but no posts fetched for user:",
-        user.id,
-        "Platforms:",
-        platforms
-      );
-
-      return Response.json(
-        {
-          error: "No posts available",
-          message:
-            "Unable to fetch posts from your connected accounts. This might be due to Twitter API rate limits or connection issues. Please wait 15 minutes and try again.",
-          connected_platforms: platforms,
-          suggestion:
-            "If the issue persists after waiting, try reconnecting your Twitter account in Settings.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Perform style analysis
-    const styleProfile = await styleAnalyzer.analyzeUserStyle(
-      user.id,
-      posts,
-      subscriptionTier
+      postsToAnalyze,
+      subscriptionTier,
+      default_tone
     );
 
     // Store the analysis in the database
@@ -246,7 +233,7 @@ export async function POST(request: NextRequest) {
     return Response.json({
       style_profile: styleProfile,
       analysis_summary: analysisSummary,
-      posts_analyzed: posts.length,
+      posts_analyzed: postsToAnalyze.length,
       from_cache: false,
     });
   } catch (error) {
@@ -345,6 +332,143 @@ export async function GET(request: NextRequest) {
       {
         error: "Internal server error",
         message: "Failed to retrieve style profile",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * @swagger
+ * /api/ai/analyze-style:
+ *   patch:
+ *     summary: Update default tone
+ *     description: Update the user's default tone preference
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - default_tone
+ *             properties:
+ *               default_tone:
+ *                 type: string
+ *                 enum: [professional, casual, humorous, inspirational, educational]
+ *     responses:
+ *       200:
+ *         description: Default tone updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 style_profile:
+ *                   $ref: '#/components/schemas/UserStyleProfile'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: No style profile found
+ */
+export async function PATCH(request: NextRequest) {
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return Response.json(
+        { error: "Unauthorized", message: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { default_tone } = body;
+
+    if (!default_tone) {
+      return Response.json(
+        { error: "Bad request", message: "Default tone is required" },
+        { status: 400 }
+      );
+    }
+
+    const validTones = [
+      "professional",
+      "casual",
+      "humorous",
+      "inspirational",
+      "educational",
+    ];
+    if (!validTones.includes(default_tone)) {
+      return Response.json(
+        { error: "Bad request", message: "Invalid tone value" },
+        { status: 400 }
+      );
+    }
+
+    // Update the user's style profile with new default tone
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from("user_style_profiles")
+      .update({
+        default_tone,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Error updating default tone:", updateError);
+      return Response.json(
+        {
+          error: "Internal server error",
+          message: "Failed to update default tone",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!updatedProfile) {
+      return Response.json(
+        {
+          error: "Not found",
+          message: "No style profile found. Please run style analysis first.",
+        },
+        { status: 404 }
+      );
+    }
+
+    return Response.json({
+      style_profile: updatedProfile,
+      message: "Default tone updated successfully",
+    });
+  } catch (error) {
+    console.error("Update default tone error:", error);
+    return Response.json(
+      {
+        error: "Internal server error",
+        message: "Failed to update default tone",
       },
       { status: 500 }
     );

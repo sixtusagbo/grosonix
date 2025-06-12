@@ -11,6 +11,7 @@ export interface StyleProfile {
   id?: string;
   user_id: string;
   tone: string;
+  default_tone?: string;
   topics: string[];
   writing_patterns: string[];
   engagement_strategies: string[];
@@ -21,6 +22,16 @@ export interface StyleProfile {
   analyzed_posts_count: number;
   confidence_score: number;
   last_analyzed: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface VoiceSample {
+  id?: string;
+  user_id: string;
+  platform: "twitter" | "instagram" | "linkedin";
+  content: string;
+  additional_instructions?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -61,19 +72,20 @@ export interface ContentGenerationRequest {
     | "inspirational"
     | "educational";
   topic?: string;
+  use_voice_style?: boolean;
+  ignore_tone?: boolean;
 }
 
 export interface StyleAnalysisRequest {
-  posts?: Array<{
-    content: string;
-    platform: string;
-    engagement_metrics?: {
-      likes: number;
-      shares: number;
-      comments: number;
-    };
-  }>;
+  voice_samples?: VoiceSample[];
+  default_tone?: string;
   force_refresh?: boolean;
+}
+
+export interface VoiceSampleRequest {
+  platform: "twitter" | "instagram" | "linkedin";
+  content: string;
+  additional_instructions?: string;
 }
 
 export interface ContentAdaptationRequest {

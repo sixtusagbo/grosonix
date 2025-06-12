@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContentGenerator } from "@/components/ai/ContentGenerator";
-import { StyleAnalyzer } from "@/components/ai/StyleAnalyzer";
+import { VoiceStyleManager } from "@/components/ai/VoiceStyleManager";
 import { ContentAdapter } from "@/components/ai/ContentAdapter";
 import { UsageStats } from "@/components/ai/UsageStats";
 import { AIDemo } from "@/components/ai/AIDemo";
@@ -73,7 +73,7 @@ export default function ContentPage() {
         </TabsContent>
 
         <TabsContent value="style" className="space-y-6">
-          <StyleAnalyzer />
+          <VoiceStyleManager />
         </TabsContent>
 
         <TabsContent value="adapt" className="space-y-6">

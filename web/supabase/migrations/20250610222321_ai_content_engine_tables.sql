@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS user_style_profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   tone text NOT NULL,
+  default_tone text DEFAULT 'professional',
   topics text[] DEFAULT '{}',
   writing_patterns text[] DEFAULT '{}',
   engagement_strategies text[] DEFAULT '{}',
@@ -30,6 +31,17 @@ CREATE TABLE IF NOT EXISTS user_style_profiles (
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
   UNIQUE(user_id)
+);
+
+-- Create user_voice_samples table for manual post input
+CREATE TABLE IF NOT EXISTS user_voice_samples (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  platform text NOT NULL CHECK (platform IN ('twitter', 'instagram', 'linkedin')),
+  content text NOT NULL,
+  additional_instructions text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 
 -- Create content_suggestions table
@@ -72,6 +84,7 @@ CREATE TABLE IF NOT EXISTS ai_usage_tracking (
 
 -- Enable Row Level Security
 ALTER TABLE user_style_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_voice_samples ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_suggestions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_adaptations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_usage_tracking ENABLE ROW LEVEL SECURITY;
@@ -92,6 +105,31 @@ CREATE POLICY "Users can insert own style profile"
 CREATE POLICY "Users can update own style profile"
   ON user_style_profiles
   FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- User voice samples policies
+CREATE POLICY "Users can read own voice samples"
+  ON user_voice_samples
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own voice samples"
+  ON user_voice_samples
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own voice samples"
+  ON user_voice_samples
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own voice samples"
+  ON user_voice_samples
+  FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
 
@@ -161,6 +199,11 @@ CREATE POLICY "Users can update own AI usage"
 -- Create triggers for updated_at
 CREATE TRIGGER set_user_style_profiles_updated_at
   BEFORE UPDATE ON user_style_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_updated_at();
+
+CREATE TRIGGER set_user_voice_samples_updated_at
+  BEFORE UPDATE ON user_voice_samples
   FOR EACH ROW
   EXECUTE FUNCTION handle_updated_at();
 
