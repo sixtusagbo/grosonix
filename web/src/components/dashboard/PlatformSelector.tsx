@@ -60,7 +60,7 @@ export function PlatformSelector({
       id: "overview" as PlatformFilter,
       name: "Overview",
       icon: "📊",
-      color: "text-electric-purple",
+      color: "text-emerald-500",
       description: "All connected platforms",
       available: true,
     },
@@ -68,7 +68,7 @@ export function PlatformSelector({
       id: "twitter" as PlatformFilter,
       name: "Twitter",
       icon: "🐦",
-      color: "text-cyber-blue",
+      color: "text-neon-cyan-500",
       description: "Twitter analytics",
       available: connectedPlatforms.includes("twitter"),
     },
@@ -104,7 +104,7 @@ export function PlatformSelector({
       {/* Dropdown */}
       <div
         ref={dropdownRef}
-        className="fixed bg-surface border border-electric-purple/20 rounded-lg shadow-2xl z-[9999] backdrop-blur-sm"
+        className="fixed bg-surface border border-emerald-500/20 rounded-lg shadow-2xl z-[9999] backdrop-blur-sm"
         style={{
           top: buttonRect.bottom + window.scrollY + 8,
           left: buttonRect.left + window.scrollX,
@@ -120,11 +120,9 @@ export function PlatformSelector({
               }
             }}
             disabled={!platform.available}
-            className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-electric-purple/10 transition-all first:rounded-t-lg last:rounded-b-lg ${
+            className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-emerald-500/10 transition-all first:rounded-t-lg last:rounded-b-lg ${
               !platform.available ? "opacity-50 cursor-not-allowed" : ""
-            } ${
-              selectedPlatform === platform.id ? "bg-electric-purple/20" : ""
-            }`}>
+            } ${selectedPlatform === platform.id ? "bg-emerald-500/20" : ""}`}>
             <span className="text-xl">{platform.icon}</span>
             <div className="flex-1">
               <div className={`font-medium ${platform.color}`}>
@@ -148,7 +146,7 @@ export function PlatformSelector({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 bg-surface border border-electric-purple/20 rounded-lg px-4 py-3 hover:border-electric-purple/40 transition-all min-w-[200px]">
+        className="flex items-center space-x-3 bg-surface border border-emerald-500/20 rounded-lg px-4 py-3 hover:border-emerald-500/40 transition-all min-w-[200px]">
         <span className="text-xl">{selectedPlatformData?.icon}</span>
         <div className="flex-1 text-left">
           <div className={`font-medium ${selectedPlatformData?.color}`}>

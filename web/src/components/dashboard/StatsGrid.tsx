@@ -202,7 +202,7 @@ export function StatsGrid({
             <div className="flex items-center mt-2">
               {stat.loading ? (
                 <div className="animate-pulse">
-                  <div className="h-8 bg-electric-purple/20 rounded w-16"></div>
+                  <div className="h-8 bg-emerald-500/20 rounded w-16"></div>
                 </div>
               ) : (
                 <p className="text-2xl font-semibold text-text-primary">
