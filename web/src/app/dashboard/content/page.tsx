@@ -21,10 +21,10 @@ export default function ContentPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="glass-card p-6">
-        <h1 className="text-2xl font-bold text-white mb-2">
+        <h1 className="text-2xl font-bold text-theme-primary mb-2">
           AI Content Engine
         </h1>
-        <p className="text-silver">
+        <p className="text-theme-secondary">
           Generate personalized content, analyze your writing style, and adapt
           content for multiple platforms.
         </p>

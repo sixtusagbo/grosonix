@@ -201,23 +201,23 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
   return (
     <div className="space-y-6">
       {/* Default Tone Settings */}
-      <Card className="glass-card border-electric-purple/20">
+      <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Settings className="w-5 h-5 text-electric-purple" />
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <Settings className="w-5 h-5 text-emerald-500" />
             Default Tone Settings
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-silver mb-2 block">
+              <label className="text-sm text-theme-secondary mb-2 block">
                 Choose your default tone for content generation
               </label>
               <Select
                 value={defaultTone}
                 onValueChange={handleUpdateDefaultTone}>
-                <SelectTrigger className="bg-dark-purple/50 border-electric-purple/30">
+                <SelectTrigger className="glass-input">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -234,10 +234,10 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
       </Card>
 
       {/* Voice Samples Management */}
-      <Card className="glass-card border-electric-purple/20">
+      <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <MessageSquare className="w-5 h-5 text-electric-purple" />
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <MessageSquare className="w-5 h-5 text-emerald-500" />
             Voice & Style Samples
             <Badge variant="outline" className="ml-auto">
               {voiceSamples.length}/3
@@ -245,18 +245,20 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-silver text-sm">
+          <p className="text-theme-secondary text-sm">
             Add up to 3 of your favorite posts to help AI understand your unique
             voice and writing style.
           </p>
 
           {/* Add New Sample Form */}
           {voiceSamples.length < 3 && (
-            <div className="space-y-4 p-4 bg-dark-purple/30 rounded-lg border border-electric-purple/20">
-              <h4 className="font-medium text-white">Add New Voice Sample</h4>
+            <div className="space-y-4 p-4 bg-theme-surface rounded-lg border border-emerald-500/20">
+              <h4 className="font-medium text-theme-primary">
+                Add New Voice Sample
+              </h4>
 
               <div>
-                <label className="text-sm text-silver mb-2 block">
+                <label className="text-sm text-theme-secondary mb-2 block">
                   Platform
                 </label>
                 <Select
@@ -264,7 +266,7 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
                   onValueChange={(
                     value: "twitter" | "instagram" | "linkedin"
                   ) => setNewSample({ ...newSample, platform: value })}>
-                  <SelectTrigger className="bg-dark-purple/50 border-electric-purple/30">
+                  <SelectTrigger className="glass-input">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -276,7 +278,7 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
               </div>
 
               <div>
-                <label className="text-sm text-silver mb-2 block">
+                <label className="text-sm text-theme-secondary mb-2 block">
                   Post Content
                 </label>
                 <Textarea
@@ -285,12 +287,12 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
                   onChange={(e) =>
                     setNewSample({ ...newSample, content: e.target.value })
                   }
-                  className="bg-dark-purple/50 border-electric-purple/30 min-h-[100px]"
+                  className="glass-input min-h-[100px]"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-silver mb-2 block">
+                <label className="text-sm text-theme-secondary mb-2 block">
                   Additional Instructions (Optional)
                 </label>
                 <Textarea
@@ -302,13 +304,13 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
                       additional_instructions: e.target.value,
                     })
                   }
-                  className="bg-dark-purple/50 border-electric-purple/30"
+                  className="glass-input"
                 />
               </div>
 
               <Button
                 onClick={handleAddSample}
-                className="bg-electric-purple hover:bg-electric-purple/80">
+                className="bg-emerald-500 hover:bg-emerald-600 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Voice Sample
               </Button>
@@ -318,11 +320,13 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
           {/* Existing Samples */}
           {voiceSamples.length > 0 && (
             <div className="space-y-4">
-              <h4 className="font-medium text-white">Your Voice Samples</h4>
+              <h4 className="font-medium text-theme-primary">
+                Your Voice Samples
+              </h4>
               {voiceSamples.map((sample) => (
                 <div
                   key={sample.id}
-                  className="p-4 bg-dark-purple/30 rounded-lg border border-electric-purple/20">
+                  className="p-4 bg-theme-surface rounded-lg border border-emerald-500/20">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">
@@ -345,12 +349,12 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
                     </Button>
                   </div>
 
-                  <p className="text-silver text-sm mb-2 line-clamp-3">
+                  <p className="text-theme-secondary text-sm mb-2 line-clamp-3">
                     {sample.content}
                   </p>
 
                   {sample.additional_instructions && (
-                    <p className="text-xs text-silver/70 italic">
+                    <p className="text-xs text-theme-muted italic">
                       Note: {sample.additional_instructions}
                     </p>
                   )}
@@ -364,7 +368,7 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
             <Button
               onClick={handleAnalyzeStyle}
               disabled={isAnalyzing}
-              className="w-full bg-electric-purple hover:bg-electric-purple/80">
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white">
               {isAnalyzing ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
@@ -378,41 +382,45 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
 
       {/* Style Analysis Results */}
       {styleProfile && (
-        <Card className="glass-card border-electric-purple/20">
+        <Card className="glass-card border-emerald-500/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Sparkles className="w-5 h-5 text-electric-purple" />
+            <CardTitle className="flex items-center gap-2 text-theme-primary">
+              <Sparkles className="w-5 h-5 text-emerald-500" />
               Your Writing Style Analysis
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Analysis Summary */}
-            <div className="p-4 bg-electric-purple/10 rounded-lg border border-electric-purple/20">
-              <p className="text-silver">{analysisSummary}</p>
+            <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <p className="text-theme-secondary">{analysisSummary}</p>
             </div>
 
             {/* Style Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h4 className="font-semibold text-white flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-electric-purple" />
+                <h4 className="font-semibold text-theme-primary flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-emerald-500" />
                   Tone & Voice
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-silver">Primary Tone</label>
+                    <label className="text-sm text-theme-secondary">
+                      Primary Tone
+                    </label>
                     <Badge variant="secondary" className="ml-2 capitalize">
                       {styleProfile.tone}
                     </Badge>
                   </div>
                   <div>
-                    <label className="text-sm text-silver">Default Tone</label>
+                    <label className="text-sm text-theme-secondary">
+                      Default Tone
+                    </label>
                     <Badge variant="outline" className="ml-2 capitalize">
                       {styleProfile.default_tone || "Not set"}
                     </Badge>
                   </div>
                   <div>
-                    <label className="text-sm text-silver">
+                    <label className="text-sm text-theme-secondary">
                       Vocabulary Level
                     </label>
                     <Badge variant="outline" className="ml-2 capitalize">
@@ -423,12 +431,12 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
               </div>
 
               <div className="space-y-4">
-                <h4 className="font-semibold text-white">
+                <h4 className="font-semibold text-theme-primary">
                   Content Preferences
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-silver">
+                    <label className="text-sm text-theme-secondary">
                       Content Length
                     </label>
                     <Badge variant="outline" className="ml-2 capitalize">
@@ -436,13 +444,17 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
                     </Badge>
                   </div>
                   <div>
-                    <label className="text-sm text-silver">Emoji Usage</label>
+                    <label className="text-sm text-theme-secondary">
+                      Emoji Usage
+                    </label>
                     <Badge variant="outline" className="ml-2 capitalize">
                       {styleProfile.emoji_usage}
                     </Badge>
                   </div>
                   <div>
-                    <label className="text-sm text-silver">Hashtag Style</label>
+                    <label className="text-sm text-theme-secondary">
+                      Hashtag Style
+                    </label>
                     <Badge variant="outline" className="ml-2">
                       {styleProfile.hashtag_style}
                     </Badge>
@@ -454,7 +466,9 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
             {/* Topics and Patterns */}
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold text-white mb-2">Main Topics</h4>
+                <h4 className="font-semibold text-theme-primary mb-2">
+                  Main Topics
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {styleProfile.topics.map((topic, index) => (
                     <Badge key={index} variant="secondary">
@@ -465,7 +479,7 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-2">
+                <h4 className="font-semibold text-theme-primary mb-2">
                   Writing Patterns
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -478,7 +492,7 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-2">
+                <h4 className="font-semibold text-theme-primary mb-2">
                   Engagement Strategies
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -492,8 +506,8 @@ export function VoiceStyleManager({ onStyleAnalyzed }: VoiceStyleManagerProps) {
             </div>
 
             {/* Analysis Stats */}
-            <div className="pt-4 border-t border-electric-purple/20">
-              <div className="flex items-center justify-between text-sm text-silver">
+            <div className="pt-4 border-t border-emerald-500/20">
+              <div className="flex items-center justify-between text-sm text-theme-secondary">
                 <span>
                   Analyzed {styleProfile.analyzed_posts_count} voice samples
                 </span>

@@ -135,21 +135,21 @@ export function ContentAdapter({
   return (
     <div className="space-y-6">
       {/* Input Section */}
-      <Card className="glass-card border-electric-purple/20">
+      <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Shuffle className="w-5 h-5 text-electric-purple" />
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <Shuffle className="w-5 h-5 text-emerald-500" />
             Cross-Platform Content Adapter
           </CardTitle>
           {remainingQuota !== null && (
-            <div className="text-sm text-silver">
+            <div className="text-sm text-theme-secondary">
               Remaining adaptations: {remainingQuota}
             </div>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white">
+            <label className="text-sm font-medium text-theme-primary">
               Original Content
             </label>
             <Textarea
@@ -158,13 +158,13 @@ export function ContentAdapter({
               onChange={(e) => setOriginalContent(e.target.value)}
               className="glass-input min-h-[120px]"
             />
-            <div className="text-xs text-silver">
+            <div className="text-xs text-theme-secondary">
               {originalContent.length} characters
             </div>
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-white">
+            <label className="text-sm font-medium text-theme-primary">
               Target Platforms
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -204,7 +204,7 @@ export function ContentAdapter({
               !originalContent.trim() ||
               selectedPlatforms.length === 0
             }
-            className="w-full bg-electric-purple hover:bg-electric-purple/80">
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white">
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : (
@@ -218,7 +218,7 @@ export function ContentAdapter({
       {/* Adaptations */}
       {adaptations.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-theme-primary">
             Platform Adaptations
           </h3>
           <div className="grid gap-4">
@@ -227,9 +227,7 @@ export function ContentAdapter({
               const limits = PLATFORM_LIMITS[adaptation.platform];
 
               return (
-                <Card
-                  key={index}
-                  className="glass-card border-electric-purple/20">
+                <Card key={index} className="glass-card border-emerald-500/20">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-2">
@@ -254,12 +252,12 @@ export function ContentAdapter({
                         size="sm"
                         variant="ghost"
                         onClick={() => copyToClipboard(adaptation.content)}
-                        className="text-silver hover:text-white">
+                        className="text-theme-secondary hover:text-theme-primary">
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
 
-                    <p className="text-white mb-4 leading-relaxed">
+                    <p className="text-theme-primary mb-4 leading-relaxed">
                       {adaptation.content}
                     </p>
 
@@ -279,7 +277,9 @@ export function ContentAdapter({
                     {/* Character Count & Validation */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-silver">Character Count</span>
+                        <span className="text-theme-secondary">
+                          Character Count
+                        </span>
                         <span
                           className={getCharacterColor(
                             adaptation.platform,
@@ -320,7 +320,7 @@ export function ContentAdapter({
                       )}
 
                       {/* Platform Guidelines */}
-                      <div className="text-xs text-silver space-y-1">
+                      <div className="text-xs text-theme-muted space-y-1">
                         <p>
                           • Recommended hashtags: {limits.recommendedHashtags}
                         </p>

@@ -123,14 +123,14 @@ export function ContentGenerator({
   return (
     <div className="space-y-6">
       {/* Generation Form */}
-      <Card className="glass-card border-electric-purple/20">
+      <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Sparkles className="w-5 h-5 text-electric-purple" />
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <Sparkles className="w-5 h-5 text-emerald-500" />
             AI Content Generator
           </CardTitle>
           {remainingQuota !== null && (
-            <div className="flex items-center gap-2 text-sm text-silver">
+            <div className="flex items-center gap-2 text-sm text-theme-secondary">
               <span>Remaining quota: {remainingQuota}</span>
               <Badge variant="outline" className="text-xs">
                 {subscriptionTier}
@@ -141,7 +141,9 @@ export function ContentGenerator({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Platform</label>
+              <label className="text-sm font-medium text-theme-primary">
+                Platform
+              </label>
               <Select
                 value={formData.platform}
                 onValueChange={(value: any) =>
@@ -171,7 +173,9 @@ export function ContentGenerator({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Tone</label>
+              <label className="text-sm font-medium text-theme-primary">
+                Tone
+              </label>
               <Select
                 value={formData.tone}
                 onValueChange={(value: any) =>
@@ -192,7 +196,7 @@ export function ContentGenerator({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white">
+            <label className="text-sm font-medium text-theme-primary">
               Topic (Optional)
             </label>
             <Input
@@ -206,7 +210,7 @@ export function ContentGenerator({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white">
+            <label className="text-sm font-medium text-theme-primary">
               Custom Prompt
             </label>
             <Textarea
@@ -220,8 +224,10 @@ export function ContentGenerator({
           </div>
 
           {/* Voice & Style Options */}
-          <div className="space-y-4 p-4 bg-dark-purple/30 rounded-lg border border-electric-purple/20">
-            <h4 className="font-medium text-white">Voice & Style Options</h4>
+          <div className="space-y-4 p-4 bg-theme-surface rounded-lg border border-emerald-500/20">
+            <h4 className="font-medium text-theme-primary">
+              Voice & Style Options
+            </h4>
 
             <div className="flex items-center space-x-4">
               <label className="flex items-center space-x-2">
@@ -234,9 +240,9 @@ export function ContentGenerator({
                       use_voice_style: e.target.checked,
                     })
                   }
-                  className="rounded border-electric-purple/30 bg-dark-purple/50 text-electric-purple focus:ring-electric-purple"
+                  className="rounded border-emerald-500/30 bg-theme-surface text-emerald-500 focus:ring-emerald-500"
                 />
-                <span className="text-sm text-silver">
+                <span className="text-sm text-theme-secondary">
                   Use my voice & style
                 </span>
               </label>
@@ -248,15 +254,15 @@ export function ContentGenerator({
                   onChange={(e) =>
                     setFormData({ ...formData, ignore_tone: e.target.checked })
                   }
-                  className="rounded border-electric-purple/30 bg-dark-purple/50 text-electric-purple focus:ring-electric-purple"
+                  className="rounded border-emerald-500/30 bg-theme-surface text-emerald-500 focus:ring-emerald-500"
                 />
-                <span className="text-sm text-silver">
+                <span className="text-sm text-theme-secondary">
                   Ignore tone setting (use only my voice)
                 </span>
               </label>
             </div>
 
-            <p className="text-xs text-silver/70">
+            <p className="text-xs text-theme-muted">
               {formData.use_voice_style
                 ? formData.ignore_tone
                   ? "Content will be generated using only your personal voice and style, ignoring the tone setting above."
@@ -269,7 +275,7 @@ export function ContentGenerator({
             <Button
               onClick={handleGenerate}
               disabled={isLoading || !formData.prompt.trim()}
-              className="flex-1 bg-electric-purple hover:bg-electric-purple/80">
+              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white">
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
@@ -282,7 +288,7 @@ export function ContentGenerator({
               onClick={handleGetSuggestions}
               disabled={isLoading}
               variant="outline"
-              className="border-electric-purple/50 text-electric-purple hover:bg-electric-purple/10">
+              className="border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
@@ -297,14 +303,14 @@ export function ContentGenerator({
       {/* Generated Content */}
       {suggestions.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-theme-primary">
             Generated Content
           </h3>
           <div className="grid gap-4">
             {suggestions.map((suggestion) => (
               <Card
                 key={suggestion.id}
-                className="glass-card border-electric-purple/20">
+                className="glass-card border-emerald-500/20">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -329,13 +335,13 @@ export function ContentGenerator({
                         size="sm"
                         variant="ghost"
                         onClick={() => copyToClipboard(suggestion.content)}
-                        className="text-silver hover:text-white">
+                        className="text-theme-secondary hover:text-theme-primary">
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <p className="text-white mb-4 leading-relaxed">
+                  <p className="text-theme-primary mb-4 leading-relaxed">
                     {suggestion.content}
                   </p>
 
@@ -352,7 +358,7 @@ export function ContentGenerator({
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 text-sm text-silver">
+                  <div className="flex items-center gap-4 text-sm text-theme-secondary">
                     <span className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       Predicted engagement

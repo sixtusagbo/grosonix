@@ -203,3 +203,38 @@ body {
 .glass-input::placeholder {
   color: var(--text-muted);
 }
+
+/* Glass Input Styling */
+.glass-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+}
+
+.glass-input:focus {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+/* Theme-aware text colors */
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+/* Theme-aware background colors */
+.bg-theme-surface {
+  background-color: var(--surface);
+}
+
+.bg-theme-surface-hover {
+  background-color: var(--surface-hover);
+}

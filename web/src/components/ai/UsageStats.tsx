@@ -81,7 +81,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
       case "free":
         return "text-gray-400";
       case "pro":
-        return "text-electric-purple";
+        return "text-emerald-500";
       case "agency":
         return "text-yellow-400";
       default:
@@ -140,10 +140,10 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
   return (
     <div className="space-y-6">
       {/* Current Plan */}
-      <Card className="glass-card border-electric-purple/20">
+      <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <BarChart3 className="w-5 h-5 text-electric-purple" />
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <BarChart3 className="w-5 h-5 text-emerald-500" />
             Usage Statistics
           </CardTitle>
         </CardHeader>
@@ -154,7 +154,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
               <div className={getTierColor(stats.subscription_tier)}>
                 {getTierIcon(stats.subscription_tier)}
               </div>
-              <span className="font-semibold text-white capitalize">
+              <span className="font-semibold text-theme-primary capitalize">
                 {stats.subscription_tier} Plan
               </span>
             </div>
@@ -172,7 +172,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
           {/* Daily Generations */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-theme-primary">
                 Daily Content Generations
               </span>
               <span
@@ -216,7 +216,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
           {stats.subscription_tier !== "free" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-theme-primary">
                   Daily Content Adaptations
                 </span>
                 <span
@@ -238,7 +238,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
           )}
 
           {/* Reset Timer */}
-          <div className="flex items-center gap-2 text-sm text-silver">
+          <div className="flex items-center gap-2 text-sm text-theme-secondary">
             <Clock className="w-4 h-4" />
             <span>Resets in {formatResetTime(stats.reset_time)}</span>
           </div>
@@ -261,15 +261,17 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
           </div>
 
           {stats.subscription_tier === "free" && (
-            <div className="mt-6 p-4 bg-electric-purple/10 rounded-lg border border-electric-purple/20">
-              <h4 className="font-semibold text-white mb-2">Upgrade to Pro</h4>
-              <p className="text-sm text-silver mb-3">
+            <div className="mt-6 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <h4 className="font-semibold text-theme-primary mb-2">
+                Upgrade to Pro
+              </h4>
+              <p className="text-sm text-theme-secondary mb-3">
                 Get 10x more content generations, cross-platform adaptation, and
                 advanced features.
               </p>
               <Button
                 onClick={onUpgradeClick}
-                className="w-full bg-electric-purple hover:bg-electric-purple/80">
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white">
                 <Crown className="w-4 h-4 mr-2" />
                 Upgrade Now
               </Button>
@@ -280,41 +282,41 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="glass-card border-electric-purple/20">
+        <Card className="glass-card border-emerald-500/20">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-electric-purple">
+            <div className="text-2xl font-bold text-emerald-500">
               {stats.daily_generations}
             </div>
-            <div className="text-xs text-silver">Generated Today</div>
+            <div className="text-xs text-theme-secondary">Generated Today</div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-electric-purple/20">
+        <Card className="glass-card border-emerald-500/20">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-electric-purple">
+            <div className="text-2xl font-bold text-emerald-500">
               {stats.daily_adaptations}
             </div>
-            <div className="text-xs text-silver">Adapted Today</div>
+            <div className="text-xs text-theme-secondary">Adapted Today</div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-electric-purple/20">
+        <Card className="glass-card border-emerald-500/20">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-electric-purple">
+            <div className="text-2xl font-bold text-emerald-500">
               {isUnlimited
                 ? "∞"
                 : Math.max(0, stats.daily_limit - stats.daily_generations)}
             </div>
-            <div className="text-xs text-silver">Remaining</div>
+            <div className="text-xs text-theme-secondary">Remaining</div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card border-electric-purple/20">
+        <Card className="glass-card border-emerald-500/20">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-electric-purple capitalize">
+            <div className="text-2xl font-bold text-emerald-500 capitalize">
               {stats.subscription_tier}
             </div>
-            <div className="text-xs text-silver">Current Plan</div>
+            <div className="text-xs text-theme-secondary">Current Plan</div>
           </CardContent>
         </Card>
       </div>
