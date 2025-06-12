@@ -4,6 +4,17 @@ import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { Bell, Search, User as UserIcon, LogOut, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface DashboardNavProps {
   user: User;
@@ -23,52 +34,91 @@ export function DashboardNav({ user }: DashboardNavProps) {
   };
 
   return (
-    <nav className="bg-midnight border-b border-electric-purple/20">
-      <div className="container mx-auto px-4">
+    <nav className="bg-surface/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-40">
+      <div className="px-6">
         <div className="flex items-center justify-between h-16">
-          <Link
-            href="/dashboard"
-            className="text-xl font-bold bg-gradient-to-r from-electric-purple to-cyber-blue bg-clip-text text-transparent">
-            Grosonix
-          </Link>
-
-          <div className="flex items-center space-x-6">
-            <nav className="hidden md:flex space-x-6">
-              <Link
-                href="/dashboard"
-                className="text-silver hover:text-white transition-colors">
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/content"
-                className="text-silver hover:text-white transition-colors">
-                Content
-              </Link>
-              <Link
-                href="/dashboard/analytics"
-                className="text-silver hover:text-white transition-colors">
-                Analytics
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="text-silver hover:text-white transition-colors">
-                Settings
-              </Link>
-              <Link
-                href="/docs"
-                className="text-cyber-blue hover:text-cyber-blue/80 transition-colors">
-                API Docs
-              </Link>
-            </nav>
-
-            <div className="flex items-center space-x-4">
-              <span className="text-silver text-sm">{user.email}</span>
-              <button
-                onClick={handleSignOut}
-                className="text-cyber-blue hover:text-cyber-blue/80 transition-colors text-sm">
-                Sign out
-              </button>
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search content, analytics, settings..."
+                className="glass-input w-full pl-10 pr-4 py-2 text-sm"
+              />
             </div>
+          </div>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-4">
+            {/* Notifications */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 relative">
+              <Bell className="h-4 w-4" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-electric-orange-500 rounded-full flex items-center justify-center">
+                <span className="text-xs text-white font-bold">3</span>
+              </span>
+            </Button>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-9 px-3 hover:bg-emerald-500/10 hover:text-emerald-400">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-hero-gradient rounded-full flex items-center justify-center">
+                      <UserIcon className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-text-secondary">
+                      {user.email?.split("@")[0]}
+                    </span>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 glass-card border-emerald-500/20 bg-surface/90 backdrop-blur-xl">
+                <DropdownMenuLabel className="text-emerald-400">
+                  My Account
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10">
+                  <UserIcon className="h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10">
+                  <Crown className="h-4 w-4 text-electric-orange-400" />
+                  <span>Upgrade to Pro</span>
+                  <div className="ml-auto px-2 py-0.5 bg-electric-orange-500/20 text-electric-orange-400 text-xs rounded-full">
+                    New
+                  </div>
+                </DropdownMenuItem>
+
+                <Link href="/dashboard/settings">
+                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer hover:bg-emerald-500/10">
+                    <UserIcon className="h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                </Link>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-red-500/10 text-red-400">
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

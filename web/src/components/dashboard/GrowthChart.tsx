@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Line } from 'react-chartjs-2';
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,7 +11,8 @@ import {
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js';
+} from "chart.js";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 ChartJS.register(
   CategoryScale,
@@ -25,14 +26,17 @@ ChartJS.register(
 );
 
 export function GrowthChart() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
-        label: 'Followers Growth',
+        label: "Followers Growth",
         data: [0, 0, 0, 0, 0, 0],
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderColor: "#10B981", // emerald-500
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
         fill: true,
         tension: 0.4,
       },
@@ -46,10 +50,10 @@ export function GrowthChart() {
         display: false,
       },
       tooltip: {
-        backgroundColor: '#1A1A2E',
-        titleColor: '#E2E8F0',
-        bodyColor: '#E2E8F0',
-        borderColor: 'rgba(139, 92, 246, 0.2)',
+        backgroundColor: isDark ? "#1A1A2E" : "#FFFFFF",
+        titleColor: isDark ? "#E2E8F0" : "#0F172A",
+        bodyColor: isDark ? "#E2E8F0" : "#0F172A",
+        borderColor: "rgba(16, 185, 129, 0.2)",
         borderWidth: 1,
         padding: 12,
       },
@@ -58,18 +62,18 @@ export function GrowthChart() {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(226, 232, 240, 0.1)',
+          color: isDark ? "rgba(226, 232, 240, 0.1)" : "rgba(15, 23, 42, 0.1)",
         },
         ticks: {
-          color: '#E2E8F0',
+          color: isDark ? "#E2E8F0" : "#0F172A",
         },
       },
       x: {
         grid: {
-          color: 'rgba(226, 232, 240, 0.1)',
+          color: isDark ? "rgba(226, 232, 240, 0.1)" : "rgba(15, 23, 42, 0.1)",
         },
         ticks: {
-          color: '#E2E8F0',
+          color: isDark ? "#E2E8F0" : "#0F172A",
         },
       },
     },
@@ -77,7 +81,9 @@ export function GrowthChart() {
 
   return (
     <div className="glass-card p-6">
-      <h2 className="text-xl font-semibold mb-6">Growth Trends</h2>
+      <h2 className="text-xl font-semibold text-text-primary mb-6">
+        Growth Trends
+      </h2>
       <Line data={data} options={options} />
     </div>
   );

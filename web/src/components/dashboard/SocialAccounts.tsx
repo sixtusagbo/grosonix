@@ -31,7 +31,9 @@ export function SocialAccounts({ accounts }: SocialAccountsProps) {
 
   return (
     <div className="glass-card p-6">
-      <h2 className="text-xl font-semibold text-white mb-4">Social Accounts</h2>
+      <h2 className="text-xl font-semibold text-text-primary mb-4">
+        Social Accounts
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {platforms.map((platform) => {
@@ -40,7 +42,7 @@ export function SocialAccounts({ accounts }: SocialAccountsProps) {
           return (
             <div
               key={platform.id}
-              className={`bg-midnight rounded-lg p-4 border transition-all ${
+              className={`bg-surface rounded-lg p-4 border transition-all ${
                 platform.available
                   ? "border-electric-purple/20 hover:border-electric-purple/40"
                   : "border-muted/20 opacity-60"
@@ -70,7 +72,7 @@ export function SocialAccounts({ accounts }: SocialAccountsProps) {
                 )}
               </div>
 
-              <p className="text-xs text-silver">{platform.description}</p>
+              <p className="text-xs text-text-muted">{platform.description}</p>
             </div>
           );
         })}

@@ -1,4 +1,5 @@
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -32,9 +33,17 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-deep-space">
-      <DashboardNav user={user} />
-      <main className="container mx-auto px-4 py-8">{children}</main>
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        <DashboardNav user={user} />
+        <main className="flex-1 p-6 bg-background">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
