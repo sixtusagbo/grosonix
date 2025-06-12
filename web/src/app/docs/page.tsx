@@ -37,16 +37,18 @@ export default function ApiDocsPage() {
   return (
     <div className="min-h-screen bg-white">
       {spec ? (
-        <SwaggerUI
-          spec={spec}
-          docExpansion="list"
-          defaultModelsExpandDepth={2}
-          tryItOutEnabled={true}
-          displayRequestDuration={true}
-          filter={true}
-          showExtensions={true}
-          showCommonExtensions={true}
-        />
+        <div className="swagger-container">
+          <SwaggerUI
+            spec={spec}
+            docExpansion="list"
+            defaultModelsExpandDepth={2}
+            tryItOutEnabled={true}
+            displayRequestDuration={true}
+            filter={true}
+            showExtensions={true}
+            showCommonExtensions={true}
+          />
+        </div>
       ) : (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -61,6 +63,40 @@ export default function ApiDocsPage() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .swagger-container {
+          padding-top: 0;
+          margin-top: 0;
+        }
+
+        .swagger-ui .topbar {
+          padding: 10px 0;
+          background-color: #fafafa;
+          border-bottom: 1px solid #e8e8e8;
+        }
+
+        .swagger-ui .info {
+          margin: 0;
+        }
+
+        .swagger-ui .info .title {
+          font-size: 36px;
+          margin-bottom: 10px;
+        }
+
+        /* Ensure proper spacing and visibility */
+        .swagger-ui {
+          padding: 0;
+          margin: 0;
+        }
+
+        /* Fix any potential overflow issues */
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      `}</style>
     </div>
   );
 }
