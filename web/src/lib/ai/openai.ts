@@ -116,6 +116,32 @@ export class OpenAIService {
     }
   }
 
+  async analyzeContentStructure(prompt: string): Promise<string> {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert content analyst. Analyze the provided content and return your analysis in the exact JSON format requested. Ensure the response is valid JSON.",
+          },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 500,
+        temperature: 0.3,
+      });
+
+      return (
+        completion.choices[0]?.message?.content ||
+        '{"error": "Unable to analyze content structure"}'
+      );
+    } catch (error) {
+      console.error("Content structure analysis error:", error);
+      throw new Error("Failed to analyze content structure");
+    }
+  }
+
   private buildSystemPrompt(
     platform: string,
     tone: string,

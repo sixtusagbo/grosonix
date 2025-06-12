@@ -361,7 +361,7 @@ Focus on identifying unique characteristics that can be replicated in future con
         "content_length_preference": "short/medium/long/mixed"
       }`;
 
-      const analysis = await this.openAIService.analyzeContentStructure(
+      const analysis = await this.openaiService.analyzeContentStructure(
         analysisPrompt
       );
 
