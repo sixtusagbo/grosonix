@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { PlatformFilter } from '@/lib/social';
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { PlatformFilter } from "@/lib/social";
 
 interface PlatformSelectorProps {
   selectedPlatform: PlatformFilter;
@@ -14,7 +14,7 @@ interface PlatformSelectorProps {
 export function PlatformSelector({
   selectedPlatform,
   onPlatformChange,
-  connectedPlatforms
+  connectedPlatforms,
 }: PlatformSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
@@ -37,36 +37,40 @@ export function PlatformSelector({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [isOpen]);
 
   const platforms = [
     {
-      id: 'overview' as PlatformFilter,
-      name: 'Overview',
-      icon: '📊',
-      color: 'text-electric-purple',
-      description: 'All connected platforms',
+      id: "overview" as PlatformFilter,
+      name: "Overview",
+      icon: "📊",
+      color: "text-electric-purple",
+      description: "All connected platforms",
       available: true,
     },
     {
-      id: 'twitter' as PlatformFilter,
-      name: 'Twitter',
-      icon: '🐦',
-      color: 'text-cyber-blue',
-      description: 'Twitter analytics',
-      available: connectedPlatforms.includes('twitter'),
+      id: "twitter" as PlatformFilter,
+      name: "Twitter",
+      icon: "🐦",
+      color: "text-cyber-blue",
+      description: "Twitter analytics",
+      available: connectedPlatforms.includes("twitter"),
     },
     // Temporarily disabled - will be re-enabled in future updates
     // {
@@ -87,7 +91,7 @@ export function PlatformSelector({
     // },
   ];
 
-  const selectedPlatformData = platforms.find(p => p.id === selectedPlatform);
+  const selectedPlatformData = platforms.find((p) => p.id === selectedPlatform);
 
   const dropdownContent = isOpen && mounted && buttonRect && (
     <>
@@ -105,8 +109,7 @@ export function PlatformSelector({
           top: buttonRect.bottom + window.scrollY + 8,
           left: buttonRect.left + window.scrollX,
           width: buttonRect.width,
-        }}
-      >
+        }}>
         {platforms.map((platform) => (
           <button
             key={platform.id}
@@ -118,22 +121,21 @@ export function PlatformSelector({
             }}
             disabled={!platform.available}
             className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-electric-purple/10 transition-all first:rounded-t-lg last:rounded-b-lg ${
-              !platform.available ? 'opacity-50 cursor-not-allowed' : ''
-            } ${selectedPlatform === platform.id ? 'bg-electric-purple/20' : ''}`}
-          >
+              !platform.available ? "opacity-50 cursor-not-allowed" : ""
+            } ${
+              selectedPlatform === platform.id ? "bg-electric-purple/20" : ""
+            }`}>
             <span className="text-xl">{platform.icon}</span>
             <div className="flex-1">
               <div className={`font-medium ${platform.color}`}>
                 {platform.name}
               </div>
-              <div className="text-xs text-silver">
+              <div className="text-xs text-text-muted">
                 {platform.description}
               </div>
             </div>
-            {!platform.available && platform.id !== 'overview' && (
-              <span className="text-xs text-warning-orange">
-                Not Connected
-              </span>
+            {!platform.available && platform.id !== "overview" && (
+              <span className="text-xs text-warning-orange">Not Connected</span>
             )}
           </button>
         ))}
@@ -146,8 +148,7 @@ export function PlatformSelector({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 bg-midnight border border-electric-purple/20 rounded-lg px-4 py-3 hover:border-electric-purple/40 transition-all min-w-[200px]"
-      >
+        className="flex items-center space-x-3 bg-midnight border border-electric-purple/20 rounded-lg px-4 py-3 hover:border-electric-purple/40 transition-all min-w-[200px]">
         <span className="text-xl">{selectedPlatformData?.icon}</span>
         <div className="flex-1 text-left">
           <div className={`font-medium ${selectedPlatformData?.color}`}>
@@ -158,13 +159,16 @@ export function PlatformSelector({
           </div>
         </div>
         <ChevronDownIcon
-          className={`w-4 h-4 text-silver transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-silver transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
 
-      {mounted && typeof document !== 'undefined' && dropdownContent &&
-        createPortal(dropdownContent, document.body)
-      }
+      {mounted &&
+        typeof document !== "undefined" &&
+        dropdownContent &&
+        createPortal(dropdownContent, document.body)}
     </div>
   );
 }

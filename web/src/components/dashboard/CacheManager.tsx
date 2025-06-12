@@ -64,10 +64,10 @@ export function CacheManager() {
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-text-primary">
             Cache & Rate Limits
           </h3>
-          <p className="text-silver text-sm">
+          <p className="text-text-secondary text-sm">
             Manage API caching and monitor rate limit status
           </p>
         </div>
@@ -116,7 +116,7 @@ export function CacheManager() {
       {cacheData && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-white">Platform Status</h4>
+            <h4 className="font-medium text-text-primary">Platform Status</h4>
             <div className="flex space-x-2">
               <button
                 onClick={handleWarmSelected}
@@ -172,7 +172,7 @@ export function CacheManager() {
                               <ClockIcon className="w-4 h-4 text-danger-red" />
                             )}
                           </div>
-                          <div className="text-xs text-silver">
+                          <div className="text-xs text-text-muted">
                             {status.has_cache ? (
                               <>
                                 Cached{" "}
@@ -196,7 +196,7 @@ export function CacheManager() {
                           </div>
                         )}
                         {status.expires_at && (
-                          <div className="text-xs text-silver">
+                          <div className="text-xs text-text-muted">
                             Expires:{" "}
                             {new Date(status.expires_at).toLocaleTimeString()}
                           </div>

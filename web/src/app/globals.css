@@ -53,14 +53,14 @@
 
 .light {
   --background: #ffffff;
-  --foreground: #1a1a1a;
-  --surface: #f8fafc;
-  --surface-hover: #f1f5f9;
+  --foreground: #0f172a;
+  --surface: #f1f5f9;
+  --surface-hover: #e2e8f0;
   --border: rgba(16, 185, 129, 0.3);
   --border-hover: rgba(16, 185, 129, 0.5);
-  --text-primary: #1a1a1a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #475569;
   --glass-bg: rgba(16, 185, 129, 0.05);
   --glass-border: rgba(16, 185, 129, 0.2);
 }
