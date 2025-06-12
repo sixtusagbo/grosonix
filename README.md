@@ -15,70 +15,6 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 - **🎮 Gamified Experience**: Progress bars, achievement badges, and growth streaks to keep you motivated
 - **📱 Tinder-Style UI**: Swipe through content recommendations in an addictive, mobile-first interface
 
-## 🎯 Subscription Tiers
-
-### Free Tier
-
-- Basic dashboard and analytics
-- 5 AI content suggestions per day
-- Current week analytics view
-- Basic progress tracking
-
-### Pro ($9.99/month)
-
-- Unlimited content suggestions
-- Cross-platform content adaptation
-- Full analytics history
-- Smart scheduling features
-- Advanced AI recommendations
-
-### Agency ($29.99/month)
-
-- Multiple account management
-- Team collaboration tools
-- Priority customer support
-- Advanced AI models
-- White-label options
-
-## 🛠 Tech Stack
-
-### Web Application
-
-- **Frontend**: Next.js 14 with TypeScript
-- **Styling**: Tailwind CSS with Glassmorphism design
-- **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **AI**: OpenAI GPT-4 API
-- **Social APIs**: Twitter API v2, Instagram Basic Display, LinkedIn API
-- **Subscriptions**: RevenueCat
-- **Deployment**: Vercel
-
-### Mobile Application
-
-- **Framework**: Flutter
-- **State Management**: Riverpod
-- **HTTP Client**: Dio
-- **Subscriptions**: RevenueCat Flutter SDK
-
-## 🎨 Design System
-
-Our brand revolves around a futuristic, AI-powered aesthetic with glassmorphism elements and smooth animations.
-
-### Color Palette
-
-- **Primary**: Electric Purple (`#8B5CF6`)
-- **Secondary**: Cyber Blue (`#06B6D4`)
-- **Success**: Neon Green (`#10B981`)
-- **Background**: Deep Space (`#0F0F23`)
-- **Cards**: Midnight (`#1A1A2E`)
-
-## 📅 Development Timeline
-
-- **Weeks 1-2**: Web application development
-- **Week 3**: Flutter mobile app development
-- **Week 4**: Testing, deployment, and launch preparation
-
 ## 🚀 Getting Started
 
 1. Clone the repository
@@ -93,17 +29,12 @@ grosonix/
 ├── web/                 # Next.js web application
 ├── mobile/              # Flutter mobile application
 ├── docs/                # Documentation
-├── design/              # Design assets and guidelines
 └── README.md           # This file
 ```
 
 ## 🤝 Contributing
 
 We're building fast and moving quickly. Check our development timeline and jump in where you can help!
-
-## 📄 License
-
-MIT License - See LICENSE file for details
 
 ---
 
