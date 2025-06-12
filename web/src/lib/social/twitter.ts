@@ -1,4 +1,4 @@
-import { TwitterApi } from 'twitter-api-v2';
+import { TwitterApi } from "twitter-api-v2";
 
 export interface TwitterUserData {
   id: string;
@@ -23,6 +23,8 @@ export interface TwitterMetrics {
 export class TwitterService {
   private client: TwitterApi;
   private accessToken: string;
+  private lastTimelineCall: number = 0;
+  private timelineCooldown: number = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -37,22 +39,22 @@ export class TwitterService {
 
   async getUserData(): Promise<TwitterUserData> {
     try {
-      console.log('Fetching Twitter user data...');
-      console.log('Access token available:', !!this.client);
+      console.log("Fetching Twitter user data...");
+      console.log("Access token available:", !!this.client);
 
       const user = await this.client.v2.me({
-        'user.fields': [
-          'id',
-          'username',
-          'name',
-          'public_metrics',
-          'profile_image_url',
-          'verified'
-        ]
+        "user.fields": [
+          "id",
+          "username",
+          "name",
+          "public_metrics",
+          "profile_image_url",
+          "verified",
+        ],
       });
 
-      console.log('Twitter API response:', user.data);
-      console.log('Public metrics:', user.data.public_metrics);
+      console.log("Twitter API response:", user.data);
+      console.log("Public metrics:", user.data.public_metrics);
 
       const userData = {
         id: user.data.id,
@@ -65,16 +67,16 @@ export class TwitterService {
         verified: user.data.verified || false,
       };
 
-      console.log('Processed user data:', userData);
+      console.log("Processed user data:", userData);
       return userData;
     } catch (error) {
-      console.error('Twitter API error:', error);
-      console.error('Error details:', {
+      console.error("Twitter API error:", error);
+      console.error("Error details:", {
         code: (error as any)?.code,
         status: (error as any)?.status,
-        data: (error as any)?.data
+        data: (error as any)?.data,
       });
-      throw new Error('Failed to fetch Twitter user data');
+      throw new Error("Failed to fetch Twitter user data");
     }
   }
 
@@ -84,13 +86,14 @@ export class TwitterService {
 
       // Skip timeline fetch to avoid rate limits for now
       // We'll implement proper caching and rate limit handling later
-      console.log('Skipping timeline fetch to avoid rate limits');
+      console.log("Skipping timeline fetch to avoid rate limits");
 
       // Calculate basic engagement rate based on follower count
       // This is a rough estimate until we can safely fetch timeline data
-      const estimatedEngagementRate = userData.followers_count > 0
-        ? Math.min(5, Math.max(0.5, (1000 / userData.followers_count) * 2))
-        : 0;
+      const estimatedEngagementRate =
+        userData.followers_count > 0
+          ? Math.min(5, Math.max(0.5, (1000 / userData.followers_count) * 2))
+          : 0;
 
       return {
         followers_count: userData.followers_count,
@@ -101,13 +104,13 @@ export class TwitterService {
         last_updated: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Twitter metrics error:', error);
+      console.error("Twitter metrics error:", error);
 
       // Handle different error types
       const errorCode = (error as any)?.code;
 
       if (errorCode === 429) {
-        console.log('Rate limit hit, returning cached/basic data');
+        console.log("Rate limit hit, returning cached/basic data");
         return {
           followers_count: 0,
           following_count: 0,
@@ -119,33 +122,89 @@ export class TwitterService {
       }
 
       if (errorCode === 401) {
-        console.log('Unauthorized - token expired or invalid. Please reconnect Twitter.');
+        console.log(
+          "Unauthorized - token expired or invalid. Please reconnect Twitter."
+        );
         // Return a special error state that the UI can handle
-        throw new Error('TWITTER_TOKEN_INVALID');
+        throw new Error("TWITTER_TOKEN_INVALID");
       }
 
-      throw new Error('Failed to fetch Twitter metrics');
+      throw new Error("Failed to fetch Twitter metrics");
     }
   }
 
   async getRecentTweets(count: number = 10) {
     try {
+      console.log(
+        `[TwitterService] Fetching recent tweets (count: ${count})...`
+      );
+
+      // Check if we're within the free plan cooldown period
+      const now = Date.now();
+      const timeSinceLastCall = now - this.lastTimelineCall;
+
+      if (
+        this.lastTimelineCall > 0 &&
+        timeSinceLastCall < this.timelineCooldown
+      ) {
+        const remainingTime = Math.ceil(
+          (this.timelineCooldown - timeSinceLastCall) / 1000 / 60
+        );
+        console.log(
+          `[TwitterService] Free plan cooldown: ${remainingTime} minutes remaining`
+        );
+        throw new Error("TWITTER_FREE_PLAN_LIMIT");
+      }
+
       const user = await this.client.v2.me();
-      const tweets = await this.client.v2.userTimeline(user.data.id, {
-        max_results: count,
-        'tweet.fields': ['public_metrics', 'created_at', 'text'],
-        exclude: ['retweets', 'replies']
+      console.log(`[TwitterService] Got user data:`, {
+        id: user.data.id,
+        username: user.data.username,
       });
 
-      return tweets.data?.map(tweet => ({
-        id: tweet.id,
-        text: tweet.text,
-        created_at: tweet.created_at,
-        metrics: tweet.public_metrics,
-      })) || [];
-    } catch (error) {
-      console.error('Twitter tweets error:', error);
-      throw new Error('Failed to fetch recent tweets');
+      // Update the last call timestamp before making the timeline request
+      this.lastTimelineCall = now;
+
+      const tweets = await this.client.v2.userTimeline(user.data.id, {
+        max_results: count,
+        "tweet.fields": ["public_metrics", "created_at", "text"],
+        exclude: ["retweets", "replies"],
+      });
+
+      const tweetData =
+        tweets.data && Array.isArray(tweets.data)
+          ? tweets.data.map((tweet: any) => ({
+              id: tweet.id,
+              text: tweet.text,
+              created_at: tweet.created_at,
+              public_metrics: tweet.public_metrics,
+            }))
+          : [];
+
+      console.log(
+        `[TwitterService] Successfully fetched ${tweetData.length} tweets`
+      );
+      return tweetData;
+    } catch (error: any) {
+      console.error("[TwitterService] Twitter tweets error:", error);
+
+      // If it's a 401 error, the token has expired
+      if (error.code === 401) {
+        console.log(
+          "[TwitterService] Token expired (401), throwing specific error"
+        );
+        throw new Error("TWITTER_TOKEN_EXPIRED");
+      }
+
+      // If it's a 429 error, we've hit rate limits
+      if (error.code === 429) {
+        console.log(
+          "[TwitterService] Rate limit hit (429) - Free plan allows only 1 request per 15 minutes"
+        );
+        throw new Error("TWITTER_FREE_PLAN_LIMIT");
+      }
+
+      throw new Error(`Failed to fetch recent tweets: ${error.message}`);
     }
   }
 }
@@ -153,46 +212,53 @@ export class TwitterService {
 // OAuth helper functions
 export function getTwitterAuthUrl(): string {
   const clientId = process.env.TWITTER_CLIENT_ID;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4001';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
   const redirectUri = `${baseUrl}/api/auth/twitter/callback`;
-  const scopes = 'tweet.read users.read follows.read offline.access';
-  
+  const scopes = "tweet.read users.read follows.read offline.access";
+
   // Generate a proper code challenge for PKCE
-  const codeVerifier = 'grosonix_twitter_auth_challenge_2024';
-  
+  const codeVerifier = "grosonix_twitter_auth_challenge_2024";
+
   const params = new URLSearchParams({
-    response_type: 'code',
+    response_type: "code",
     client_id: clientId!,
     redirect_uri: redirectUri,
     scope: scopes,
-    state: 'twitter_auth',
+    state: "twitter_auth",
     code_challenge: codeVerifier,
-    code_challenge_method: 'plain',
+    code_challenge_method: "plain",
   });
 
-  console.log('Twitter OAuth URL:', `https://twitter.com/i/oauth2/authorize?${params.toString()}`);
-  console.log('Redirect URI:', redirectUri);
+  console.log(
+    "Twitter OAuth URL:",
+    `https://twitter.com/i/oauth2/authorize?${params.toString()}`
+  );
+  console.log("Redirect URI:", redirectUri);
 
   return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
 }
 
-export async function exchangeTwitterCode(code: string): Promise<{ access_token: string; refresh_token?: string }> {
+export async function exchangeTwitterCode(
+  code: string
+): Promise<{ access_token: string; refresh_token?: string }> {
   const clientId = process.env.TWITTER_CLIENT_ID;
   const clientSecret = process.env.TWITTER_CLIENT_SECRET;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:4001';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4001";
   const redirectUri = `${baseUrl}/api/auth/twitter/callback`;
-  const codeVerifier = 'grosonix_twitter_auth_challenge_2024';
+  const codeVerifier = "grosonix_twitter_auth_challenge_2024";
 
-  console.log('Exchanging Twitter code with redirect URI:', redirectUri);
+  console.log("Exchanging Twitter code with redirect URI:", redirectUri);
 
-  const response = await fetch('https://api.twitter.com/2/oauth2/token', {
-    method: 'POST',
+  const response = await fetch("https://api.twitter.com/2/oauth2/token", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(
+        `${clientId}:${clientSecret}`
+      ).toString("base64")}`,
     },
     body: new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
       redirect_uri: redirectUri,
       code_verifier: codeVerifier,
@@ -201,8 +267,10 @@ export async function exchangeTwitterCode(code: string): Promise<{ access_token:
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Twitter token exchange error:', errorText);
-    throw new Error(`Failed to exchange Twitter authorization code: ${errorText}`);
+    console.error("Twitter token exchange error:", errorText);
+    throw new Error(
+      `Failed to exchange Twitter authorization code: ${errorText}`
+    );
   }
 
   const data = await response.json();
@@ -212,32 +280,36 @@ export async function exchangeTwitterCode(code: string): Promise<{ access_token:
   };
 }
 
-export async function refreshTwitterToken(refreshToken: string): Promise<{ access_token: string; refresh_token?: string }> {
+export async function refreshTwitterToken(
+  refreshToken: string
+): Promise<{ access_token: string; refresh_token?: string }> {
   const clientId = process.env.TWITTER_CLIENT_ID;
   const clientSecret = process.env.TWITTER_CLIENT_SECRET;
 
-  console.log('Refreshing Twitter token...');
+  console.log("Refreshing Twitter token...");
 
-  const response = await fetch('https://api.twitter.com/2/oauth2/token', {
-    method: 'POST',
+  const response = await fetch("https://api.twitter.com/2/oauth2/token", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(
+        `${clientId}:${clientSecret}`
+      ).toString("base64")}`,
     },
     body: new URLSearchParams({
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       refresh_token: refreshToken,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Twitter token refresh error:', errorText);
+    console.error("Twitter token refresh error:", errorText);
     throw new Error(`Failed to refresh Twitter token: ${errorText}`);
   }
 
   const data = await response.json();
-  console.log('Token refreshed successfully');
+  console.log("Token refreshed successfully");
 
   return {
     access_token: data.access_token,

@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --electric-purple: #8B5CF6;
-  --cyber-blue: #06B6D4;
-  --neon-green: #10B981;
-  --deep-space: #0F0F23;
-  --midnight: #1A1A2E;
-  --pure-white: #FFFFFF;
-  --silver: #E2E8F0;
-  --muted: #64748B;
+  --electric-purple: #8b5cf6;
+  --cyber-blue: #06b6d4;
+  --neon-green: #10b981;
+  --deep-space: #0f0f23;
+  --midnight: #1a1a2e;
+  --pure-white: #ffffff;
+  --silver: #e2e8f0;
+  --muted: #64748b;
 }
 
 body {
@@ -24,4 +24,21 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-input {
+  background: rgba(26, 26, 46, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: white;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.glass-input::placeholder {
+  color: rgba(226, 232, 240, 0.6);
 }

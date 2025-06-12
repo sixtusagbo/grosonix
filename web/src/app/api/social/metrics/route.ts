@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { SocialMediaManager } from '@/lib/social';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { SocialMediaManager } from "@/lib/social";
 
 /**
  * @swagger
@@ -55,9 +55,9 @@ import { SocialMediaManager } from '@/lib/social';
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const platform = searchParams.get('platform');
-  const refresh = searchParams.get('refresh') === 'true';
-  
+  const platform = searchParams.get("platform");
+  const refresh = searchParams.get("refresh") === "true";
+
   const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,102 +72,119 @@ export async function GET(request: Request) {
   );
 
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       return Response.json(
-        { error: 'Unauthorized', message: 'Authentication required' },
+        { error: "Unauthorized", message: "Authentication required" },
         { status: 401 }
       );
     }
 
     // Get user's connected social accounts
     let query = supabase
-      .from('social_accounts')
-      .select('*')
-      .eq('user_id', user.id);
+      .from("social_accounts")
+      .select("*")
+      .eq("user_id", user.id);
 
     if (platform) {
-      query = query.eq('platform', platform);
+      query = query.eq("platform", platform);
     }
 
     const { data: accounts, error } = await query;
 
     if (error) {
       return Response.json(
-        { error: 'Fetch failed', message: error.message },
+        { error: "Fetch failed", message: error.message },
         { status: 400 }
       );
     }
 
     const metrics = [];
-    
+
     // Fetch metrics for each connected account
     for (const account of accounts || []) {
       try {
         // Only handle Twitter for now
-        if (account.platform === 'twitter') {
+        if (account.platform === "twitter") {
           console.log(`Fetching real-time metrics for ${account.platform}...`);
           console.log(`Token info:`, {
             platform: account.platform,
             token_length: account.access_token?.length || 0,
-            token_start: account.access_token?.substring(0, 10) + '...',
+            token_start: account.access_token?.substring(0, 10) + "...",
             expires_at: account.expires_at,
             created_at: account.created_at,
-            has_refresh_token: !!account.refresh_token
+            has_refresh_token: !!account.refresh_token,
           });
 
           try {
-            const platformMetrics = await SocialMediaManager.getMetricsWithCache(
-              account.platform as any,
-              account.access_token,
-              user.id,
-              refresh
-            );
+            const platformMetrics =
+              await SocialMediaManager.getMetricsWithCache(
+                account.platform as any,
+                account.access_token,
+                user.id,
+                refresh
+              );
             console.log(`${account.platform} metrics:`, platformMetrics);
             metrics.push(platformMetrics);
           } catch (error) {
             // If we get a token invalid error and have a refresh token, try to refresh
-            if (error.message === 'TWITTER_TOKEN_INVALID' && account.refresh_token) {
-              console.log('Attempting to refresh Twitter token...');
+            if (
+              error instanceof Error &&
+              error.message === "TWITTER_TOKEN_INVALID" &&
+              account.refresh_token
+            ) {
+              console.log("Attempting to refresh Twitter token...");
 
               try {
                 // Call our refresh token API
-                const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/social/refresh-token`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Cookie': request.headers.get('cookie') || '',
-                  },
-                  body: JSON.stringify({ platform: 'twitter' }),
-                });
+                const refreshResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_APP_URL}/api/social/refresh-token`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Cookie: request.headers.get("cookie") || "",
+                    },
+                    body: JSON.stringify({ platform: "twitter" }),
+                  }
+                );
 
                 if (refreshResponse.ok) {
-                  console.log('Token refreshed successfully, retrying metrics...');
+                  console.log(
+                    "Token refreshed successfully, retrying metrics..."
+                  );
 
                   // Get the updated account with new token
                   const { data: updatedAccount } = await supabase
-                    .from('social_accounts')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('platform', 'twitter')
+                    .from("social_accounts")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .eq("platform", "twitter")
                     .single();
 
                   if (updatedAccount) {
-                    const platformMetrics = await SocialMediaManager.getMetricsWithCache(
-                      account.platform as any,
-                      updatedAccount.access_token,
-                      user.id,
-                      true // Force refresh after token refresh
+                    const platformMetrics =
+                      await SocialMediaManager.getMetricsWithCache(
+                        account.platform as any,
+                        updatedAccount.access_token,
+                        user.id,
+                        true // Force refresh after token refresh
+                      );
+                    console.log(
+                      `${account.platform} metrics after refresh:`,
+                      platformMetrics
                     );
-                    console.log(`${account.platform} metrics after refresh:`, platformMetrics);
                     metrics.push(platformMetrics);
                   }
                 } else {
                   throw error; // Fall through to error handling below
                 }
               } catch (refreshError) {
-                console.error('Token refresh failed:', refreshError);
+                console.error("Token refresh failed:", refreshError);
                 throw error; // Fall through to error handling below
               }
             } else {
@@ -185,16 +202,19 @@ export async function GET(request: Request) {
             engagement_rate: 0,
             growth_rate: 0,
             last_updated: new Date().toISOString(),
-            error: 'Platform temporarily disabled',
+            error: "Platform temporarily disabled",
           });
         }
       } catch (error) {
         console.error(`Error fetching ${account.platform} metrics:`, error);
 
         // Handle specific error types
-        let errorMessage = 'Failed to fetch real-time data';
-        if (error.message === 'TWITTER_TOKEN_INVALID') {
-          errorMessage = 'Please reconnect Twitter account';
+        let errorMessage = "Failed to fetch real-time data";
+        if (
+          error instanceof Error &&
+          error.message === "TWITTER_TOKEN_INVALID"
+        ) {
+          errorMessage = "Please reconnect Twitter account";
         }
 
         // Add placeholder metrics if API call fails
@@ -215,22 +235,27 @@ export async function GET(request: Request) {
     const summary = {
       total_followers: metrics.reduce((sum, m) => sum + m.followers_count, 0),
       total_posts: metrics.reduce((sum, m) => sum + m.posts_count, 0),
-      avg_engagement_rate: metrics.length > 0
-        ? metrics.reduce((sum, m) => sum + m.engagement_rate, 0) / metrics.length
-        : 0,
+      avg_engagement_rate:
+        metrics.length > 0
+          ? metrics.reduce((sum, m) => sum + m.engagement_rate, 0) /
+            metrics.length
+          : 0,
       connected_platforms: metrics.length,
-      platform_filter: platform || 'overview',
+      platform_filter: platform || "overview",
     };
 
     return Response.json({
       metrics,
       summary,
-      platform_filter: platform || 'overview',
+      platform_filter: platform || "overview",
     });
   } catch (error) {
-    console.error('Social metrics error:', error);
+    console.error("Social metrics error:", error);
     return Response.json(
-      { error: 'Internal server error', message: 'Failed to fetch social metrics' },
+      {
+        error: "Internal server error",
+        message: "Failed to fetch social metrics",
+      },
       { status: 500 }
     );
   }

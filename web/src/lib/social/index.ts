@@ -1,10 +1,10 @@
-import { TwitterService } from './twitter';
-import { TwitterServiceWithCache } from './TwitterServiceWithCache';
+import { TwitterService } from "./twitter";
+import { TwitterServiceWithCache } from "./TwitterServiceWithCache";
 // import { InstagramService } from './instagram'; // Temporarily disabled
 // import { LinkedInService } from './linkedin'; // Temporarily disabled
 
-export type SocialPlatform = 'twitter' | 'instagram' | 'linkedin';
-export type PlatformFilter = SocialPlatform | 'overview';
+export type SocialPlatform = "twitter" | "instagram" | "linkedin";
+export type PlatformFilter = SocialPlatform | "overview";
 
 export interface SocialMetrics {
   platform: SocialPlatform;
@@ -17,12 +17,15 @@ export interface SocialMetrics {
 }
 
 export class SocialMediaManager {
-  static async getMetrics(platform: SocialPlatform, accessToken: string): Promise<SocialMetrics> {
+  static async getMetrics(
+    platform: SocialPlatform,
+    accessToken: string
+  ): Promise<SocialMetrics> {
     try {
       let metrics;
 
       switch (platform) {
-        case 'twitter':
+        case "twitter":
           const twitterService = new TwitterService(accessToken);
           const twitterMetrics = await twitterService.getMetrics();
           metrics = {
@@ -36,16 +39,18 @@ export class SocialMediaManager {
           };
           break;
 
-        case 'instagram':
+        case "instagram":
           // Temporarily disabled
-          throw new Error('Instagram metrics temporarily disabled');
+          throw new Error("Instagram metrics temporarily disabled");
 
-        case 'linkedin':
+        case "linkedin":
           // Temporarily disabled
-          throw new Error('LinkedIn metrics temporarily disabled');
+          throw new Error("LinkedIn metrics temporarily disabled");
 
         default:
-          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter only`);
+          throw new Error(
+            `Platform ${platform} not yet supported. Currently available: Twitter only`
+          );
       }
 
       return metrics;
@@ -68,8 +73,11 @@ export class SocialMediaManager {
       let metrics;
 
       switch (platform) {
-        case 'twitter':
-          const twitterService = new TwitterServiceWithCache(accessToken, userId);
+        case "twitter":
+          const twitterService = new TwitterServiceWithCache(
+            accessToken,
+            userId
+          );
           const twitterMetrics = await twitterService.getMetrics(forceRefresh);
           metrics = {
             platform,
@@ -82,16 +90,18 @@ export class SocialMediaManager {
           };
           break;
 
-        case 'instagram':
+        case "instagram":
           // Temporarily disabled
-          throw new Error('Instagram metrics temporarily disabled');
+          throw new Error("Instagram metrics temporarily disabled");
 
-        case 'linkedin':
+        case "linkedin":
           // Temporarily disabled
-          throw new Error('LinkedIn metrics temporarily disabled');
+          throw new Error("LinkedIn metrics temporarily disabled");
 
         default:
-          throw new Error(`Platform ${platform} not yet supported. Currently available: Twitter only`);
+          throw new Error(
+            `Platform ${platform} not yet supported. Currently available: Twitter only`
+          );
       }
 
       return metrics;
@@ -104,15 +114,15 @@ export class SocialMediaManager {
   static async getUserData(platform: SocialPlatform, accessToken: string) {
     try {
       switch (platform) {
-        case 'twitter':
+        case "twitter":
           const twitterService = new TwitterService(accessToken);
           return await twitterService.getUserData();
-          
-        case 'instagram':
-          throw new Error('Instagram temporarily disabled');
 
-        case 'linkedin':
-          throw new Error('LinkedIn temporarily disabled');
+        case "instagram":
+          throw new Error("Instagram temporarily disabled");
+
+        case "linkedin":
+          throw new Error("LinkedIn temporarily disabled");
 
         default:
           throw new Error(`Platform ${platform} not yet supported`);
@@ -123,34 +133,56 @@ export class SocialMediaManager {
     }
   }
 
-  static async getRecentContent(platform: SocialPlatform, accessToken: string, count: number = 10) {
+  static async getRecentContent(
+    platform: SocialPlatform,
+    accessToken: string,
+    count: number = 10
+  ) {
     try {
       switch (platform) {
-        case 'twitter':
+        case "twitter":
           const twitterService = new TwitterService(accessToken);
           return await twitterService.getRecentTweets(count);
-          
-        case 'instagram':
-          throw new Error('Instagram temporarily disabled');
 
-        case 'linkedin':
-          throw new Error('LinkedIn temporarily disabled');
+        case "instagram":
+          throw new Error("Instagram temporarily disabled");
+
+        case "linkedin":
+          throw new Error("LinkedIn temporarily disabled");
 
         default:
           throw new Error(`Platform ${platform} not yet supported`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error fetching ${platform} content:`, error);
+
+      // If it's a token expiration error, provide a more specific message
+      if (error.message === "TWITTER_TOKEN_EXPIRED") {
+        throw new Error(
+          "Twitter token has expired. Please reconnect your Twitter account in Settings."
+        );
+      }
+
+      // If it's a rate limit error, provide a helpful message
+      if (
+        error.message === "TWITTER_RATE_LIMITED" ||
+        error.message === "TWITTER_FREE_PLAN_LIMIT"
+      ) {
+        throw new Error(
+          "Twitter Free plan limit: Only 1 timeline request per 15 minutes. Please wait 15 minutes before trying again."
+        );
+      }
+
       throw error;
     }
   }
 }
 
 // Export OAuth URL generators
-export { getTwitterAuthUrl } from './twitter';
-export { getInstagramAuthUrl } from './instagram';
-export { getLinkedInAuthUrl } from './linkedin';
+export { getTwitterAuthUrl } from "./twitter";
+export { getInstagramAuthUrl } from "./instagram";
+export { getLinkedInAuthUrl } from "./linkedin";
 
-export * from './twitter';
-export * from './instagram';
-export * from './linkedin';
+export * from "./twitter";
+export * from "./instagram";
+export * from "./linkedin";

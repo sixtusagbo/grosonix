@@ -1,6 +1,6 @@
-import { TwitterApi } from 'twitter-api-v2';
-import { MetricsCache } from '../cache/MetricsCache';
-import { TwitterUserData, TwitterMetrics } from './twitter';
+import { TwitterApi } from "twitter-api-v2";
+import { MetricsCache } from "../cache/MetricsCache";
+import { TwitterUserData, TwitterMetrics } from "./twitter";
 
 export class TwitterServiceWithCache {
   private client: TwitterApi;
@@ -19,17 +19,20 @@ export class TwitterServiceWithCache {
    * Get user data with caching and rate limit protection
    */
   async getUserData(forceRefresh: boolean = false): Promise<TwitterUserData> {
-    const endpoint = 'user_lookup';
-    
+    const endpoint = "user_lookup";
+
     // Check cache first (unless force refresh)
     if (!forceRefresh) {
-      const cachedMetrics = await this.cache.getCachedMetrics(this.userId, 'twitter');
+      const cachedMetrics = await this.cache.getCachedMetrics(
+        this.userId,
+        "twitter"
+      );
       if (cachedMetrics) {
-        console.log('Returning cached Twitter user data');
+        console.log("Returning cached Twitter user data");
         return {
           id: this.userId,
-          username: 'cached_user',
-          name: 'Cached User',
+          username: "cached_user",
+          name: "Cached User",
           followers_count: cachedMetrics.followers_count,
           following_count: cachedMetrics.following_count,
           tweet_count: cachedMetrics.posts_count,
@@ -39,39 +42,48 @@ export class TwitterServiceWithCache {
     }
 
     // Check rate limits
-    const canMakeRequest = await this.cache.canMakeRequest(this.userId, 'twitter', endpoint);
+    const canMakeRequest = await this.cache.canMakeRequest(
+      this.userId,
+      "twitter",
+      endpoint
+    );
     if (!canMakeRequest) {
-      console.log('Rate limit reached for Twitter user lookup, using cached data');
-      const cachedMetrics = await this.cache.getCachedMetrics(this.userId, 'twitter');
+      console.log(
+        "Rate limit reached for Twitter user lookup, using cached data"
+      );
+      const cachedMetrics = await this.cache.getCachedMetrics(
+        this.userId,
+        "twitter"
+      );
       if (cachedMetrics) {
         return {
           id: this.userId,
-          username: 'cached_user',
-          name: 'Cached User',
+          username: "cached_user",
+          name: "Cached User",
           followers_count: cachedMetrics.followers_count,
           following_count: cachedMetrics.following_count,
           tweet_count: cachedMetrics.posts_count,
           verified: false,
         };
       }
-      throw new Error('Rate limit reached and no cached data available');
+      throw new Error("Rate limit reached and no cached data available");
     }
 
     try {
-      console.log('Fetching fresh Twitter user data...');
-      
+      console.log("Fetching fresh Twitter user data...");
+
       // Record the request for rate limiting
-      await this.cache.recordRequest(this.userId, 'twitter', endpoint);
+      await this.cache.recordRequest(this.userId, "twitter", endpoint);
 
       const user = await this.client.v2.me({
-        'user.fields': [
-          'id',
-          'username',
-          'name',
-          'public_metrics',
-          'profile_image_url',
-          'verified'
-        ]
+        "user.fields": [
+          "id",
+          "username",
+          "name",
+          "public_metrics",
+          "profile_image_url",
+          "verified",
+        ],
       });
 
       const userData = {
@@ -87,7 +99,7 @@ export class TwitterServiceWithCache {
 
       // Cache the metrics data
       const metricsData = {
-        platform: 'twitter',
+        platform: "twitter",
         followers_count: userData.followers_count,
         following_count: userData.following_count,
         posts_count: userData.tweet_count,
@@ -96,24 +108,32 @@ export class TwitterServiceWithCache {
         last_updated: new Date().toISOString(),
       };
 
-      const ttl = MetricsCache.getCacheTTL('twitter', 'metrics');
-      await this.cache.setCachedMetrics(this.userId, 'twitter', metricsData, ttl);
+      const ttl = MetricsCache.getCacheTTL("twitter", "metrics");
+      await this.cache.setCachedMetrics(
+        this.userId,
+        "twitter",
+        metricsData,
+        ttl
+      );
 
-      console.log('Twitter user data fetched and cached successfully');
+      console.log("Twitter user data fetched and cached successfully");
       return userData;
     } catch (error) {
-      console.error('Twitter API error:', error);
-      
+      console.error("Twitter API error:", error);
+
       const errorCode = (error as any)?.code;
-      
+
       if (errorCode === 429) {
-        console.log('Rate limit hit, trying to return cached data');
-        const cachedMetrics = await this.cache.getCachedMetrics(this.userId, 'twitter');
+        console.log("Rate limit hit, trying to return cached data");
+        const cachedMetrics = await this.cache.getCachedMetrics(
+          this.userId,
+          "twitter"
+        );
         if (cachedMetrics) {
           return {
             id: this.userId,
-            username: 'cached_user',
-            name: 'Cached User',
+            username: "cached_user",
+            name: "Cached User",
             followers_count: cachedMetrics.followers_count,
             following_count: cachedMetrics.following_count,
             tweet_count: cachedMetrics.posts_count,
@@ -123,10 +143,10 @@ export class TwitterServiceWithCache {
       }
 
       if (errorCode === 401) {
-        throw new Error('TWITTER_TOKEN_INVALID');
+        throw new Error("TWITTER_TOKEN_INVALID");
       }
 
-      throw new Error('Failed to fetch Twitter user data');
+      throw new Error("Failed to fetch Twitter user data");
     }
   }
 
@@ -137,9 +157,12 @@ export class TwitterServiceWithCache {
     try {
       // Check cache first
       if (!forceRefresh) {
-        const cachedMetrics = await this.cache.getCachedMetrics(this.userId, 'twitter');
+        const cachedMetrics = await this.cache.getCachedMetrics(
+          this.userId,
+          "twitter"
+        );
         if (cachedMetrics) {
-          console.log('Returning cached Twitter metrics');
+          console.log("Returning cached Twitter metrics");
           return {
             followers_count: cachedMetrics.followers_count,
             following_count: cachedMetrics.following_count,
@@ -155,9 +178,10 @@ export class TwitterServiceWithCache {
       const userData = await this.getUserData(forceRefresh);
 
       // Calculate engagement rate (simplified for now)
-      const estimatedEngagementRate = userData.followers_count > 0
-        ? Math.min(5, Math.max(0.5, (1000 / userData.followers_count) * 2))
-        : 0;
+      const estimatedEngagementRate =
+        userData.followers_count > 0
+          ? Math.min(5, Math.max(0.5, (1000 / userData.followers_count) * 2))
+          : 0;
 
       const metrics = {
         followers_count: userData.followers_count,
@@ -170,12 +194,15 @@ export class TwitterServiceWithCache {
 
       return metrics;
     } catch (error) {
-      console.error('Twitter metrics error:', error);
+      console.error("Twitter metrics error:", error);
 
       // Try to return cached data on error
-      const cachedMetrics = await this.cache.getCachedMetrics(this.userId, 'twitter');
+      const cachedMetrics = await this.cache.getCachedMetrics(
+        this.userId,
+        "twitter"
+      );
       if (cachedMetrics) {
-        console.log('Returning cached metrics due to error');
+        console.log("Returning cached metrics due to error");
         return {
           followers_count: cachedMetrics.followers_count,
           following_count: cachedMetrics.following_count,
@@ -187,7 +214,7 @@ export class TwitterServiceWithCache {
       }
 
       // If no cache available, return error state
-      if ((error as any)?.message === 'TWITTER_TOKEN_INVALID') {
+      if ((error as any)?.message === "TWITTER_TOKEN_INVALID") {
         throw error;
       }
 
@@ -205,42 +232,51 @@ export class TwitterServiceWithCache {
   /**
    * Get recent tweets with rate limiting
    */
-  async getRecentTweets(count: number = 10, forceRefresh: boolean = false): Promise<any[]> {
-    const endpoint = 'user_timeline';
+  async getRecentTweets(
+    count: number = 10,
+    forceRefresh: boolean = false
+  ): Promise<any[]> {
+    const endpoint = "user_timeline";
 
     // Check rate limits
-    const canMakeRequest = await this.cache.canMakeRequest(this.userId, 'twitter', endpoint);
+    const canMakeRequest = await this.cache.canMakeRequest(
+      this.userId,
+      "twitter",
+      endpoint
+    );
     if (!canMakeRequest && !forceRefresh) {
-      console.log('Rate limit reached for Twitter timeline, skipping');
+      console.log("Rate limit reached for Twitter timeline, skipping");
       return [];
     }
 
     try {
       // Record the request
-      await this.cache.recordRequest(this.userId, 'twitter', endpoint);
+      await this.cache.recordRequest(this.userId, "twitter", endpoint);
 
       const user = await this.client.v2.me();
       const tweets = await this.client.v2.userTimeline(user.data.id, {
         max_results: Math.min(count, 10), // Limit to 10 to be conservative
-        'tweet.fields': ['public_metrics', 'created_at', 'text'],
-        exclude: ['retweets', 'replies']
+        "tweet.fields": ["public_metrics", "created_at", "text"],
+        exclude: ["retweets", "replies"],
       });
 
-      return tweets.data?.map(tweet => ({
-        id: tweet.id,
-        text: tweet.text,
-        created_at: tweet.created_at,
-        metrics: tweet.public_metrics,
-      })) || [];
+      return tweets.data && Array.isArray(tweets.data)
+        ? tweets.data.map((tweet) => ({
+            id: tweet.id,
+            text: tweet.text,
+            created_at: tweet.created_at,
+            metrics: tweet.public_metrics,
+          }))
+        : [];
     } catch (error) {
-      console.error('Twitter tweets error:', error);
-      
+      console.error("Twitter tweets error:", error);
+
       if ((error as any)?.code === 429) {
-        console.log('Rate limit hit for timeline');
+        console.log("Rate limit hit for timeline");
         return [];
       }
-      
-      throw new Error('Failed to fetch recent tweets');
+
+      throw new Error("Failed to fetch recent tweets");
     }
   }
 
@@ -250,7 +286,7 @@ export class TwitterServiceWithCache {
   private async calculateGrowthRate(currentFollowers: number): Promise<number> {
     // This is a simplified implementation
     // In a real app, you'd store historical data and calculate actual growth
-    
+
     // For now, return a mock growth rate based on follower count
     if (currentFollowers < 100) return 0.5;
     if (currentFollowers < 1000) return 1.2;
@@ -262,18 +298,22 @@ export class TwitterServiceWithCache {
    * Clear cache for this user
    */
   async clearCache(): Promise<void> {
-    await this.cache.deleteCachedMetrics(this.userId, 'twitter');
+    await this.cache.deleteCachedMetrics(this.userId, "twitter");
   }
 
   /**
    * Get rate limit status
    */
   async getRateLimitStatus(): Promise<{ [endpoint: string]: any }> {
-    const endpoints = ['user_lookup', 'user_timeline', 'user_metrics'];
+    const endpoints = ["user_lookup", "user_timeline", "user_metrics"];
     const status: { [endpoint: string]: any } = {};
 
     for (const endpoint of endpoints) {
-      const rateLimitInfo = await this.cache.getRateLimitInfo(this.userId, 'twitter', endpoint);
+      const rateLimitInfo = await this.cache.getRateLimitInfo(
+        this.userId,
+        "twitter",
+        endpoint
+      );
       status[endpoint] = rateLimitInfo;
     }
 
