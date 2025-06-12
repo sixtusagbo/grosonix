@@ -30,7 +30,7 @@ import { RateLimiter } from "@/lib/ai/rate-limiter";
  *                 items:
  *                   type: string
  *                   enum: [twitter, instagram, linkedin]
- *                 description: Specific platforms to adapt for (default: all)
+ *                 description: Specific platforms to adapt for (default - all)
  *     responses:
  *       200:
  *         description: Content adapted successfully

@@ -81,6 +81,7 @@ export function ContentGenerator({
     setIsLoading(true);
     try {
       const result = await aiApiClient.generateContent({
+        prompt: "", // Empty prompt for suggestions
         platform: formData.platform,
         tone: formData.tone,
         topic: formData.topic || undefined,

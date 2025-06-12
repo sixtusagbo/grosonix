@@ -23,6 +23,8 @@ export interface TwitterMetrics {
 export class TwitterService {
   private client: TwitterApi;
   private accessToken: string;
+  private lastTimelineCall: number = 0;
+  private timelineCooldown: number = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -136,11 +138,32 @@ export class TwitterService {
       console.log(
         `[TwitterService] Fetching recent tweets (count: ${count})...`
       );
+
+      // Check if we're within the free plan cooldown period
+      const now = Date.now();
+      const timeSinceLastCall = now - this.lastTimelineCall;
+
+      if (
+        this.lastTimelineCall > 0 &&
+        timeSinceLastCall < this.timelineCooldown
+      ) {
+        const remainingTime = Math.ceil(
+          (this.timelineCooldown - timeSinceLastCall) / 1000 / 60
+        );
+        console.log(
+          `[TwitterService] Free plan cooldown: ${remainingTime} minutes remaining`
+        );
+        throw new Error("TWITTER_FREE_PLAN_LIMIT");
+      }
+
       const user = await this.client.v2.me();
       console.log(`[TwitterService] Got user data:`, {
         id: user.data.id,
         username: user.data.username,
       });
+
+      // Update the last call timestamp before making the timeline request
+      this.lastTimelineCall = now;
 
       const tweets = await this.client.v2.userTimeline(user.data.id, {
         max_results: count,
@@ -149,12 +172,14 @@ export class TwitterService {
       });
 
       const tweetData =
-        tweets.data?.map((tweet) => ({
-          id: tweet.id,
-          text: tweet.text,
-          created_at: tweet.created_at,
-          public_metrics: tweet.public_metrics,
-        })) || [];
+        tweets.data && Array.isArray(tweets.data)
+          ? tweets.data.map((tweet: any) => ({
+              id: tweet.id,
+              text: tweet.text,
+              created_at: tweet.created_at,
+              public_metrics: tweet.public_metrics,
+            }))
+          : [];
 
       console.log(
         `[TwitterService] Successfully fetched ${tweetData.length} tweets`
@@ -174,9 +199,9 @@ export class TwitterService {
       // If it's a 429 error, we've hit rate limits
       if (error.code === 429) {
         console.log(
-          "[TwitterService] Rate limit hit (429), throwing specific error"
+          "[TwitterService] Rate limit hit (429) - Free plan allows only 1 request per 15 minutes"
         );
-        throw new Error("TWITTER_RATE_LIMITED");
+        throw new Error("TWITTER_FREE_PLAN_LIMIT");
       }
 
       throw new Error(`Failed to fetch recent tweets: ${error.message}`);

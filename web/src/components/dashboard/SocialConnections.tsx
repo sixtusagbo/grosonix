@@ -10,7 +10,9 @@ interface SocialConnectionsProps {
 
 export function SocialConnections({ accounts }: SocialConnectionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<Record<string, boolean>>({});
+  const [connectionStatus, setConnectionStatus] = useState<
+    Record<string, boolean>
+  >({});
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,16 +23,18 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       id: "twitter",
       name: "Twitter",
       color: "text-cyber-blue",
-      description: "Connect Twitter to track followers, engagement, and get AI-powered content suggestions",
+      description:
+        "Connect Twitter to track followers, engagement, and get AI-powered content suggestions",
       icon: "🐦",
       available: true,
       requirements: "Personal, Business, or Creator account",
     },
     {
       id: "instagram",
-      name: "Instagram", 
+      name: "Instagram",
       color: "text-social-pink",
-      description: "Link Instagram Business/Creator account for comprehensive analytics and insights",
+      description:
+        "Link Instagram Business/Creator account for comprehensive analytics and insights",
       icon: "📸",
       available: true,
       requirements: "Business or Creator account required",
@@ -39,7 +43,8 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       id: "linkedin",
       name: "LinkedIn",
       color: "text-linkedin-blue",
-      description: "Connect your professional network for comprehensive analytics and insights",
+      description:
+        "Connect your professional network for comprehensive analytics and insights",
       icon: "💼",
       available: true,
       requirements: "Personal, Business, or Creator account",
@@ -49,32 +54,38 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
   useEffect(() => {
     // Initialize connection status
     const status: Record<string, boolean> = {};
-    platforms.forEach(platform => {
-      status[platform.id] = accounts?.some(a => a.platform === platform.id) || false;
+    platforms.forEach((platform) => {
+      status[platform.id] =
+        accounts?.some((a) => a.platform === platform.id) || false;
     });
     setConnectionStatus(status);
 
     // Check for OAuth callback results
     const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const error = urlParams.get('error');
+    const success = urlParams.get("success");
+    const error = urlParams.get("error");
 
     if (success) {
-      const platform = success.replace('_connected', '');
-      toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connected successfully!`);
-      setConnectionStatus(prev => ({ ...prev, [platform]: true }));
+      const platform = success.replace("_connected", "");
+      toast.success(
+        `${
+          platform.charAt(0).toUpperCase() + platform.slice(1)
+        } connected successfully!`
+      );
+      setConnectionStatus((prev) => ({ ...prev, [platform]: true }));
       // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
     }
 
     if (error) {
-      let errorMessage = error.replace(/_/g, ' ');
-      if (error.includes('instagram')) {
-        errorMessage = 'Instagram connection failed. Please ensure you have a Business or Creator account.';
+      let errorMessage = error.replace(/_/g, " ");
+      if (error.includes("instagram")) {
+        errorMessage =
+          "Instagram connection failed. Please ensure you have a Business or Creator account.";
       }
       toast.error(`Connection failed: ${errorMessage}`);
       // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, [accounts]);
 
@@ -85,10 +96,10 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await fetch('/api/social/connect', {
-        method: 'POST',
+      const response = await fetch("/api/social/connect", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ platform: platformId }),
         signal: controller.signal,
@@ -97,8 +108,10 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.message || 'Failed to get auth URL');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.message || "Failed to get auth URL");
       }
 
       const data = await response.json();
@@ -106,9 +119,11 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       // Redirect to OAuth URL
       window.location.href = data.auth_url;
     } catch (error) {
-      console.error('Connection error:', error);
-      if (error.name === 'AbortError') {
-        toast.error('Connection timeout. Please check your internet connection and try again.');
+      console.error("Connection error:", error);
+      if (error instanceof Error && error.name === "AbortError") {
+        toast.error(
+          "Connection timeout. Please check your internet connection and try again."
+        );
       } else {
         toast.error(`Failed to connect ${platformId}. Please try again.`);
       }
@@ -128,7 +143,7 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       if (error) throw error;
 
       toast.success(`${platformId} disconnected successfully!`);
-      setConnectionStatus(prev => ({ ...prev, [platformId]: false }));
+      setConnectionStatus((prev) => ({ ...prev, [platformId]: false }));
       window.location.reload();
     } catch (error) {
       toast.error("Failed to disconnect account");
@@ -152,9 +167,9 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
             <div
               key={platform.id}
               className={`bg-midnight rounded-lg p-4 border transition-all ${
-                platform.available 
-                  ? 'border-electric-purple/20 hover:border-electric-purple/40' 
-                  : 'border-muted/20 opacity-60'
+                platform.available
+                  ? "border-electric-purple/20 hover:border-electric-purple/40"
+                  : "border-muted/20 opacity-60"
               }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
@@ -204,7 +219,9 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
               {isConnected && platform.available && (
                 <div className="mt-2 flex items-center space-x-2">
                   <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
-                  <span className="text-xs text-neon-green">Connected & Active</span>
+                  <span className="text-xs text-neon-green">
+                    Connected & Active
+                  </span>
                 </div>
               )}
             </div>
@@ -215,8 +232,17 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       <div className="mt-6 p-4 bg-midnight/50 rounded-lg border border-cyber-blue/20">
         <div className="flex items-start space-x-3">
           <div className="w-8 h-8 bg-cyber-blue/20 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-cyber-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4 text-cyber-blue"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
           <div>
@@ -224,7 +250,9 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
               Real Social Media Integration
             </p>
             <p className="text-xs text-silver mt-1">
-              Connect your Twitter and Instagram Business/Creator accounts to start tracking real follower growth, engagement metrics, and get AI-powered content suggestions. LinkedIn integration coming soon!
+              Connect your Twitter and Instagram Business/Creator accounts to
+              start tracking real follower growth, engagement metrics, and get
+              AI-powered content suggestions. LinkedIn integration coming soon!
             </p>
           </div>
         </div>
@@ -233,8 +261,17 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
       <div className="mt-4 p-4 bg-electric-purple/10 rounded-lg border border-electric-purple/20">
         <div className="flex items-start space-x-3">
           <div className="w-8 h-8 bg-electric-purple/20 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-electric-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4 text-electric-purple"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
           <div>
@@ -242,7 +279,9 @@ export function SocialConnections({ accounts }: SocialConnectionsProps) {
               Instagram Graph API Integration
             </p>
             <p className="text-xs text-silver mt-1">
-              We use Instagram Graph API (the successor to Basic Display API) for comprehensive business analytics, detailed insights, and advanced metrics for Business and Creator accounts.
+              We use Instagram Graph API (the successor to Basic Display API)
+              for comprehensive business analytics, detailed insights, and
+              advanced metrics for Business and Creator accounts.
             </p>
           </div>
         </div>

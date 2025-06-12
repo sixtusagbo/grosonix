@@ -157,9 +157,9 @@ export class ContentAdapter {
     }
   }
 
-  private createFallbackAdaptation(
+  public createFallbackAdaptation(
     content: string,
-    platform: string
+    platform: "twitter" | "instagram" | "linkedin"
   ): PlatformContent {
     let adaptedContent = content;
     let hashtags: string[] = [];

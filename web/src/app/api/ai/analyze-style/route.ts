@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
-import { StyleAnalyzer } from "@/lib/ai/style-analyzer";
+import { StyleAnalyzer, UserStyleProfile } from "@/lib/ai/style-analyzer";
 import { RateLimiter } from "@/lib/ai/rate-limiter";
 
 /**
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         user.id
       );
 
-      const demoStyleProfile = {
+      const demoStyleProfile: UserStyleProfile = {
         user_id: user.id,
         tone: "professional",
         topics: ["technology", "business", "innovation", "productivity"],
@@ -154,10 +154,8 @@ export async function POST(request: NextRequest) {
         hashtag_style: "moderate usage",
         content_length_preference: "medium",
         analyzed_posts_count: 0,
-        confidence_score: 30, // Lower confidence since it's demo data
+        confidence_score: 30,
         last_analyzed: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       // Store the demo profile in the database

@@ -164,9 +164,12 @@ export class SocialMediaManager {
       }
 
       // If it's a rate limit error, provide a helpful message
-      if (error.message === "TWITTER_RATE_LIMITED") {
+      if (
+        error.message === "TWITTER_RATE_LIMITED" ||
+        error.message === "TWITTER_FREE_PLAN_LIMIT"
+      ) {
         throw new Error(
-          "Twitter API rate limit reached. Please wait 15 minutes before trying again."
+          "Twitter Free plan limit: Only 1 timeline request per 15 minutes. Please wait 15 minutes before trying again."
         );
       }
 

@@ -56,14 +56,14 @@ export function StyleAnalyzer({ onStyleAnalyzed }: StyleAnalyzerProps) {
         onStyleAnalyzed(result.style_profile);
       }
 
-      if (result.is_demo) {
+      if ((result as any).is_demo) {
         toast.success(
           "Demo style analysis created! Connect your Twitter account for personalized analysis."
         );
       } else {
         toast.success(
           `Style analysis completed! Analyzed ${
-            result.posts_analyzed || 0
+            (result as any).posts_analyzed || 0
           } posts.`
         );
       }
