@@ -24,6 +24,8 @@ const badgeVariants = cva(
         warning:
           "border-transparent bg-electric-orange-500/20 text-electric-orange-400 border border-electric-orange-500/30",
         info: "border-transparent bg-neon-cyan-500/20 text-neon-cyan-400 border border-neon-cyan-500/30",
+        trending:
+          "border-transparent bg-gradient-to-r from-electric-orange-500 to-emerald-500 text-white font-bold animate-pulse",
       },
     },
     defaultVariants: {
