@@ -27,8 +27,10 @@ import {
   Heart,
   MessageCircle,
   Share,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLinkedInShare } from "@/hooks/useLinkedInShare";
 
 interface ContentGeneratorProps {
   onContentGenerated?: (content: ContentSuggestion) => void;
@@ -44,6 +46,9 @@ export function ContentGenerator({
 
   // Ref for scrolling to generated content
   const generatedContentRef = useRef<HTMLDivElement>(null);
+
+  // LinkedIn sharing hook
+  const { shareToLinkedIn, isSharing, checkLinkedInConnection } = useLinkedInShare();
 
   const [formData, setFormData] = useState<ContentGenerationRequest>({
     prompt: "",
@@ -142,6 +147,30 @@ export function ContentGenerator({
     if (score >= 80) return "text-green-400";
     if (score >= 60) return "text-yellow-400";
     return "text-red-400";
+  };
+
+  const handleShareToLinkedIn = async (suggestion: ContentSuggestion) => {
+    // Check if LinkedIn is connected
+    console.log('Checking LinkedIn connection...');
+    const isConnected = await checkLinkedInConnection();
+    console.log('LinkedIn connection status:', isConnected);
+
+    if (!isConnected) {
+      toast.error("Please connect your LinkedIn account first in Settings");
+      return;
+    }
+
+    // Share the content
+    const result = await shareToLinkedIn({
+      content: suggestion.content,
+      hashtags: suggestion.hashtags,
+      visibility: 'PUBLIC'
+    });
+
+    if (result.success && result.share_url) {
+      // Optionally open the shared post in a new tab
+      window.open(result.share_url, '_blank');
+    }
   };
 
   return (
@@ -355,13 +384,15 @@ export function ContentGenerator({
                         )}`}>
                         {suggestion.engagement_score}% engagement
                       </span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(suggestion.content)}
-                        className="text-theme-secondary hover:text-theme-primary">
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(suggestion.content)}
+                          className="text-theme-secondary hover:text-theme-primary">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -379,6 +410,23 @@ export function ContentGenerator({
                           {hashtag}
                         </Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {/* LinkedIn Share Button */}
+                  {(suggestion.platform === "linkedin" || !suggestion.platform) && (
+                    <div className="mb-4">
+                      <Button
+                        onClick={() => handleShareToLinkedIn(suggestion)}
+                        disabled={isSharing}
+                        className="bg-blue-600 hover:bg-blue-700 text-white">
+                        {isSharing ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                        )}
+                        Share on LinkedIn
+                      </Button>
                     </div>
                   )}
 
