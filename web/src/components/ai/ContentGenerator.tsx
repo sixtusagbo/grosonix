@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ContentSuggestion, ContentGenerationRequest } from "@/types/ai";
 import {
   aiApiClient,
@@ -42,6 +42,9 @@ export function ContentGenerator({
   const [remainingQuota, setRemainingQuota] = useState<number | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
 
+  // Ref for scrolling to generated content
+  const generatedContentRef = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState<ContentGenerationRequest>({
     prompt: "",
     platform: "twitter",
@@ -50,6 +53,17 @@ export function ContentGenerator({
     use_voice_style: true,
     ignore_tone: false,
   });
+
+  // Utility function to scroll to generated content
+  const scrollToGeneratedContent = () => {
+    if (generatedContentRef.current) {
+      generatedContentRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
 
   const handleGenerate = async () => {
     if (!formData.prompt.trim()) {
@@ -69,6 +83,11 @@ export function ContentGenerator({
       }
 
       toast.success("Content generated successfully!");
+
+      // Scroll to generated content after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToGeneratedContent();
+      }, 100);
     } catch (error) {
       console.error("Content generation error:", error);
       toast.error(
@@ -95,6 +114,11 @@ export function ContentGenerator({
       toast.success(
         `Generated ${result.suggestions.length} content suggestions!`
       );
+
+      // Scroll to generated content after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToGeneratedContent();
+      }, 100);
     } catch (error) {
       console.error("Content suggestions error:", error);
       toast.error(
@@ -302,7 +326,7 @@ export function ContentGenerator({
 
       {/* Generated Content */}
       {suggestions.length > 0 && (
-        <div className="space-y-4">
+        <div ref={generatedContentRef} className="space-y-4">
           <h3 className="text-lg font-semibold text-theme-primary">
             Generated Content
           </h3>
@@ -341,9 +365,9 @@ export function ContentGenerator({
                     </div>
                   </div>
 
-                  <p className="text-theme-primary mb-4 leading-relaxed">
+                  <div className="text-theme-primary mb-4 leading-relaxed whitespace-pre-line">
                     {suggestion.content}
-                  </p>
+                  </div>
 
                   {suggestion.hashtags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">

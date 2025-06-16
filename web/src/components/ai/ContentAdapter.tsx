@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PlatformContent, PLATFORM_LIMITS } from "@/types/ai";
 import {
   aiApiClient,
@@ -42,11 +42,25 @@ export function ContentAdapter({
   ]);
   const [remainingQuota, setRemainingQuota] = useState<number | null>(null);
 
+  // Ref for scrolling to adapted content
+  const adaptedContentRef = useRef<HTMLDivElement>(null);
+
   const platforms = [
     { id: "twitter", name: "Twitter/X", icon: "𝕏", color: "text-blue-400" },
     { id: "instagram", name: "Instagram", icon: "📷", color: "text-pink-400" },
     { id: "linkedin", name: "LinkedIn", icon: "💼", color: "text-blue-600" },
   ];
+
+  // Utility function to scroll to adapted content
+  const scrollToAdaptedContent = () => {
+    if (adaptedContentRef.current) {
+      adaptedContentRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
 
   const handleAdaptContent = async () => {
     if (!originalContent.trim()) {
@@ -80,6 +94,11 @@ export function ContentAdapter({
       toast.success(
         `Content adapted for ${selectedPlatforms.length} platforms!`
       );
+
+      // Scroll to adapted content after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToAdaptedContent();
+      }, 100);
     } catch (error) {
       console.error("Content adaptation error:", error);
       toast.error(
@@ -217,7 +236,7 @@ export function ContentAdapter({
 
       {/* Adaptations */}
       {adaptations.length > 0 && (
-        <div className="space-y-4">
+        <div ref={adaptedContentRef} className="space-y-4">
           <h3 className="text-lg font-semibold text-theme-primary">
             Platform Adaptations
           </h3>
@@ -257,9 +276,9 @@ export function ContentAdapter({
                       </Button>
                     </div>
 
-                    <p className="text-theme-primary mb-4 leading-relaxed">
+                    <div className="text-theme-primary mb-4 leading-relaxed whitespace-pre-line">
                       {adaptation.content}
-                    </p>
+                    </div>
 
                     {adaptation.hashtags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-4">

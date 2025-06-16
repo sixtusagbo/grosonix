@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { OpenAIService } from "@/lib/ai/openai";
 import { StyleAnalyzer } from "@/lib/ai/style-analyzer";
 import { RateLimiter } from "@/lib/ai/rate-limiter";
+import { LinkedInHashtagGenerator } from "@/lib/ai/linkedin-hashtag-generator";
 
 /**
  * @swagger
@@ -140,20 +141,41 @@ export async function GET(request: Request) {
     for (let i = 0; i < actualLimit; i++) {
       try {
         const generatedContent = await openaiService.generateContent({
-          prompt: `Create engaging content about ${topic}`,
+          prompt: `Create engaging, well-formatted content about ${topic}. Use proper paragraph structure with line breaks for readability.`,
           platform: platform as any,
           tone: (styleProfile?.tone as any) || "professional",
           userStyle,
-          maxTokens: 150,
+          maxTokens: platform === "linkedin" ? 250 : 150, // More tokens for LinkedIn formatting
           subscriptionTier,
           priority: "standard",
         });
+
+        // Enhance LinkedIn hashtags with intelligent generation
+        let finalHashtags = generatedContent.hashtags;
+        if (platform === "linkedin") {
+          try {
+            const linkedinHashtagGenerator = new LinkedInHashtagGenerator();
+            const enhancedHashtags = await linkedinHashtagGenerator.generateHashtags(
+              generatedContent.content,
+              undefined, // Could be enhanced to detect industry from user profile
+              3
+            );
+
+            // Use enhanced hashtags if available, otherwise fall back to generated ones
+            if (enhancedHashtags.length > 0) {
+              finalHashtags = enhancedHashtags.map(h => h.hashtag);
+            }
+          } catch (error) {
+            console.error('LinkedIn hashtag enhancement failed:', error);
+            // Keep original hashtags on error
+          }
+        }
 
         const suggestion = {
           id: `suggestion-${Date.now()}-${i}`,
           content: generatedContent.content,
           platform,
-          hashtags: generatedContent.hashtags,
+          hashtags: finalHashtags,
           engagement_score: generatedContent.engagement_score,
           created_at: new Date().toISOString(),
         };
@@ -378,22 +400,47 @@ Please generate content that matches this specific voice and writing style.`;
       }
     }
 
-    // Generate custom AI content
+    // Generate custom AI content with formatting instructions
+    const enhancedPrompt = platform === "linkedin"
+      ? `${prompt}\n\nPlease format the content with proper paragraph structure using double line breaks (\\n\\n) between sections for professional readability.`
+      : prompt;
+
     const generatedContent = await openaiService.generateContent({
-      prompt,
+      prompt: enhancedPrompt,
       platform: platform as any,
       tone: effectiveTone as any,
       userStyle: use_voice_style ? userStyle : undefined,
-      maxTokens: 200,
+      maxTokens: platform === "linkedin" ? 300 : 200, // More tokens for LinkedIn formatting
       subscriptionTier,
       priority: subscriptionTier === "agency" ? "high" : "standard",
     });
+
+    // Enhance LinkedIn hashtags with intelligent generation
+    let finalHashtags = generatedContent.hashtags;
+    if (platform === "linkedin") {
+      try {
+        const linkedinHashtagGenerator = new LinkedInHashtagGenerator();
+        const enhancedHashtags = await linkedinHashtagGenerator.generateHashtags(
+          generatedContent.content,
+          undefined, // Could be enhanced to detect industry from user profile
+          3
+        );
+
+        // Use enhanced hashtags if available, otherwise fall back to generated ones
+        if (enhancedHashtags.length > 0) {
+          finalHashtags = enhancedHashtags.map(h => h.hashtag);
+        }
+      } catch (error) {
+        console.error('LinkedIn hashtag enhancement failed:', error);
+        // Keep original hashtags on error
+      }
+    }
 
     const customSuggestion = {
       id: `custom-${Date.now()}`,
       content: generatedContent.content,
       platform,
-      hashtags: generatedContent.hashtags,
+      hashtags: finalHashtags,
       engagement_score: generatedContent.engagement_score,
       created_at: new Date().toISOString(),
     };

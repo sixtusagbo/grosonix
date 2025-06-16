@@ -152,24 +152,43 @@ export class OpenAIService {
       ? `\n\nUser's writing style: ${userStyle}`
       : "";
 
-    return `You are an expert social media content creator specializing in ${platform}. 
-    
+    return `You are an expert social media content creator specializing in ${platform}.
+
     Platform specifications:
     ${platformSpecs}
-    
+
     Tone: ${tone}${styleContext}
-    
+
     Generate engaging, platform-optimized content that:
     1. Follows the character limits and format requirements
     2. Includes relevant hashtags (3-5 for Twitter, 5-10 for Instagram, 2-3 for LinkedIn)
     3. Matches the specified tone
     4. Is likely to drive engagement
     5. Follows current best practices for the platform
-    
+    6. Uses proper formatting with line breaks between paragraphs for readability
+    7. For longer content (LinkedIn), structure with clear paragraphs separated by double line breaks
+
+    Formatting guidelines:
+    - Use double line breaks (\\n\\n) between distinct paragraphs or sections
+    - For LinkedIn: Structure content with introduction, main points, and conclusion/call-to-action
+    - For Twitter: Keep concise but use line breaks for clarity when needed
+    - For Instagram: Use line breaks to create visual appeal and readability
+
     Format your response as:
-    CONTENT: [the main post content]
+    CONTENT: [the main post content with proper line breaks and formatting]
+    [Additional content paragraphs should be on separate lines]
+    [Use actual line breaks in your response for paragraph separation]
     HASHTAGS: [comma-separated hashtags]
-    SCORE: [engagement prediction score 1-100]`;
+    SCORE: [engagement prediction score 1-100]
+
+    IMPORTANT: For LinkedIn content, structure your response like this example:
+    CONTENT: Opening hook or attention-grabbing statement.
+
+    Main value proposition or insight with detailed explanation.
+
+    Call to action or engaging question to drive comments.
+    HASHTAGS: #RelevantTag1, #RelevantTag2, #RelevantTag3
+    SCORE: 85`;
   }
 
   private buildUserPrompt(prompt: string, platform: string): string {
@@ -217,21 +236,37 @@ export class OpenAIService {
         - Use 1-3 relevant hashtags
         - Encourage retweets and replies
         - Consider using threads for longer content
-        - Include call-to-action when appropriate`;
+        - Include call-to-action when appropriate
+        - Use line breaks for clarity and readability
+        - Keep paragraphs short and punchy`;
 
       case "instagram":
         return `- Caption can be longer (up to 2,200 characters)
         - Use 5-10 relevant hashtags
         - Focus on visual storytelling
         - Encourage comments and saves
-        - Include emojis for visual appeal`;
+        - Include emojis for visual appeal
+        - Use line breaks to create visual hierarchy
+        - Structure with engaging opening, story/value, and call-to-action
+        - Use double line breaks between distinct sections`;
 
       case "linkedin":
-        return `- Professional tone is key
-        - Longer form content (up to 3,000 characters)
-        - Use 2-3 professional hashtags
-        - Focus on industry insights and value
-        - Encourage professional discussion`;
+        return `- Professional, business-focused tone is essential
+        - Longer form content (up to 3,000 characters) - use this space wisely
+        - Use 2-3 strategic professional hashtags that are:
+          * Industry-specific (e.g., #TechLeadership, #DigitalMarketing, #DataScience)
+          * Skill-focused (e.g., #ProjectManagement, #Innovation, #Strategy)
+          * Career-oriented (e.g., #ProfessionalDevelopment, #Leadership, #Networking)
+          * Trending business topics (e.g., #AI, #Sustainability, #RemoteWork)
+        - Focus on industry insights, thought leadership, and actionable value
+        - Encourage meaningful professional discussion and engagement
+        - Include questions to drive comments and connections
+        - Share personal experiences and lessons learned
+        - Use professional emojis sparingly (💼 📈 🎯 💡)
+        - CRITICAL: Structure content with clear paragraphs separated by double line breaks (\\n\\n)
+        - Format structure: Hook/Opening → Main Content/Value → Call-to-Action/Question
+        - Use single line breaks within paragraphs, double line breaks between sections
+        - Hashtags should be relevant to the content topic and target professional audience`;
 
       default:
         return "General social media best practices apply.";
@@ -242,40 +277,68 @@ export class OpenAIService {
     text: string,
     platform: string
   ): GeneratedContent {
-    const lines = text.split("\n");
-    let content = "";
-    let hashtags: string[] = [];
-    let score = 75; // Default score
-
-    for (const line of lines) {
-      if (line.startsWith("CONTENT:")) {
-        content = line.replace("CONTENT:", "").trim();
-      } else if (line.startsWith("HASHTAGS:")) {
-        const hashtagText = line.replace("HASHTAGS:", "").trim();
-        hashtags = hashtagText
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0);
-      } else if (line.startsWith("SCORE:")) {
-        const scoreText = line.replace("SCORE:", "").trim();
-        score = parseInt(scoreText) || 75;
-      }
+    // Try to parse structured response first
+    const structuredContent = this.parseStructuredResponse(text);
+    if (structuredContent) {
+      return {
+        content: this.optimizeForPlatform(structuredContent.content, platform),
+        hashtags: structuredContent.hashtags,
+        engagement_score: structuredContent.score,
+        platform_optimized: true,
+      };
     }
 
-    // Fallback: if parsing failed, use the entire text as content
-    if (!content) {
-      content = text.trim();
-      hashtags = this.extractHashtagsFromText(content);
-    }
-
-    // Ensure hashtags have # prefix
-    hashtags = hashtags.map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
+    // Fallback: treat entire text as content
+    const content = text.trim();
+    const hashtags = this.extractHashtagsFromText(content);
 
     return {
       content: this.optimizeForPlatform(content, platform),
       hashtags,
-      engagement_score: Math.min(Math.max(score, 1), 100),
+      engagement_score: 75,
       platform_optimized: true,
+    };
+  }
+
+  private parseStructuredResponse(text: string): {
+    content: string;
+    hashtags: string[];
+    score: number;
+  } | null {
+    const contentMatch = text.match(/CONTENT:\s*([\s\S]*?)(?=HASHTAGS:|SCORE:|$)/i);
+    const hashtagsMatch = text.match(/HASHTAGS:\s*([^\n]*)/i);
+    const scoreMatch = text.match(/SCORE:\s*(\d+)/i);
+
+    if (!contentMatch) return null;
+
+    let content = contentMatch[1].trim();
+
+    // Clean up content - remove any trailing HASHTAGS or SCORE lines
+    content = content.replace(/\s*(HASHTAGS:|SCORE:)[\s\S]*$/i, '').trim();
+
+    // Ensure proper paragraph formatting for LinkedIn
+    if (content.includes('\n') && !content.includes('\n\n')) {
+      // Convert single line breaks to double line breaks for paragraph separation
+      const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      if (lines.length > 1) {
+        content = lines.join('\n\n');
+      }
+    }
+
+    const hashtags = hashtagsMatch
+      ? hashtagsMatch[1]
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag.length > 0)
+          .map(tag => tag.startsWith('#') ? tag : `#${tag}`)
+      : [];
+
+    const score = scoreMatch ? parseInt(scoreMatch[1]) : 75;
+
+    return {
+      content,
+      hashtags,
+      score: Math.min(Math.max(score, 1), 100)
     };
   }
 
@@ -285,6 +348,9 @@ export class OpenAIService {
   }
 
   private optimizeForPlatform(content: string, platform: string): string {
+    // First, ensure proper formatting
+    content = this.formatContent(content, platform);
+
     switch (platform) {
       case "twitter":
         // Ensure Twitter character limit
@@ -294,12 +360,66 @@ export class OpenAIService {
         break;
 
       case "instagram":
-        // Instagram allows longer content, no truncation needed
+        // Instagram allows longer content, ensure good formatting
+        content = this.ensureInstagramFormatting(content);
         break;
 
       case "linkedin":
-        // LinkedIn allows long content, but ensure professional tone
+        // LinkedIn allows long content, ensure professional formatting
+        content = this.ensureLinkedInFormatting(content);
         break;
+    }
+
+    return content;
+  }
+
+  private formatContent(content: string, platform: string): string {
+    // Clean up any existing formatting issues
+    content = content.replace(/\n{3,}/g, '\n\n'); // Replace 3+ line breaks with 2
+    content = content.replace(/^\s+|\s+$/g, ''); // Trim whitespace
+
+    return content;
+  }
+
+  private ensureInstagramFormatting(content: string): string {
+    // Ensure Instagram content has good visual breaks
+    const sentences = content.split(/(?<=[.!?])\s+/);
+    if (sentences.length > 3) {
+      // Group sentences into paragraphs for better readability
+      const paragraphs = [];
+      for (let i = 0; i < sentences.length; i += 2) {
+        const paragraph = sentences.slice(i, i + 2).join(' ');
+        paragraphs.push(paragraph);
+      }
+      return paragraphs.join('\n\n');
+    }
+    return content;
+  }
+
+  private ensureLinkedInFormatting(content: string): string {
+    // Ensure LinkedIn content has professional paragraph structure
+    if (!content.includes('\n\n')) {
+      // If no paragraph breaks exist, create them intelligently
+      const sentences = content.split(/(?<=[.!?])\s+/);
+      if (sentences.length > 2) {
+        const paragraphs = [];
+
+        // First paragraph (hook/opening)
+        paragraphs.push(sentences[0]);
+
+        // Middle paragraphs (main content)
+        if (sentences.length > 3) {
+          const middleContent = sentences.slice(1, -1).join(' ');
+          paragraphs.push(middleContent);
+        }
+
+        // Last paragraph (call to action/conclusion)
+        if (sentences.length > 1) {
+          paragraphs.push(sentences[sentences.length - 1]);
+        }
+
+        return paragraphs.join('\n\n');
+      }
     }
 
     return content;
