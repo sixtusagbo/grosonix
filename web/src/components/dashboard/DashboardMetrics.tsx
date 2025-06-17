@@ -1,10 +1,11 @@
 "use client";
 
+import { PlatformFilter } from "@/lib/social";
 import { useState } from "react";
-import { StatsGrid } from "./StatsGrid";
+import { GoalSetting } from "./GoalSetting";
 import { GrowthChart } from "./GrowthChart";
 import { PlatformSelector } from "./PlatformSelector";
-import { PlatformFilter } from "@/lib/social";
+import { StatsGrid } from "./StatsGrid";
 
 interface DashboardMetricsProps {
   socialAccounts: any[] | null;
@@ -45,7 +46,10 @@ export function DashboardMetrics({ socialAccounts }: DashboardMetricsProps) {
       />
 
       {/* Growth Chart */}
-      <GrowthChart />
+      <GrowthChart socialAccounts={socialAccounts} />
+
+      {/* Goal Setting */}
+      <GoalSetting socialAccounts={socialAccounts} />
     </div>
   );
 }

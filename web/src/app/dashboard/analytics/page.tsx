@@ -33,14 +33,21 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="glass-card p-6">
-        <h1 className="text-2xl font-bold text-theme-primary mb-2">
-          Analytics Dashboard
-        </h1>
-        <p className="text-theme-secondary">
-          Track your social media growth and engagement metrics across all
-          platforms.
-        </p>
+      <div className="glass-card p-6 border-emerald-500/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-theme-primary mb-2 flex items-center gap-2">
+              📊 Advanced Analytics Dashboard
+            </h1>
+            <p className="text-theme-secondary">
+              Real-time metrics, growth tracking, and goal management for your social media presence.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-emerald-500">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <span>Live Data</span>
+          </div>
+        </div>
       </div>
 
       <DashboardMetrics socialAccounts={socialAccounts} />

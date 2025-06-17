@@ -180,6 +180,20 @@ body {
   }
 }
 
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
