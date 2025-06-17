@@ -17,6 +17,27 @@ export interface LinkedInMetrics {
   last_updated: string;
 }
 
+export interface LinkedInShareRequest {
+  content: string;
+  hashtags?: string[];
+  visibility?: 'PUBLIC' | 'CONNECTIONS' | 'LOGGED_IN_MEMBERS';
+  images?: File[] | string[]; // Support both File objects and URLs
+}
+
+export interface LinkedInShareResponse {
+  id: string;
+  shareUrl?: string;
+  success: boolean;
+  message?: string;
+}
+
+export interface LinkedInImageUploadResponse {
+  asset: string;
+  uploadUrl: string;
+  success: boolean;
+  message?: string;
+}
+
 export class LinkedInService {
   private accessToken: string;
   private baseUrl = 'https://api.linkedin.com/v2';
@@ -89,6 +110,80 @@ export class LinkedInService {
     } catch (error) {
       console.error('LinkedIn posts error:', error);
       throw new Error('Failed to fetch recent posts');
+    }
+  }
+
+  /**
+   * Share content to LinkedIn
+   */
+  async shareContent(shareRequest: LinkedInShareRequest): Promise<LinkedInShareResponse> {
+    try {
+      // Get user data to get the person URN
+      const userData = await this.getUserData();
+      const personUrn = `urn:li:person:${userData.id}`;
+
+      // Prepare content with hashtags
+      let finalContent = shareRequest.content;
+      if (shareRequest.hashtags && shareRequest.hashtags.length > 0) {
+        const hashtagString = shareRequest.hashtags.join(' ');
+        finalContent = `${shareRequest.content}\n\n${hashtagString}`;
+      }
+
+      // LinkedIn Share API v2 payload
+      const sharePayload = {
+        author: personUrn,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: {
+              text: finalContent
+            },
+            shareMediaCategory: 'NONE'
+          }
+        },
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': shareRequest.visibility || 'PUBLIC'
+        }
+      };
+
+      console.log('LinkedIn Share Payload:', JSON.stringify(sharePayload, null, 2));
+
+      const response = await axios.post(`${this.baseUrl}/ugcPosts`, sharePayload, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+          'X-Restli-Protocol-Version': '2.0.0'
+        },
+      });
+
+      const shareId = response.data.id;
+
+      return {
+        id: shareId,
+        shareUrl: `https://www.linkedin.com/feed/update/${shareId}`,
+        success: true,
+        message: 'Content shared successfully to LinkedIn'
+      };
+
+    } catch (error: any) {
+      console.error('LinkedIn share error:', error);
+
+      // Handle specific LinkedIn API errors
+      let errorMessage = 'Failed to share content to LinkedIn';
+
+      if (error.response?.status === 403) {
+        errorMessage = 'Insufficient permissions to share content. Please reconnect your LinkedIn account with sharing permissions.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'LinkedIn authentication expired. Please reconnect your account.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      return {
+        id: '',
+        success: false,
+        message: errorMessage
+      };
     }
   }
 }

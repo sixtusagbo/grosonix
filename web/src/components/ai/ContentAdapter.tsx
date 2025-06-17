@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PlatformContent, PLATFORM_LIMITS } from "@/types/ai";
 import {
   aiApiClient,
@@ -20,8 +20,10 @@ import {
   Copy,
   AlertTriangle,
   CheckCircle,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLinkedInShare } from "@/hooks/useLinkedInShare";
 
 interface ContentAdapterProps {
   initialContent?: string;
@@ -42,11 +44,28 @@ export function ContentAdapter({
   ]);
   const [remainingQuota, setRemainingQuota] = useState<number | null>(null);
 
+  // Ref for scrolling to adapted content
+  const adaptedContentRef = useRef<HTMLDivElement>(null);
+
+  // LinkedIn sharing hook
+  const { shareToLinkedIn, isSharing, checkLinkedInConnection } = useLinkedInShare();
+
   const platforms = [
     { id: "twitter", name: "Twitter/X", icon: "𝕏", color: "text-blue-400" },
     { id: "instagram", name: "Instagram", icon: "📷", color: "text-pink-400" },
     { id: "linkedin", name: "LinkedIn", icon: "💼", color: "text-blue-600" },
   ];
+
+  // Utility function to scroll to adapted content
+  const scrollToAdaptedContent = () => {
+    if (adaptedContentRef.current) {
+      adaptedContentRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
 
   const handleAdaptContent = async () => {
     if (!originalContent.trim()) {
@@ -80,6 +99,11 @@ export function ContentAdapter({
       toast.success(
         `Content adapted for ${selectedPlatforms.length} platforms!`
       );
+
+      // Scroll to adapted content after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToAdaptedContent();
+      }, 100);
     } catch (error) {
       console.error("Content adaptation error:", error);
       toast.error(
@@ -130,6 +154,27 @@ export function ContentAdapter({
     }
 
     return issues;
+  };
+
+  const handleShareToLinkedIn = async (adaptation: PlatformContent) => {
+    // Check if LinkedIn is connected
+    const isConnected = await checkLinkedInConnection();
+    if (!isConnected) {
+      toast.error("Please connect your LinkedIn account first in Settings");
+      return;
+    }
+
+    // Share the content
+    const result = await shareToLinkedIn({
+      content: adaptation.content,
+      hashtags: adaptation.hashtags,
+      visibility: 'PUBLIC'
+    });
+
+    if (result.success && result.share_url) {
+      // Optionally open the shared post in a new tab
+      window.open(result.share_url, '_blank');
+    }
   };
 
   return (
@@ -217,7 +262,7 @@ export function ContentAdapter({
 
       {/* Adaptations */}
       {adaptations.length > 0 && (
-        <div className="space-y-4">
+        <div ref={adaptedContentRef} className="space-y-4">
           <h3 className="text-lg font-semibold text-theme-primary">
             Platform Adaptations
           </h3>
@@ -248,18 +293,35 @@ export function ContentAdapter({
                           </Badge>
                         )}
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(adaptation.content)}
-                        className="text-theme-secondary hover:text-theme-primary">
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(adaptation.content)}
+                          className="text-theme-secondary hover:text-theme-primary">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        {adaptation.platform === "linkedin" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleShareToLinkedIn(adaptation)}
+                            disabled={isSharing}
+                            title="Share to LinkedIn"
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10">
+                            {isSharing ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <ExternalLink className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
-                    <p className="text-theme-primary mb-4 leading-relaxed">
+                    <div className="text-theme-primary mb-4 leading-relaxed whitespace-pre-line">
                       {adaptation.content}
-                    </p>
+                    </div>
 
                     {adaptation.hashtags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-4">
@@ -271,6 +333,23 @@ export function ContentAdapter({
                             {hashtag}
                           </Badge>
                         ))}
+                      </div>
+                    )}
+
+                    {/* LinkedIn Share Button */}
+                    {adaptation.platform === "linkedin" && (
+                      <div className="mb-4">
+                        <Button
+                          onClick={() => handleShareToLinkedIn(adaptation)}
+                          disabled={isSharing}
+                          className="bg-blue-600 hover:bg-blue-700 text-white">
+                          {isSharing ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                          )}
+                          Share on LinkedIn
+                        </Button>
                       </div>
                     )}
 
