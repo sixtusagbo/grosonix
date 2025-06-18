@@ -1,7 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { MetricCounter, RealTimeMetrics } from "@/components/ui/animated-counter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlatformFilter } from "@/lib/social";
+import {
+  Activity,
+  BarChart3,
+  Heart,
+  MessageCircle,
+  RefreshCw,
+  Users
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
+// Import animated components
 
 interface StatsGridProps {
   socialAccounts: any[] | null;
@@ -86,171 +99,200 @@ export function StatsGrid({
     changeType: ChangeType;
     loading?: boolean;
   }> = [
-    {
-      name:
-        selectedPlatform === "overview"
-          ? "Connected Platforms"
-          : `${getPlatformDisplayName()} Status`,
-      value:
-        selectedPlatform === "overview"
-          ? connectedPlatforms
-          : metrics.length > 0
-          ? "Connected"
-          : "Not Connected",
-      change:
-        selectedPlatform === "overview"
-          ? connectedPlatforms > 0
-            ? `+${connectedPlatforms}`
-            : "0"
-          : metrics.length > 0
-          ? "Active"
-          : "Inactive",
-      changeType:
-        selectedPlatform === "overview"
-          ? connectedPlatforms > 0
+      {
+        name:
+          selectedPlatform === "overview"
+            ? "Connected Platforms"
+            : `${getPlatformDisplayName()} Status`,
+        value:
+          selectedPlatform === "overview"
+            ? connectedPlatforms
+            : metrics.length > 0
+              ? "Connected"
+              : "Not Connected",
+        change:
+          selectedPlatform === "overview"
+            ? connectedPlatforms > 0
+              ? `+${connectedPlatforms}`
+              : "0"
+            : metrics.length > 0
+              ? "Active"
+              : "Inactive",
+        changeType:
+          selectedPlatform === "overview"
+            ? connectedPlatforms > 0
+              ? "increase"
+              : "neutral"
+            : metrics.length > 0
+              ? "increase"
+              : "decrease",
+      },
+      {
+        name: "Total Followers",
+        value: loading ? "..." : totalFollowers.toLocaleString(),
+        change: avgGrowthRate > 0 ? `+${avgGrowthRate.toFixed(1)}%` : "0%",
+        changeType:
+          avgGrowthRate > 0
             ? "increase"
-            : "neutral"
-          : metrics.length > 0
-          ? "increase"
-          : "decrease",
+            : avgGrowthRate < 0
+              ? "decrease"
+              : "neutral",
+        loading,
+      },
+      {
+        name: "Engagement Rate",
+        value: loading ? "..." : `${avgEngagementRate.toFixed(1)}%`,
+        change:
+          avgEngagementRate > 2
+            ? "+Good"
+            : avgEngagementRate > 1
+              ? "+Fair"
+              : "Low",
+        changeType:
+          avgEngagementRate > 2
+            ? "increase"
+            : avgEngagementRate > 1
+              ? "neutral"
+              : "decrease",
+        loading,
+      },
+      {
+        name: "Total Posts",
+        value: loading ? "..." : totalPosts.toLocaleString(),
+        change: totalPosts > 0 ? `${totalPosts} posts` : "No posts",
+        changeType: totalPosts > 0 ? "increase" : "neutral",
+        loading,
+      },
+    ];
+
+  // Prepare metrics for RealTimeMetrics component
+  const realTimeMetrics = [
+    {
+      id: "platforms",
+      label: selectedPlatform === "overview" ? "Connected Platforms" : `${getPlatformDisplayName()} Status`,
+      value: selectedPlatform === "overview" ? connectedPlatforms : (metrics.length > 0 ? 1 : 0),
+      previousValue: selectedPlatform === "overview" ? Math.max(0, connectedPlatforms - 1) : undefined,
+      icon: <BarChart3 className="w-4 h-4" />,
+      trend: connectedPlatforms > 0 ? "up" : "neutral" as const,
     },
     {
-      name: "Total Followers",
-      value: loading ? "..." : totalFollowers.toLocaleString(),
-      change: avgGrowthRate > 0 ? `+${avgGrowthRate.toFixed(1)}%` : "0%",
-      changeType:
-        avgGrowthRate > 0
-          ? "increase"
-          : avgGrowthRate < 0
-          ? "decrease"
-          : "neutral",
-      loading,
+      id: "followers",
+      label: "Total Followers",
+      value: totalFollowers,
+      previousValue: Math.max(0, totalFollowers - Math.round(totalFollowers * (avgGrowthRate / 100))),
+      icon: <Users className="w-4 h-4" />,
+      trend: avgGrowthRate > 0 ? "up" : avgGrowthRate < 0 ? "down" : "neutral" as const,
     },
     {
-      name: "Engagement Rate",
-      value: loading ? "..." : `${avgEngagementRate.toFixed(1)}%`,
-      change:
-        avgEngagementRate > 2
-          ? "+Good"
-          : avgEngagementRate > 1
-          ? "+Fair"
-          : "Low",
-      changeType:
-        avgEngagementRate > 2
-          ? "increase"
-          : avgEngagementRate > 1
-          ? "neutral"
-          : "decrease",
-      loading,
+      id: "engagement",
+      label: "Engagement Rate",
+      value: Math.round(avgEngagementRate * 100) / 100,
+      previousValue: Math.max(0, avgEngagementRate - 0.5),
+      icon: <Heart className="w-4 h-4" />,
+      trend: avgEngagementRate > 2 ? "up" : avgEngagementRate < 1 ? "down" : "neutral" as const,
+      suffix: "%",
     },
     {
-      name: "Total Posts",
-      value: loading ? "..." : totalPosts.toLocaleString(),
-      change: totalPosts > 0 ? `${totalPosts} posts` : "No posts",
-      changeType: totalPosts > 0 ? "increase" : "neutral",
-      loading,
+      id: "posts",
+      label: "Total Posts",
+      value: totalPosts,
+      previousValue: Math.max(0, totalPosts - Math.round(totalPosts * 0.1)),
+      icon: <MessageCircle className="w-4 h-4" />,
+      trend: totalPosts > 0 ? "up" : "neutral" as const,
     },
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Header with refresh button and last updated */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-text-primary">
-            {selectedPlatform === "overview"
-              ? "Overview Metrics"
-              : `${getPlatformDisplayName()} Metrics`}
-          </h3>
-          {lastUpdated && (
-            <p className="text-xs text-text-muted">
-              Last updated: {lastUpdated}
-            </p>
-          )}
-        </div>
-        <button
-          onClick={fetchMetrics}
-          disabled={loading}
-          className="flex items-center space-x-2 px-3 py-2 bg-electric-purple/20 hover:bg-electric-purple/30 rounded-lg transition-all disabled:opacity-50">
-          <svg
-            className={`w-4 h-4 text-electric-purple ${
-              loading ? "animate-spin" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          <span className="text-sm text-electric-purple">
-            {loading ? "Refreshing..." : "Refresh"}
-          </span>
-        </button>
-      </div>
+    <Card className="glass-card border-emerald-500/20">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
+            <Activity className="w-5 h-5 text-emerald-500" />
+            {selectedPlatform === "overview" ? "Overview Metrics" : `${getPlatformDisplayName()} Metrics`}
+          </CardTitle>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div
-            key={stat.name}
-            className="glass-card p-6 hover:scale-105 transition-transform duration-200">
-            <p className="text-sm text-text-secondary">{stat.name}</p>
-            <div className="flex items-center mt-2">
-              {stat.loading ? (
-                <div className="animate-pulse">
-                  <div className="h-8 bg-emerald-500/20 rounded w-16"></div>
-                </div>
-              ) : (
-                <p className="text-2xl font-semibold text-text-primary">
-                  {stat.value}
-                </p>
-              )}
-            </div>
-            <p
-              className={`text-sm mt-2 flex items-center space-x-1 ${
-                stat.changeType === "increase"
-                  ? "text-neon-green"
-                  : stat.changeType === "decrease"
-                  ? "text-danger-red"
-                  : "text-text-muted"
-              }`}>
-              {stat.changeType === "increase" && (
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 17l9.2-9.2M17 17V7H7"
-                  />
-                </svg>
-              )}
-              {stat.changeType === "decrease" && (
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 7l-9.2 9.2M7 7v10h10"
-                  />
-                </svg>
-              )}
-              <span>{stat.change}</span>
-            </p>
+          <div className="flex items-center gap-2">
+            {lastUpdated && (
+              <span className="text-xs text-theme-secondary">
+                Updated: {lastUpdated}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchMetrics}
+              disabled={loading}
+              className="border-emerald-500/20 hover:border-emerald-500/40"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Refreshing..." : "Refresh"}
+            </Button>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {/* Real-time Metrics with Animations */}
+        <RealTimeMetrics
+          metrics={realTimeMetrics}
+          updateInterval={30000} // 30 seconds
+          className="mb-6"
+        />
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            <span className="ml-2 text-theme-secondary">Refreshing metrics...</span>
+          </div>
+        )}
+
+        {/* No Data State */}
+        {!loading && connectedPlatforms === 0 && (
+          <div className="text-center py-8 text-theme-secondary">
+            <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No social media accounts connected</p>
+            <p className="text-sm">Connect your accounts to see metrics</p>
+          </div>
+        )}
+
+        {/* Platform-specific metrics */}
+        {!loading && metrics.length > 0 && selectedPlatform !== "overview" && (
+          <div className="mt-6 pt-6 border-t border-border/50">
+            <h4 className="text-lg font-semibold text-theme-primary mb-4">
+              {getPlatformDisplayName()} Details
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {metrics.map((metric) => (
+                <div key={metric.platform} className="space-y-2">
+                  <MetricCounter
+                    value={metric.followers_count}
+                    label="Followers"
+                    icon={<Users className="w-4 h-4" />}
+                    trend={metric.growth_rate > 0 ? "up" : metric.growth_rate < 0 ? "down" : "neutral"}
+                    showChange={true}
+                  />
+                  <MetricCounter
+                    value={metric.engagement_rate}
+                    label="Engagement Rate"
+                    icon={<Heart className="w-4 h-4" />}
+                    trend={metric.engagement_rate > 2 ? "up" : metric.engagement_rate < 1 ? "down" : "neutral"}
+                    suffix="%"
+                    showChange={false}
+                  />
+                  <MetricCounter
+                    value={metric.posts_count}
+                    label="Posts"
+                    icon={<MessageCircle className="w-4 h-4" />}
+                    trend="neutral"
+                    showChange={false}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
