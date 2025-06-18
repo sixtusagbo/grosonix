@@ -28,9 +28,11 @@ import {
   MessageCircle,
   Share,
   ExternalLink,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLinkedInShare } from "@/hooks/useLinkedInShare";
+import { ContentScheduler } from "./ContentScheduler";
 
 interface ContentGeneratorProps {
   onContentGenerated?: (content: ContentSuggestion) => void;
@@ -50,6 +52,11 @@ export function ContentGenerator({
   // LinkedIn sharing hook
   const { shareToLinkedIn, isSharing, checkLinkedInConnection } = useLinkedInShare();
 
+  // Scheduling state
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [contentToSchedule, setContentToSchedule] = useState<ContentSuggestion | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<ContentGenerationRequest>({
     prompt: "",
     platform: "twitter",
@@ -58,6 +65,23 @@ export function ContentGenerator({
     use_voice_style: true,
     ignore_tone: false,
   });
+
+  // Get user ID on component mount
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          setUserId(data.user?.id || null);
+        }
+      } catch (error) {
+        console.error('Error getting user ID:', error);
+      }
+    };
+
+    getUserId();
+  }, []);
 
   // Utility function to scroll to generated content
   const scrollToGeneratedContent = () => {
@@ -171,6 +195,21 @@ export function ContentGenerator({
       // Optionally open the shared post in a new tab
       window.open(result.share_url, '_blank');
     }
+  };
+
+  const handleScheduleContent = (suggestion: ContentSuggestion) => {
+    if (!userId) {
+      toast.error("Please log in to schedule content");
+      return;
+    }
+
+    setContentToSchedule(suggestion);
+    setShowScheduler(true);
+  };
+
+  const handleCloseScheduler = () => {
+    setShowScheduler(false);
+    setContentToSchedule(null);
   };
 
   return (
@@ -389,8 +428,17 @@ export function ContentGenerator({
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard(suggestion.content)}
-                          className="text-theme-secondary hover:text-theme-primary">
+                          className="text-theme-secondary hover:text-theme-primary"
+                          title="Copy to clipboard">
                           <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleScheduleContent(suggestion)}
+                          className="text-theme-secondary hover:text-theme-primary"
+                          title="Schedule content">
+                          <Calendar className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -451,6 +499,16 @@ export function ContentGenerator({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Content Scheduler Modal */}
+      {showScheduler && contentToSchedule && userId && (
+        <ContentScheduler
+          isOpen={showScheduler}
+          onClose={handleCloseScheduler}
+          content={contentToSchedule}
+          userId={userId}
+        />
       )}
     </div>
   );
