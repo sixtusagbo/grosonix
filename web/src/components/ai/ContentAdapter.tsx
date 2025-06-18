@@ -21,9 +21,11 @@ import {
   AlertTriangle,
   CheckCircle,
   ExternalLink,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLinkedInShare } from "@/hooks/useLinkedInShare";
+import { ContentScheduler } from "./ContentScheduler";
 
 interface ContentAdapterProps {
   initialContent?: string;
@@ -49,6 +51,11 @@ export function ContentAdapter({
 
   // LinkedIn sharing hook
   const { shareToLinkedIn, isSharing, checkLinkedInConnection } = useLinkedInShare();
+
+  // Scheduling state
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [contentToSchedule, setContentToSchedule] = useState<any>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const platforms = [
     { id: "twitter", name: "Twitter/X", icon: "𝕏", color: "text-blue-400" },
@@ -156,6 +163,23 @@ export function ContentAdapter({
     return issues;
   };
 
+  // Get user ID on component mount
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          setUserId(data.user?.id || null);
+        }
+      } catch (error) {
+        console.error('Error getting user ID:', error);
+      }
+    };
+
+    getUserId();
+  }, []);
+
   const handleShareToLinkedIn = async (adaptation: PlatformContent) => {
     // Check if LinkedIn is connected
     const isConnected = await checkLinkedInConnection();
@@ -175,6 +199,29 @@ export function ContentAdapter({
       // Optionally open the shared post in a new tab
       window.open(result.share_url, '_blank');
     }
+  };
+
+  const handleScheduleContent = (adaptation: PlatformContent) => {
+    if (!userId) {
+      toast.error("Please log in to schedule content");
+      return;
+    }
+
+    // Convert PlatformContent to ContentSuggestion format
+    const contentSuggestion = {
+      content: adaptation.content,
+      platform: adaptation.platform,
+      hashtags: adaptation.hashtags,
+      engagement_score: 85, // Default score for adapted content
+    };
+
+    setContentToSchedule(contentSuggestion);
+    setShowScheduler(true);
+  };
+
+  const handleCloseScheduler = () => {
+    setShowScheduler(false);
+    setContentToSchedule(null);
   };
 
   return (
@@ -298,8 +345,17 @@ export function ContentAdapter({
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard(adaptation.content)}
-                          className="text-theme-secondary hover:text-theme-primary">
+                          className="text-theme-secondary hover:text-theme-primary"
+                          title="Copy to clipboard">
                           <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleScheduleContent(adaptation)}
+                          className="text-theme-secondary hover:text-theme-primary"
+                          title="Schedule content">
+                          <Calendar className="w-4 h-4" />
                         </Button>
                         {adaptation.platform === "linkedin" && (
                           <Button
@@ -413,6 +469,16 @@ export function ContentAdapter({
             })}
           </div>
         </div>
+      )}
+
+      {/* Content Scheduler Modal */}
+      {showScheduler && contentToSchedule && userId && (
+        <ContentScheduler
+          isOpen={showScheduler}
+          onClose={handleCloseScheduler}
+          content={contentToSchedule}
+          userId={userId}
+        />
       )}
     </div>
   );
