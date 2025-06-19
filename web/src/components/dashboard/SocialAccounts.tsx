@@ -24,8 +24,8 @@ export function SocialAccounts({ accounts }: SocialAccountsProps) {
       id: "linkedin",
       name: "LinkedIn",
       color: "text-linkedin-blue",
-      available: false,
-      description: "Coming Soon - Professional insights",
+      available: true,
+      description: "Professional insights",
     },
   ];
 
