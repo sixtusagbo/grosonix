@@ -56,7 +56,6 @@ const navigation = [
     href: "/dashboard/goals",
     icon: Target,
     description: "Track progress",
-    badge: "New",
   },
   {
     name: "Trends",
