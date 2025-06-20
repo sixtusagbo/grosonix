@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
@@ -17,7 +16,7 @@ import {
   AlertTriangle,
   Info,
   ExternalLink,
-  MarkAsRead,
+  Check,
 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { InAppNotification } from '@/types/notifications';
@@ -102,7 +101,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
       </DropdownMenuTrigger>
       
       <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-        <DropdownMenuHeader className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4">
           <h3 className="font-semibold">Notifications</h3>
           <div className="flex items-center gap-2">
             <Button
@@ -120,12 +119,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                 onClick={markAllAsRead}
                 className="h-6 px-2"
               >
-                <MarkAsRead className="w-3 h-3 mr-1" />
+                <Check className="w-3 h-3 mr-1" />
                 Mark all read
               </Button>
             )}
           </div>
-        </DropdownMenuHeader>
+        </div>
 
         <DropdownMenuSeparator />
 
