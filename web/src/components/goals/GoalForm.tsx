@@ -20,7 +20,8 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Calendar, Target, TrendingUp, Users } from 'lucide-react';
+import { Calendar, Target, TrendingUp, Users, Lightbulb, Loader2 } from 'lucide-react';
+import { useGoalIntegration } from '@/hooks/useGoalIntegration';
 import {
   Goal,
   GoalType,
@@ -54,6 +55,7 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { suggestGoal, suggesting } = useGoalIntegration();
 
   // Initialize form data when goal changes
   useEffect(() => {
@@ -142,6 +144,25 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleSuggestGoal = async () => {
+    if (!formData.goal_type || !formData.platform) {
+      return;
+    }
+
+    const suggestion = await suggestGoal(
+      formData.goal_type,
+      formData.platform === 'all' ? 'all' : formData.platform,
+      1.5 // 50% increase from current
+    );
+
+    if (suggestion) {
+      setFormData(prev => ({
+        ...prev,
+        target_value: suggestion.suggested_target.toString()
+      }));
     }
   };
 
@@ -251,9 +272,28 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="target_value">
-                    Target Value * ({GOAL_TYPE_UNITS[formData.goal_type]})
-                  </Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="target_value">
+                      Target Value * ({GOAL_TYPE_UNITS[formData.goal_type]})
+                    </Label>
+                    {!goal && formData.goal_type !== 'custom' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSuggestGoal}
+                        disabled={suggesting || !formData.goal_type || !formData.platform}
+                        className="text-xs"
+                      >
+                        {suggesting ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Lightbulb className="w-3 h-3 mr-1" />
+                        )}
+                        Suggest
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     id="target_value"
                     type="number"
