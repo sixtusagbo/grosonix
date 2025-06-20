@@ -157,10 +157,10 @@
 
 #### Tasks
 
-- [ ] Optimal posting time recommendations
-- [ ] Content calendar view and interface
+- [x] Optimal posting time recommendations
+- [x] Content calendar view and interface
 - [ ] Achievement system (badges, streaks)
-- [ ] Growth goal setting and tracking
+- [x] Growth goal setting and tracking
 - [ ] Notification system for posting reminders
 - [ ] Gamification animations and rewards
 
