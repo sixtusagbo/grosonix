@@ -96,7 +96,6 @@ export function GoalAnalytics({ userId }: GoalAnalyticsProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
               {Object.entries(PLATFORM_LABELS).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
