@@ -13,6 +13,7 @@ import {
   Users,
   Calendar,
   TrendingUp,
+  Target,
   Palette,
   ChevronLeft,
   ChevronRight,
@@ -49,7 +50,12 @@ const navigation = [
     href: "/dashboard/calendar",
     icon: Calendar,
     description: "Schedule posts",
-    badge: "Soon",
+  },
+  {
+    name: "Goals",
+    href: "/dashboard/goals",
+    icon: Target,
+    description: "Track progress",
   },
   {
     name: "Trends",

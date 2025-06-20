@@ -104,24 +104,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the share activity
-    const { error: logError } = await supabase
-      .from("social_activity_log")
-      .insert({
-        user_id: user.id,
-        platform: "linkedin",
-        action: "share_content",
-        content_preview: content.substring(0, 100),
-        metadata: {
-          share_id: shareResult.id,
-          share_url: shareResult.shareUrl,
-          hashtags: hashtags || [],
-          visibility: visibility || 'PUBLIC'
-        },
-      });
+    try {
+      const { error: logError } = await supabase
+        .from("social_activity_log")
+        .insert({
+          user_id: user.id,
+          platform: "linkedin",
+          activity_type: "post", // Updated to match new schema
+          activity_data: {
+            action: "share_content",
+            content_preview: content.substring(0, 100),
+            share_id: shareResult.id,
+            share_url: shareResult.shareUrl,
+            hashtags: hashtags || [],
+            visibility: visibility || 'PUBLIC'
+          },
+        });
 
-    if (logError) {
-      console.error("Error logging share activity:", logError);
-      // Don't fail the request if logging fails
+      if (logError) {
+        console.error("Error logging share activity:", logError);
+        // Don't fail the request if logging fails
+      }
+    } catch (error) {
+      console.error("Failed to log activity (table may not exist):", error);
+      // Continue without failing the share operation
     }
 
     return Response.json({
