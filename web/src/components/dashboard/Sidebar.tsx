@@ -49,7 +49,6 @@ const navigation = [
     href: "/dashboard/calendar",
     icon: Calendar,
     description: "Schedule posts",
-    badge: "Soon",
   },
   {
     name: "Trends",

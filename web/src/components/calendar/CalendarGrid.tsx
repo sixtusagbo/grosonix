@@ -266,7 +266,26 @@ function CalendarDayCell({
             <p className="text-xs font-medium truncate mb-1">
               {event.title}
             </p>
-            
+
+            {/* Hashtags */}
+            {event.hashtags && event.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1">
+                {event.hashtags.slice(0, 5).map((hashtag, index) => (
+                  <span
+                    key={index}
+                    className="text-xs bg-blue-100 text-blue-700 px-1 rounded"
+                  >
+                    {hashtag}
+                  </span>
+                ))}
+                {event.hashtags.length > 5 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{event.hashtags.length - 5}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
               <span>
