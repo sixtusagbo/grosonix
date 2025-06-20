@@ -78,6 +78,50 @@ CREATE TABLE IF NOT EXISTS in_app_notifications (
     expires_at TIMESTAMP WITH TIME ZONE
 );
 
+-- 6. Create user_goals table
+CREATE TABLE IF NOT EXISTS user_goals (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    goal_type TEXT NOT NULL CHECK (goal_type IN ('followers', 'engagement_rate', 'posts_count', 'likes', 'comments', 'shares', 'impressions', 'custom')),
+    platform TEXT CHECK (platform IN ('twitter', 'linkedin', 'instagram', 'all')),
+    target_value DECIMAL(12,2) NOT NULL,
+    current_value DECIMAL(12,2) DEFAULT 0,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    target_date DATE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'paused', 'cancelled')),
+    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+    is_public BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 7. Create goal_progress_log table
+CREATE TABLE IF NOT EXISTS goal_progress_log (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    goal_id UUID REFERENCES user_goals(id) ON DELETE CASCADE NOT NULL,
+    previous_value DECIMAL(12,2) NOT NULL,
+    new_value DECIMAL(12,2) NOT NULL,
+    change_amount DECIMAL(12,2) NOT NULL,
+    progress_percentage DECIMAL(5,2) NOT NULL,
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'automatic', 'api_sync')),
+    notes TEXT
+);
+
+-- 8. Create goal_milestones table
+CREATE TABLE IF NOT EXISTS goal_milestones (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    goal_id UUID REFERENCES user_goals(id) ON DELETE CASCADE NOT NULL,
+    milestone_percentage DECIMAL(5,2) NOT NULL CHECK (milestone_percentage > 0 AND milestone_percentage <= 100),
+    milestone_value DECIMAL(12,2) NOT NULL,
+    is_achieved BOOLEAN DEFAULT false,
+    achieved_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_social_activity_log_user_id ON social_activity_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_social_activity_log_platform ON social_activity_log(platform);
@@ -95,6 +139,16 @@ CREATE INDEX IF NOT EXISTS idx_posting_reminders_reminder_time ON posting_remind
 CREATE INDEX IF NOT EXISTS idx_posting_reminders_status ON posting_reminders(status);
 CREATE INDEX IF NOT EXISTS idx_in_app_notifications_user_id ON in_app_notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_in_app_notifications_is_read ON in_app_notifications(is_read);
+
+CREATE INDEX IF NOT EXISTS idx_user_goals_user_id ON user_goals(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_goals_status ON user_goals(status);
+CREATE INDEX IF NOT EXISTS idx_user_goals_goal_type ON user_goals(goal_type);
+CREATE INDEX IF NOT EXISTS idx_user_goals_platform ON user_goals(platform);
+CREATE INDEX IF NOT EXISTS idx_user_goals_target_date ON user_goals(target_date);
+CREATE INDEX IF NOT EXISTS idx_goal_progress_log_goal_id ON goal_progress_log(goal_id);
+CREATE INDEX IF NOT EXISTS idx_goal_progress_log_recorded_at ON goal_progress_log(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_goal_id ON goal_milestones(goal_id);
+CREATE INDEX IF NOT EXISTS idx_goal_milestones_is_achieved ON goal_milestones(is_achieved);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -115,8 +169,12 @@ CREATE TRIGGER update_notification_preferences_updated_at
     BEFORE UPDATE ON notification_preferences 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_posting_reminders_updated_at 
-    BEFORE UPDATE ON posting_reminders 
+CREATE TRIGGER update_posting_reminders_updated_at
+    BEFORE UPDATE ON posting_reminders
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_goals_updated_at
+    BEFORE UPDATE ON user_goals
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Enable Row Level Security (RLS)
@@ -125,6 +183,9 @@ ALTER TABLE scheduled_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posting_reminders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE in_app_notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_goals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE goal_progress_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE goal_milestones ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for social_activity_log
 CREATE POLICY "Users can view their own social activity" ON social_activity_log
@@ -176,10 +237,75 @@ CREATE POLICY "Users can update their own in-app notifications" ON in_app_notifi
 CREATE POLICY "Users can delete their own in-app notifications" ON in_app_notifications
     FOR DELETE USING (auth.uid() = user_id);
 
+-- Create RLS policies for user_goals
+CREATE POLICY "Users can view their own goals" ON user_goals
+    FOR SELECT USING (auth.uid() = user_id OR is_public = true);
+CREATE POLICY "Users can insert their own goals" ON user_goals
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own goals" ON user_goals
+    FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own goals" ON user_goals
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Create RLS policies for goal_progress_log
+CREATE POLICY "Users can view progress for their own goals" ON goal_progress_log
+    FOR SELECT USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_progress_log.goal_id
+        AND (user_goals.user_id = auth.uid() OR user_goals.is_public = true)
+    ));
+CREATE POLICY "Users can insert progress for their own goals" ON goal_progress_log
+    FOR INSERT WITH CHECK (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_progress_log.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+CREATE POLICY "Users can update progress for their own goals" ON goal_progress_log
+    FOR UPDATE USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_progress_log.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+CREATE POLICY "Users can delete progress for their own goals" ON goal_progress_log
+    FOR DELETE USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_progress_log.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+
+-- Create RLS policies for goal_milestones
+CREATE POLICY "Users can view milestones for their own goals" ON goal_milestones
+    FOR SELECT USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_milestones.goal_id
+        AND (user_goals.user_id = auth.uid() OR user_goals.is_public = true)
+    ));
+CREATE POLICY "Users can insert milestones for their own goals" ON goal_milestones
+    FOR INSERT WITH CHECK (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_milestones.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+CREATE POLICY "Users can update milestones for their own goals" ON goal_milestones
+    FOR UPDATE USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_milestones.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+CREATE POLICY "Users can delete milestones for their own goals" ON goal_milestones
+    FOR DELETE USING (EXISTS (
+        SELECT 1 FROM user_goals
+        WHERE user_goals.id = goal_milestones.goal_id
+        AND user_goals.user_id = auth.uid()
+    ));
+
 -- Grant necessary permissions
 GRANT ALL ON social_activity_log TO authenticated;
 GRANT ALL ON scheduled_posts TO authenticated;
 GRANT ALL ON notification_preferences TO authenticated;
 GRANT ALL ON posting_reminders TO authenticated;
 GRANT ALL ON in_app_notifications TO authenticated;
+GRANT ALL ON user_goals TO authenticated;
+GRANT ALL ON goal_progress_log TO authenticated;
+GRANT ALL ON goal_milestones TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
