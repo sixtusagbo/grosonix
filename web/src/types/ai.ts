@@ -5,6 +5,14 @@ export interface ContentSuggestion {
   hashtags: string[];
   engagement_score: number;
   created_at: string;
+  // New trending features
+  trending_score?: number;
+  viral_potential?: number;
+  hashtag_analysis?: {
+    trending: string[];
+    recommended: string[];
+    volume_score: number;
+  };
 }
 
 export interface StyleProfile {
@@ -74,6 +82,9 @@ export interface ContentGenerationRequest {
   topic?: string;
   use_voice_style?: boolean;
   ignore_tone?: boolean;
+  // New trending features
+  use_trending_topics?: boolean;
+  target_hashtags?: string[];
 }
 
 export interface StyleAnalysisRequest {
@@ -91,6 +102,32 @@ export interface VoiceSampleRequest {
 export interface ContentAdaptationRequest {
   content: string;
   target_platforms: ("twitter" | "instagram" | "linkedin")[];
+}
+
+// New interfaces for trending topics
+export interface TrendingTopic {
+  topic: string;
+  platform: string;
+  volume: number;
+  growth_rate: number;
+  hashtags: string[];
+  category: string;
+  relevance_score?: number;
+}
+
+export interface HashtagSuggestion {
+  hashtag: string;
+  category: 'trending' | 'industry' | 'skill' | 'career' | 'general';
+  relevance_score: number;
+  volume_estimate: number;
+  description: string;
+}
+
+export interface TrendingAnalysis {
+  trending_topics: TrendingTopic[];
+  recommended_hashtags: HashtagSuggestion[];
+  viral_potential_score: number;
+  optimization_suggestions: string[];
 }
 
 export const PLATFORM_LIMITS = {
@@ -116,16 +153,20 @@ export const SUBSCRIPTION_FEATURES = {
     daily_generations: 5,
     daily_adaptations: 0,
     style_analysis: 1,
-    features: ["Basic content generation", "Limited style analysis"],
+    trending_analysis: 1,
+    features: ["Basic content generation", "Limited style analysis", "Basic trending topics"],
   },
   pro: {
     daily_generations: 50,
     daily_adaptations: 25,
     style_analysis: 10,
+    trending_analysis: 25,
     features: [
       "Advanced content generation",
       "Cross-platform adaptation",
       "Detailed style analysis",
+      "Advanced trending topics analysis",
+      "Hashtag optimization",
       "Priority support",
     ],
   },
@@ -133,12 +174,15 @@ export const SUBSCRIPTION_FEATURES = {
     daily_generations: 200,
     daily_adaptations: 100,
     style_analysis: 50,
+    trending_analysis: 100,
     features: [
       "Unlimited content generation",
       "Advanced cross-platform adaptation",
       "Team collaboration",
       "Custom AI training",
       "Priority processing",
+      "Advanced trending analysis",
+      "Custom hashtag strategies",
     ],
   },
 } as const;
