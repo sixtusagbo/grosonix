@@ -72,6 +72,42 @@ export interface UsageStats {
   reset_time: string;
 }
 
+export interface ContentAnalytics {
+  summary: {
+    total_generated: number;
+    total_saved: number;
+    total_discarded: number;
+    total_used: number;
+    overall_save_rate: number;
+    avg_engagement_score: number;
+    most_active_platform: string | null;
+  };
+  daily_metrics: Array<{
+    date: string;
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    avg_score: number;
+  }>;
+  platform_breakdown: Array<{
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    save_rate: number;
+    avg_engagement_score: number;
+  }>;
+  recent_activity: Array<{
+    created_at: string;
+    action_type: string;
+    platform: string;
+  }>;
+  period_days: number;
+}
+
 export interface ContentGenerationRequest {
   prompt: string;
   platform: "twitter" | "instagram" | "linkedin";
@@ -84,9 +120,6 @@ export interface ContentGenerationRequest {
   topic?: string;
   use_voice_style?: boolean;
   ignore_tone?: boolean;
-  // New trending features
-  use_trending_topics?: boolean;
-  target_hashtags?: string[];
 }
 
 export interface StyleAnalysisRequest {
@@ -104,32 +137,6 @@ export interface VoiceSampleRequest {
 export interface ContentAdaptationRequest {
   content: string;
   target_platforms: ("twitter" | "instagram" | "linkedin")[];
-}
-
-// New interfaces for trending topics
-export interface TrendingTopic {
-  topic: string;
-  platform: string;
-  volume: number;
-  growth_rate: number;
-  hashtags: string[];
-  category: string;
-  relevance_score?: number;
-}
-
-export interface HashtagSuggestion {
-  hashtag: string;
-  category: 'trending' | 'industry' | 'skill' | 'career' | 'general';
-  relevance_score: number;
-  volume_estimate: number;
-  description: string;
-}
-
-export interface TrendingAnalysis {
-  trending_topics: TrendingTopic[];
-  recommended_hashtags: HashtagSuggestion[];
-  viral_potential_score: number;
-  optimization_suggestions: string[];
 }
 
 export const PLATFORM_LIMITS = {
@@ -155,20 +162,16 @@ export const SUBSCRIPTION_FEATURES = {
     daily_generations: 5,
     daily_adaptations: 0,
     style_analysis: 1,
-    trending_analysis: 1,
-    features: ["Basic content generation", "Limited style analysis", "Basic trending topics"],
+    features: ["Basic content generation", "Limited style analysis"],
   },
   pro: {
     daily_generations: 50,
     daily_adaptations: 25,
     style_analysis: 10,
-    trending_analysis: 25,
     features: [
       "Advanced content generation",
       "Cross-platform adaptation",
       "Detailed style analysis",
-      "Advanced trending topics analysis",
-      "Hashtag optimization",
       "Priority support",
     ],
   },
@@ -176,15 +179,12 @@ export const SUBSCRIPTION_FEATURES = {
     daily_generations: 200,
     daily_adaptations: 100,
     style_analysis: 50,
-    trending_analysis: 100,
     features: [
       "Unlimited content generation",
       "Advanced cross-platform adaptation",
       "Team collaboration",
       "Custom AI training",
       "Priority processing",
-      "Advanced trending analysis",
-      "Custom hashtag strategies",
     ],
   },
 } as const;

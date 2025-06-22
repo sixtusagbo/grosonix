@@ -8,6 +8,7 @@ import {
   ContentAdaptationRequest,
   VoiceSample,
   VoiceSampleRequest,
+  ContentAnalytics,
 } from "@/types/ai";
 
 class AIApiClient {
@@ -162,6 +163,60 @@ class AIApiClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to mark content as used");
+    }
+
+    return response.json();
+  }
+
+  async getContentAnalytics(days: number = 30, platform?: string): Promise<ContentAnalytics> {
+    const params = new URLSearchParams({
+      days: days.toString(),
+    });
+
+    if (platform && platform !== "all") {
+      params.append("platform", platform);
+    }
+
+    const response = await fetch(
+      `${this.baseUrl}/content/analytics?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to fetch content analytics");
+    }
+
+    return response.json();
+  }
+
+  async trackContentInteraction(
+    suggestionId: string,
+    actionType: "generated" | "viewed" | "saved" | "discarded" | "copied" | "used",
+    platform: string,
+    engagementScore?: number
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${this.baseUrl}/content/analytics`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        action_type: actionType,
+        platform,
+        engagement_score: engagementScore,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to track content interaction");
     }
 
     return response.json();

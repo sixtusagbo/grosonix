@@ -114,6 +114,22 @@ export function SwipeableContentGenerator({
       setRemainingQuota(result.remaining_quota);
       setSubscriptionTier(result.subscription_tier);
 
+      // Track content generation for analytics
+      if (result.suggestions.length > 0) {
+        try {
+          await Promise.all(result.suggestions.map(suggestion => 
+            aiApiClient.trackContentInteraction(
+              suggestion.id,
+              "generated",
+              suggestion.platform,
+              suggestion.engagement_score
+            )
+          ));
+        } catch (error) {
+          console.error("Error tracking content generation:", error);
+        }
+      }
+
       toast.success(`Generated ${result.suggestions.length} content suggestions!`);
     } catch (error) {
       console.error("Content generation error:", error);
@@ -125,7 +141,23 @@ export function SwipeableContentGenerator({
     }
   };
 
-  const handleSwipeLeft = () => {
+  const handleSwipeLeft = async () => {
+    const currentSuggestion = suggestions[currentIndex];
+    
+    if (currentSuggestion) {
+      try {
+        // Track the discard action for analytics
+        await aiApiClient.trackContentInteraction(
+          currentSuggestion.id,
+          "discarded",
+          currentSuggestion.platform,
+          currentSuggestion.engagement_score
+        );
+      } catch (error) {
+        console.error("Error tracking discard:", error);
+      }
+    }
+    
     if (currentIndex < suggestions.length - 1) {
       setCurrentIndex(currentIndex + 1);
       animateSwipe("left");
@@ -141,6 +173,14 @@ export function SwipeableContentGenerator({
       try {
         // Save the content suggestion to the database
         await aiApiClient.saveContentSuggestion(currentSuggestion.id);
+        
+        // Track the save action for analytics
+        await aiApiClient.trackContentInteraction(
+          currentSuggestion.id,
+          "saved",
+          currentSuggestion.platform,
+          currentSuggestion.engagement_score
+        );
         
         // Update the local state to mark as saved
         const updatedSuggestions = [...suggestions];
@@ -192,6 +232,22 @@ export function SwipeableContentGenerator({
   const copyToClipboard = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
+      
+      // Track the copy action for analytics
+      const currentSuggestion = suggestions[currentIndex];
+      if (currentSuggestion) {
+        try {
+          await aiApiClient.trackContentInteraction(
+            currentSuggestion.id,
+            "copied",
+            currentSuggestion.platform,
+            currentSuggestion.engagement_score
+          );
+        } catch (error) {
+          console.error("Error tracking copy:", error);
+        }
+      }
+      
       toast.success("Content copied to clipboard!");
     } catch (error) {
       toast.error("Failed to copy content");

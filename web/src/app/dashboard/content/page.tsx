@@ -8,6 +8,7 @@ import { VoiceStyleManager } from "@/components/ai/VoiceStyleManager";
 import { ContentAdapter } from "@/components/ai/ContentAdapter";
 import { UsageStats } from "@/components/ai/UsageStats";
 import { AIDemo } from "@/components/ai/AIDemo";
+import { ContentAnalytics } from "@/components/ai/ContentAnalytics";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,8 @@ import {
   Copy, 
   Trash2,
   BookOpen,
-  Filter
+  Filter,
+  TrendingUp
 } from "lucide-react";
 import { 
   Select,
@@ -119,7 +121,7 @@ export default function ContentPage() {
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 bg-dark-purple/50 border border-electric-purple/20">
+        <TabsList className="grid w-full grid-cols-7 bg-dark-purple/50 border border-electric-purple/20">
           <TabsTrigger
             value="swipe"
             className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
@@ -143,6 +145,12 @@ export default function ContentPage() {
             className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
             <Shuffle className="w-4 h-4" />
             <span className="hidden sm:inline">Adapt</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="analytics"
+            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Analytics</span>
           </TabsTrigger>
           <TabsTrigger
             value="usage"
@@ -293,6 +301,10 @@ export default function ContentPage() {
 
         <TabsContent value="adapt" className="space-y-6">
           <ContentAdapter />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <ContentAnalytics onUpgradeClick={handleUpgradeClick} />
         </TabsContent>
 
         <TabsContent value="usage" className="space-y-6">
