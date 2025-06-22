@@ -5,6 +5,8 @@ export interface ContentSuggestion {
   hashtags: string[];
   engagement_score: number;
   created_at: string;
+  is_saved?: boolean;
+  is_used?: boolean;
   // New trending features
   trending_score?: number;
   viral_potential?: number;

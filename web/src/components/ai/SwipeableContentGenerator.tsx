@@ -135,11 +135,35 @@ export function SwipeableContentGenerator({
     }
   };
 
-  const handleSwipeRight = () => {
+  const handleSwipeRight = async () => {
     const currentSuggestion = suggestions[currentIndex];
-    if (currentSuggestion && onContentSaved) {
-      onContentSaved(currentSuggestion);
-      toast.success("Content saved!");
+    if (currentSuggestion) {
+      try {
+        // Save the content suggestion to the database
+        await aiApiClient.saveContentSuggestion(currentSuggestion.id);
+        
+        // Update the local state to mark as saved
+        const updatedSuggestions = [...suggestions];
+        updatedSuggestions[currentIndex] = {
+          ...currentSuggestion,
+          is_saved: true,
+        };
+        setSuggestions(updatedSuggestions);
+
+        // Notify parent component
+        if (onContentSaved) {
+          onContentSaved({
+            ...currentSuggestion,
+            is_saved: true,
+          });
+        }
+        
+        toast.success("Content saved to your library!");
+      } catch (error) {
+        console.error("Error saving content:", error);
+        toast.error("Failed to save content. Please try again.");
+        return; // Don't proceed to next suggestion if save failed
+      }
     }
     
     if (currentIndex < suggestions.length - 1) {
@@ -383,6 +407,11 @@ export function SwipeableContentGenerator({
                     <span className="font-medium text-theme-primary capitalize">
                       {formData.platform}
                     </span>
+                    {currentSuggestion.is_saved && (
+                      <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400">
+                        Saved
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-emerald-400">

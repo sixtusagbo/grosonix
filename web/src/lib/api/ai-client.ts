@@ -65,6 +65,108 @@ class AIApiClient {
     return response.json();
   }
 
+  async getSavedContent(platform?: string): Promise<{
+    suggestions: ContentSuggestion[];
+    total_saved: number;
+  }> {
+    const params = new URLSearchParams({
+      saved_only: "true",
+    });
+
+    if (platform && platform !== "all") {
+      params.append("platform", platform);
+    }
+
+    const response = await fetch(
+      `${this.baseUrl}/content/suggestions?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to fetch saved content");
+    }
+
+    return response.json();
+  }
+
+  async saveContentSuggestion(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_saved: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to save content suggestion");
+    }
+
+    return response.json();
+  }
+
+  async unsaveContentSuggestion(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_saved: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to unsave content suggestion");
+    }
+
+    return response.json();
+  }
+
+  async markContentAsUsed(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_used: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to mark content as used");
+    }
+
+    return response.json();
+  }
+
   async getStyleProfile(): Promise<{
     style_profile: StyleProfile;
     analysis_summary: string;

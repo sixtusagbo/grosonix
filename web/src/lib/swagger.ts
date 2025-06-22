@@ -346,6 +346,98 @@ export const getApiDocs = async () => {
             },
             required: ["id", "user_id", "platform", "content", "created_at"],
           },
+          SuggestionPerformanceSummary: {
+            type: "object",
+            properties: {
+              total_generated: {
+                type: "number",
+                description: "Total content suggestions generated",
+              },
+              total_saved: {
+                type: "number",
+                description: "Total content suggestions saved",
+              },
+              total_used: {
+                type: "number",
+                description: "Total content suggestions used",
+              },
+              average_engagement_score: {
+                type: "number",
+                description: "Average engagement score of used suggestions",
+              },
+              platform_breakdown: {
+                type: "object",
+                properties: {
+                  twitter: {
+                    type: "object",
+                    properties: {
+                      generated: { type: "number" },
+                      saved: { type: "number" },
+                      used: { type: "number" },
+                      avg_engagement: { type: "number" },
+                    },
+                  },
+                  instagram: {
+                    type: "object",
+                    properties: {
+                      generated: { type: "number" },
+                      saved: { type: "number" },
+                      used: { type: "number" },
+                      avg_engagement: { type: "number" },
+                    },
+                  },
+                  linkedin: {
+                    type: "object",
+                    properties: {
+                      generated: { type: "number" },
+                      saved: { type: "number" },
+                      used: { type: "number" },
+                      avg_engagement: { type: "number" },
+                    },
+                  },
+                },
+              },
+            },
+            required: [
+              "total_generated",
+              "total_saved",
+              "total_used",
+              "average_engagement_score",
+              "platform_breakdown",
+            ],
+          },
+          DailySuggestionPerformance: {
+            type: "object",
+            properties: {
+              date: { type: "string", format: "date" },
+              generated: { type: "number" },
+              saved: { type: "number" },
+              used: { type: "number" },
+            },
+            required: ["date", "generated", "saved", "used"],
+          },
+          PerformanceAnalyticsResponse: {
+            type: "object",
+            properties: {
+              summary: { $ref: "#/components/schemas/SuggestionPerformanceSummary" },
+              daily_trends: {
+                type: "array",
+                items: { $ref: "#/components/schemas/DailySuggestionPerformance" },
+              },
+              ai_usage_history: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    feature_type: { type: "string" },
+                    usage_count: { type: "number" },
+                    date_used: { type: "string", format: "date" },
+                  },
+                },
+              },
+            },
+            required: ["summary", "daily_trends", "ai_usage_history"],
+          },
         },
       },
       security: [
