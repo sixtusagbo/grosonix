@@ -12,6 +12,16 @@ export interface ContentSuggestion {
     volume_score: number;
   };
   created_at: string;
+  is_saved?: boolean;
+  is_used?: boolean;
+  // New trending features
+  trending_score?: number;
+  viral_potential?: number;
+  hashtag_analysis?: {
+    trending: string[];
+    recommended: string[];
+    volume_score: number;
+  };
 }
 
 export interface StyleProfile {
@@ -67,6 +77,42 @@ export interface UsageStats {
   subscription_tier: "free" | "pro" | "agency";
   is_unlimited?: boolean;
   reset_time: string;
+}
+
+export interface ContentAnalytics {
+  summary: {
+    total_generated: number;
+    total_saved: number;
+    total_discarded: number;
+    total_used: number;
+    overall_save_rate: number;
+    avg_engagement_score: number;
+    most_active_platform: string | null;
+  };
+  daily_metrics: Array<{
+    date: string;
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    avg_score: number;
+  }>;
+  platform_breakdown: Array<{
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    save_rate: number;
+    avg_engagement_score: number;
+  }>;
+  recent_activity: Array<{
+    created_at: string;
+    action_type: string;
+    platform: string;
+  }>;
+  period_days: number;
 }
 
 export interface ContentGenerationRequest {

@@ -1,5 +1,7 @@
 import { TwitterService } from "./twitter";
 import { TwitterServiceWithCache } from "./TwitterServiceWithCache";
+import { LinkedInService } from "./linkedin";
+import { LinkedInServiceWithCache } from "./LinkedInServiceWithCache";
 // import { InstagramService } from './instagram'; // Temporarily disabled
 // import { LinkedInService } from './linkedin'; // Temporarily disabled
 
@@ -44,8 +46,18 @@ export class SocialMediaManager {
           throw new Error("Instagram metrics temporarily disabled");
 
         case "linkedin":
-          // Temporarily disabled
-          throw new Error("LinkedIn metrics temporarily disabled");
+          const linkedinService = new LinkedInService(accessToken);
+          const linkedinMetrics = await linkedinService.getMetrics();
+          metrics = {
+            platform,
+            followers_count: linkedinMetrics.followers_count,
+            following_count: linkedinMetrics.following_count,
+            posts_count: linkedinMetrics.posts_count,
+            engagement_rate: linkedinMetrics.engagement_rate,
+            growth_rate: linkedinMetrics.growth_rate,
+            last_updated: linkedinMetrics.last_updated,
+          };
+          break;
 
         default:
           throw new Error(
@@ -95,8 +107,21 @@ export class SocialMediaManager {
           throw new Error("Instagram metrics temporarily disabled");
 
         case "linkedin":
-          // Temporarily disabled
-          throw new Error("LinkedIn metrics temporarily disabled");
+          const linkedinServiceWithCache = new LinkedInServiceWithCache(
+            accessToken,
+            userId
+          );
+          const linkedinMetricsWithCache = await linkedinServiceWithCache.getMetrics(forceRefresh);
+          metrics = {
+            platform,
+            followers_count: linkedinMetricsWithCache.followers_count,
+            following_count: linkedinMetricsWithCache.following_count,
+            posts_count: linkedinMetricsWithCache.posts_count,
+            engagement_rate: linkedinMetricsWithCache.engagement_rate,
+            growth_rate: linkedinMetricsWithCache.growth_rate,
+            last_updated: linkedinMetricsWithCache.last_updated,
+          };
+          break;
 
         default:
           throw new Error(
@@ -122,7 +147,8 @@ export class SocialMediaManager {
           throw new Error("Instagram temporarily disabled");
 
         case "linkedin":
-          throw new Error("LinkedIn temporarily disabled");
+          const linkedinUserService = new LinkedInService(accessToken);
+          return await linkedinUserService.getUserData();
 
         default:
           throw new Error(`Platform ${platform} not yet supported`);
@@ -148,7 +174,8 @@ export class SocialMediaManager {
           throw new Error("Instagram temporarily disabled");
 
         case "linkedin":
-          throw new Error("LinkedIn temporarily disabled");
+          const linkedinContentService = new LinkedInService(accessToken);
+          return await linkedinContentService.getRecentPosts(count);
 
         default:
           throw new Error(`Platform ${platform} not yet supported`);
@@ -160,6 +187,13 @@ export class SocialMediaManager {
       if (error.message === "TWITTER_TOKEN_EXPIRED") {
         throw new Error(
           "Twitter token has expired. Please reconnect your Twitter account in Settings."
+        );
+      }
+
+      // If it's a LinkedIn error, provide specific message
+      if (error.message.includes("LinkedIn")) {
+        throw new Error(
+          "LinkedIn API access is limited. Some features may not be available."
         );
       }
 

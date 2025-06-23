@@ -1,4 +1,6 @@
 import { OpenAIService, GeneratedContent } from "./openai";
+import { LinkedInHashtagGenerator } from "./linkedin-hashtag-generator";
+import { ContentFormatter } from "./content-formatter";
 
 export interface PlatformContent {
   platform: "twitter" | "instagram" | "linkedin";
@@ -16,9 +18,11 @@ export interface CrossPlatformContent {
 
 export class ContentAdapter {
   private openaiService: OpenAIService;
+  private linkedinHashtagGenerator: LinkedInHashtagGenerator;
 
   constructor() {
     this.openaiService = OpenAIService.getInstance();
+    this.linkedinHashtagGenerator = new LinkedInHashtagGenerator();
   }
 
   async adaptContentForAllPlatforms(
@@ -76,11 +80,47 @@ export class ContentAdapter {
       priority: subscriptionTier === "agency" ? "high" : "standard",
     });
 
+    // Format content properly for the platform
+    let formattedContent = ContentFormatter.formatForPlatform(generatedContent.content, {
+      platform,
+      preserveLineBreaks: true,
+    });
+
+    // Debug logging to see formatting
+    console.log('Original content:', JSON.stringify(generatedContent.content));
+    console.log('Formatted content:', JSON.stringify(formattedContent));
+
+    // Add call-to-action for LinkedIn if appropriate
+    if (platform === "linkedin" && !formattedContent.includes('?')) {
+      formattedContent = ContentFormatter.addLinkedInCallToAction(formattedContent, 'question');
+      console.log('Content with CTA:', JSON.stringify(formattedContent));
+    }
+
+    // Enhance LinkedIn hashtags with intelligent generation
+    let finalHashtags = generatedContent.hashtags;
+    if (platform === "linkedin") {
+      try {
+        const enhancedHashtags = await this.linkedinHashtagGenerator.generateHashtags(
+          formattedContent,
+          undefined, // Could be enhanced to detect industry from content
+          3
+        );
+
+        // Use enhanced hashtags if available, otherwise fall back to generated ones
+        if (enhancedHashtags.length > 0) {
+          finalHashtags = enhancedHashtags.map(h => h.hashtag);
+        }
+      } catch (error) {
+        console.error('LinkedIn hashtag enhancement failed:', error);
+        // Keep original hashtags on error
+      }
+    }
+
     return {
       platform,
-      content: generatedContent.content,
-      hashtags: generatedContent.hashtags,
-      character_count: generatedContent.content.length,
+      content: formattedContent,
+      hashtags: finalHashtags,
+      character_count: formattedContent.length,
       optimized: true,
     };
   }
@@ -122,7 +162,10 @@ export class ContentAdapter {
         - Use 2-3 professional hashtags
         - Include industry-relevant context
         - Encourage professional discussion
-        - Can be longer with detailed explanations`;
+        - Can be longer with detailed explanations
+        - IMPORTANT: Structure with clear paragraphs separated by double line breaks (\\n\\n)
+        - Format: Opening hook → Main value/insight → Call-to-action/question
+        - Use professional formatting with proper spacing for readability`;
 
       default:
         return "Optimize for general social media best practices.";
@@ -187,9 +230,17 @@ export class ContentAdapter {
         break;
 
       case "linkedin":
-        // Make it more professional
-        adaptedContent = `Professional insight: ${content}`;
-        hashtags = ["#LinkedIn", "#Professional"];
+        // Make it more professional and add value with proper formatting
+        if (content.length > 2500) {
+          adaptedContent = content.substring(0, 2497) + "...";
+        } else {
+          // Ensure proper LinkedIn formatting with paragraph breaks
+          const formattedContent = this.formatLinkedInContent(content);
+          adaptedContent = `💼 Professional insight:\n\n${formattedContent}\n\nWhat are your thoughts on this? Share your experience in the comments.`;
+        }
+
+        // Generate intelligent hashtags for LinkedIn
+        hashtags = this.generateLinkedInFallbackHashtags(content);
         break;
     }
 
@@ -200,6 +251,120 @@ export class ContentAdapter {
       character_count: adaptedContent.length,
       optimized: false, // Mark as not fully optimized since it's a fallback
     };
+  }
+
+  /**
+   * Generate intelligent fallback hashtags for LinkedIn
+   */
+  private generateLinkedInFallbackHashtags(content: string): string[] {
+    const contentLower = content.toLowerCase();
+    const hashtags: string[] = [];
+
+    // Business and professional hashtags based on content keywords
+    const keywordHashtagMap = {
+      'leadership': '#Leadership',
+      'management': '#Management',
+      'strategy': '#Strategy',
+      'innovation': '#Innovation',
+      'technology': '#Technology',
+      'digital': '#DigitalTransformation',
+      'ai': '#AI',
+      'artificial intelligence': '#AI',
+      'data': '#DataScience',
+      'marketing': '#Marketing',
+      'sales': '#Sales',
+      'business': '#Business',
+      'entrepreneur': '#Entrepreneurship',
+      'startup': '#StartupLife',
+      'career': '#CareerDevelopment',
+      'professional': '#ProfessionalDevelopment',
+      'team': '#TeamBuilding',
+      'project': '#ProjectManagement',
+      'finance': '#Finance',
+      'investment': '#Investment',
+      'consulting': '#Consulting',
+      'remote': '#RemoteWork',
+      'work from home': '#RemoteWork',
+      'networking': '#Networking',
+      'growth': '#Growth',
+      'success': '#Success',
+      'productivity': '#Productivity',
+      'communication': '#Communication',
+      'collaboration': '#Collaboration'
+    };
+
+    // Find relevant hashtags based on content
+    for (const [keyword, hashtag] of Object.entries(keywordHashtagMap)) {
+      if (contentLower.includes(keyword) && hashtags.length < 3) {
+        hashtags.push(hashtag);
+      }
+    }
+
+    // If no specific hashtags found, use general professional ones
+    if (hashtags.length === 0) {
+      hashtags.push('#ProfessionalDevelopment', '#Leadership', '#BusinessInsights');
+    } else if (hashtags.length === 1) {
+      hashtags.push('#ProfessionalDevelopment', '#Leadership');
+    } else if (hashtags.length === 2) {
+      hashtags.push('#ProfessionalDevelopment');
+    }
+
+    return hashtags.slice(0, 3); // LinkedIn recommends 2-3 hashtags
+  }
+
+  /**
+   * Format content specifically for LinkedIn with proper paragraph structure
+   */
+  private formatLinkedInContent(content: string): string {
+    // If content already has proper formatting, return as is
+    if (content.includes('\n\n')) {
+      return content;
+    }
+
+    // Split content into sentences for intelligent paragraph creation
+    const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+    if (sentences.length <= 1) {
+      return content; // Single sentence, no formatting needed
+    }
+
+    // For 2 sentences, split them into paragraphs
+    if (sentences.length === 2) {
+      return sentences.join('\n\n');
+    }
+
+    const paragraphs = [];
+
+    // Create structured paragraphs for LinkedIn
+    if (sentences.length >= 3) {
+      // First paragraph: Hook/Opening (1 sentence for short content, 2 for longer)
+      const hookSize = sentences.length > 5 ? 2 : 1;
+      paragraphs.push(sentences.slice(0, hookSize).join(' '));
+
+      // Middle paragraph(s): Main content
+      const middleStart = hookSize;
+      const middleEnd = sentences.length - 1;
+
+      if (middleEnd > middleStart) {
+        const middleSentences = sentences.slice(middleStart, middleEnd);
+        // Split middle content into smaller paragraphs if it's long
+        if (middleSentences.length > 2) {
+          const midPoint = Math.ceil(middleSentences.length / 2);
+          paragraphs.push(middleSentences.slice(0, midPoint).join(' '));
+          if (middleSentences.length > midPoint) {
+            paragraphs.push(middleSentences.slice(midPoint).join(' '));
+          }
+        } else {
+          paragraphs.push(middleSentences.join(' '));
+        }
+      }
+
+      // Last paragraph: Conclusion/Call-to-action
+      paragraphs.push(sentences[sentences.length - 1]);
+    }
+
+    // Join paragraphs with double line breaks
+    return paragraphs.filter(p => p.trim().length > 0).join('\n\n');
   }
 
   validatePlatformContent(content: PlatformContent): {

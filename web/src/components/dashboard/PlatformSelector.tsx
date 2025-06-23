@@ -72,6 +72,14 @@ export function PlatformSelector({
       description: "Twitter analytics",
       available: connectedPlatforms.includes("twitter"),
     },
+    {
+      id: 'linkedin' as PlatformFilter,
+      name: 'LinkedIn',
+      icon: '💼',
+      color: 'text-linkedin-blue',
+      description: 'LinkedIn analytics',
+      available: connectedPlatforms.includes('linkedin'),
+    },
     // Temporarily disabled - will be re-enabled in future updates
     // {
     //   id: 'instagram' as PlatformFilter,
@@ -80,14 +88,6 @@ export function PlatformSelector({
     //   color: 'text-social-pink',
     //   description: 'Instagram analytics',
     //   available: connectedPlatforms.includes('instagram'),
-    // },
-    // {
-    //   id: 'linkedin' as PlatformFilter,
-    //   name: 'LinkedIn',
-    //   icon: '💼',
-    //   color: 'text-linkedin-blue',
-    //   description: 'LinkedIn analytics',
-    //   available: connectedPlatforms.includes('linkedin'),
     // },
   ];
 

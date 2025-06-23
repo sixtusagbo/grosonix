@@ -18,19 +18,9 @@ Grosonix is an AI-driven social media growth platform that helps creators and bu
 ## 🚀 Getting Started
 
 1. Clone the repository
-2. Follow setup instructions in `/web` for the web application
-3. Follow setup instructions in `/mobile` for the Flutter app
+2. Follow setup instructions in [`/web/README.md`](./web/README.md) for the web application
+3. Follow setup instructions in `/mobile` for the Flutter app (coming soon)
 4. See individual README files for detailed setup instructions
-
-## 📂 Project Structure
-
-```
-grosonix/
-├── web/                 # Next.js web application
-├── mobile/              # Flutter mobile application
-├── docs/                # Documentation
-└── README.md           # This file
-```
 
 ## 🤝 Contributing
 

@@ -88,13 +88,14 @@ body {
   border-radius: 20px;
   box-shadow: var(--glass-shadow);
   transition: all 0.3s ease;
+  transform-style: preserve-3d;
 }
 
 .glass-card:hover {
   background: rgba(16, 185, 129, 0.12);
   border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
 }
 
 .glass-input {
@@ -303,6 +304,7 @@ body {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -310,6 +312,7 @@ body {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

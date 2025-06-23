@@ -144,6 +144,11 @@ export class MetricsCache {
     platform: string,
     endpoint: string
   ): Promise<boolean> {
+    // TEMPORARILY DISABLED RATE LIMITING - ALWAYS ALLOW
+    console.log(`[METRICS CACHE RATE LIMITER DISABLED] Allowing ${platform} ${endpoint} for user ${userId}`);
+    return true;
+
+    /* ORIGINAL CODE - COMMENTED OUT FOR TEMPORARY DISABLE
     try {
       const rateLimitInfo = await this.getRateLimitInfo(
         userId,
@@ -171,6 +176,7 @@ export class MetricsCache {
       console.error("Error checking rate limit:", error);
       return false; // Err on the side of caution
     }
+    */
   }
 
   /**
