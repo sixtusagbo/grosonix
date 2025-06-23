@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
-import { OpenAIService } from "@/lib/ai/openai";
+import { EnhancedOpenAIService } from "@/lib/ai/enhanced-openai";
 import { StyleAnalyzer } from "@/lib/ai/style-analyzer";
 import { RateLimiter } from "@/lib/ai/rate-limiter";
 
@@ -144,7 +144,7 @@ export async function GET(request: Request) {
 
     // Original logic for generating new content suggestions
     const rateLimiter = new RateLimiter();
-    const openaiService = OpenAIService.getInstance();
+    const enhancedOpenaiService = EnhancedOpenAIService.getInstance();
     const styleAnalyzer = new StyleAnalyzer();
 
     // Check subscription tier and usage limits
@@ -179,7 +179,7 @@ export async function GET(request: Request) {
       userStyle = styleAnalyzer.generateStyleSummary(styleProfile);
     }
 
-    // Generate AI content suggestions
+    // Generate AI content suggestions with trending analysis
     const suggestions = [];
     const actualLimit = Math.min(
       limit,
@@ -188,7 +188,7 @@ export async function GET(request: Request) {
 
     for (let i = 0; i < actualLimit; i++) {
       try {
-        const generatedContent = await openaiService.generateContent({
+        const generatedContent = await enhancedOpenaiService.generateEnhancedContent({
           prompt: `Create engaging content about ${topic}`,
           platform: platform as any,
           tone: (styleProfile?.tone as any) || "professional",
@@ -196,6 +196,8 @@ export async function GET(request: Request) {
           maxTokens: 150,
           subscriptionTier,
           priority: "standard",
+          useTrendingTopics: true,
+          topic,
         });
 
         const suggestion = {
@@ -204,6 +206,9 @@ export async function GET(request: Request) {
           platform,
           hashtags: generatedContent.hashtags,
           engagement_score: generatedContent.engagement_score,
+          trending_score: generatedContent.trending_score,
+          viral_potential: generatedContent.viral_potential,
+          hashtag_analysis: generatedContent.hashtag_analysis,
           created_at: new Date().toISOString(),
           is_saved: false,
         };
@@ -344,6 +349,9 @@ export async function POST(request: NextRequest) {
       tone = "professional",
       use_voice_style = true,
       ignore_tone = false,
+      use_trending_topics = true,
+      target_hashtags = [],
+      topic,
     } = body;
 
     if (!prompt || !platform) {
@@ -355,7 +363,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize services
     const rateLimiter = new RateLimiter();
-    const openaiService = OpenAIService.getInstance();
+    const enhancedOpenaiService = EnhancedOpenAIService.getInstance();
     const styleAnalyzer = new StyleAnalyzer();
 
     // Check subscription tier and usage limits
@@ -429,8 +437,8 @@ Please generate content that matches this specific voice and writing style.`;
       }
     }
 
-    // Generate custom AI content
-    const generatedContent = await openaiService.generateContent({
+    // Generate custom AI content with trending analysis
+    const generatedContent = await enhancedOpenaiService.generateEnhancedContent({
       prompt,
       platform: platform as any,
       tone: effectiveTone as any,
@@ -438,6 +446,9 @@ Please generate content that matches this specific voice and writing style.`;
       maxTokens: 200,
       subscriptionTier,
       priority: subscriptionTier === "agency" ? "high" : "standard",
+      useTrendingTopics,
+      targetHashtags: target_hashtags,
+      topic,
     });
 
     const customSuggestion = {
@@ -446,6 +457,9 @@ Please generate content that matches this specific voice and writing style.`;
       platform,
       hashtags: generatedContent.hashtags,
       engagement_score: generatedContent.engagement_score,
+      trending_score: generatedContent.trending_score,
+      viral_potential: generatedContent.viral_potential,
+      hashtag_analysis: generatedContent.hashtag_analysis,
       created_at: new Date().toISOString(),
       is_saved: false,
     };
@@ -647,3 +661,4 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+

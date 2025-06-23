@@ -21,6 +21,7 @@ export interface EnhancedContentGenerationOptions {
   priority?: "standard" | "high";
   useTrendingTopics?: boolean;
   targetHashtags?: string[];
+  topic?: string;
 }
 
 export interface EnhancedGeneratedContent {
@@ -65,6 +66,7 @@ export class EnhancedOpenAIService {
       priority = "standard",
       useTrendingTopics = false,
       targetHashtags = [],
+      topic,
     } = options;
 
     try {
@@ -98,7 +100,7 @@ export class EnhancedOpenAIService {
         trendingContext,
         trendingHashtags
       );
-      const userPrompt = this.buildEnhancedUserPrompt(prompt, platform, targetHashtags);
+      const userPrompt = this.buildEnhancedUserPrompt(prompt, platform, targetHashtags, topic);
 
       const model = this.selectModel(subscriptionTier, priority);
 
@@ -189,9 +191,14 @@ export class EnhancedOpenAIService {
   private buildEnhancedUserPrompt(
     prompt: string,
     platform: string,
-    targetHashtags: string[]
+    targetHashtags: string[],
+    topic?: string
   ): string {
     let enhancedPrompt = `Create a ${platform} post about: ${prompt}`;
+
+    if (topic) {
+      enhancedPrompt += ` (Topic: ${topic})`;
+    }
 
     if (targetHashtags.length > 0) {
       enhancedPrompt += `\n\nInclude these specific hashtags: ${targetHashtags.join(
