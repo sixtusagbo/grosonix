@@ -4,7 +4,16 @@ export interface ContentSuggestion {
   platform: "twitter" | "instagram" | "linkedin";
   hashtags: string[];
   engagement_score: number;
+  trending_score?: number;
+  viral_potential?: number;
+  hashtag_analysis?: {
+    trending: string[];
+    recommended: string[];
+    volume_score: number;
+  };
   created_at: string;
+  is_saved?: boolean;
+  is_used?: boolean;
 }
 
 export interface StyleProfile {
@@ -62,6 +71,42 @@ export interface UsageStats {
   reset_time: string;
 }
 
+export interface ContentAnalytics {
+  summary: {
+    total_generated: number;
+    total_saved: number;
+    total_discarded: number;
+    total_used: number;
+    overall_save_rate: number;
+    avg_engagement_score: number;
+    most_active_platform: string | null;
+  };
+  daily_metrics: Array<{
+    date: string;
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    avg_score: number;
+  }>;
+  platform_breakdown: Array<{
+    platform: string;
+    generated: number;
+    saved: number;
+    discarded: number;
+    used: number;
+    save_rate: number;
+    avg_engagement_score: number;
+  }>;
+  recent_activity: Array<{
+    created_at: string;
+    action_type: string;
+    platform: string;
+  }>;
+  period_days: number;
+}
+
 export interface ContentGenerationRequest {
   prompt: string;
   platform: "twitter" | "instagram" | "linkedin";
@@ -74,6 +119,8 @@ export interface ContentGenerationRequest {
   topic?: string;
   use_voice_style?: boolean;
   ignore_tone?: boolean;
+  use_trending_topics?: boolean;
+  target_hashtags?: string[];
 }
 
 export interface StyleAnalysisRequest {
