@@ -41,6 +41,16 @@ export async function GET(request: NextRequest) {
       console.error('Error checking tables:', tablesError);
     }
 
+    // Check existing scheduled posts
+    const { data: existingPosts, error: fetchError } = await supabase
+      .from('scheduled_posts')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (fetchError) {
+      console.error('Fetch error:', fetchError);
+    }
+
     // Test inserting a simple scheduled post
     const testPost = {
       title: 'Test Post',
@@ -69,6 +79,8 @@ export async function GET(request: NextRequest) {
         tables: tables?.map(t => t.table_name) || [],
         insertError: insertError.message,
         testPost,
+        existingPosts: existingPosts || [],
+        fetchError: fetchError?.message,
       });
     }
 
@@ -83,6 +95,8 @@ export async function GET(request: NextRequest) {
       user: { id: user.id, email: user.email },
       tables: tables?.map(t => t.table_name) || [],
       testInsert: 'success',
+      existingPosts: existingPosts || [],
+      existingPostsCount: existingPosts?.length || 0,
     });
 
   } catch (error) {
