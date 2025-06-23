@@ -446,7 +446,7 @@ Please generate content that matches this specific voice and writing style.`;
       maxTokens: 200,
       subscriptionTier,
       priority: subscriptionTier === "agency" ? "high" : "standard",
-      useTrendingTopics,
+      useTrendingTopics: true,
       targetHashtags: target_hashtags,
       topic,
     });
