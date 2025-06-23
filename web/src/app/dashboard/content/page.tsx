@@ -43,10 +43,8 @@ export default function ContentPage() {
   const [savedContentFilter, setSavedContentFilter] = useState<string>("all");
 
   useEffect(() => {
-    if (activeTab === "swipe") {
-      loadSavedContent();
-    }
-  }, [activeTab]);
+    loadSavedContent();
+  }, []);
 
   const loadSavedContent = async () => {
     setIsLoadingSaved(true);
@@ -117,60 +115,90 @@ export default function ContentPage() {
       </div>
 
       {/* Main Content */}
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 bg-dark-purple/50 border border-electric-purple/20">
-          <TabsTrigger
-            value="swipe"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <Heart className="w-4 h-4" />
-            <span className="hidden sm:inline">Swipe</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="generate"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">Generate</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="style"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <Brain className="w-4 h-4" />
-            <span className="hidden sm:inline">Style</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="adapt"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <Shuffle className="w-4 h-4" />
-            <span className="hidden sm:inline">Adapt</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="analytics"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <TrendingUp className="w-4 h-4" />
-            <span className="hidden sm:inline">Analytics</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="usage"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Usage</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="demo"
-            className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
-            <Zap className="w-4 h-4" />
-            <span className="hidden sm:inline">Demo</span>
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6">
+            <TabsList className="grid w-full grid-cols-7 bg-dark-purple/50 border border-electric-purple/20">
+              <TabsTrigger
+                value="swipe"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <Heart className="w-4 h-4" />
+                <span className="hidden sm:inline">Swipe</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="generate"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">Generate</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="style"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <Brain className="w-4 h-4" />
+                <span className="hidden sm:inline">Style</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="adapt"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <Shuffle className="w-4 h-4" />
+                <span className="hidden sm:inline">Adapt</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <TrendingUp className="w-4 h-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="usage"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Usage</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="demo"
+                className="flex items-center gap-2 data-[state=active]:bg-electric-purple data-[state=active]:text-white">
+                <Zap className="w-4 h-4" />
+                <span className="hidden sm:inline">Demo</span>
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="swipe" className="space-y-6">
-          <SwipeableContentGenerator onContentSaved={handleContentSaved} />
-          
-          {/* Saved Content Library */}
-          <Card className="glass-card border-emerald-500/20">
+            <TabsContent value="swipe" className="space-y-6">
+              <SwipeableContentGenerator onContentSaved={handleContentSaved} />
+            </TabsContent>
+
+            <TabsContent value="generate" className="space-y-6">
+              <ContentGenerator onContentSaved={handleContentSaved} />
+            </TabsContent>
+
+            <TabsContent value="style" className="space-y-6">
+              <VoiceStyleManager />
+            </TabsContent>
+
+            <TabsContent value="adapt" className="space-y-6">
+              <ContentAdapter />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-6">
+              <ContentAnalytics onUpgradeClick={handleUpgradeClick} />
+            </TabsContent>
+
+            <TabsContent value="usage" className="space-y-6">
+              <UsageStats onUpgradeClick={handleUpgradeClick} />
+            </TabsContent>
+
+            <TabsContent value="demo" className="space-y-6">
+              <AIDemo />
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        {/* Saved Content Library - Now always visible */}
+        <div className="lg:col-span-1">
+          <Card className="glass-card border-emerald-500/20 sticky top-24">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -210,7 +238,7 @@ export default function ContentPage() {
                   <p className="text-theme-secondary mt-2">Loading saved content...</p>
                 </div>
               ) : filteredSavedContent.length > 0 ? (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {filteredSavedContent.map((content) => (
                     <div 
                       key={content.id} 
@@ -227,6 +255,11 @@ export default function ContentPage() {
                           <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400">
                             Saved
                           </Badge>
+                          {content.is_used && (
+                            <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400">
+                              Used
+                            </Badge>
+                          )}
                           <span className="text-xs text-theme-muted">
                             {content.engagement_score}% engagement
                           </span>
@@ -283,38 +316,14 @@ export default function ContentPage() {
                     No Saved Content Yet
                   </h3>
                   <p className="text-theme-secondary">
-                    Start swiping right on content suggestions to build your personal library!
+                    Save content from any tab to build your personal library!
                   </p>
                 </div>
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="generate" className="space-y-6">
-          <ContentGenerator />
-        </TabsContent>
-
-        <TabsContent value="style" className="space-y-6">
-          <VoiceStyleManager />
-        </TabsContent>
-
-        <TabsContent value="adapt" className="space-y-6">
-          <ContentAdapter />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <ContentAnalytics onUpgradeClick={handleUpgradeClick} />
-        </TabsContent>
-
-        <TabsContent value="usage" className="space-y-6">
-          <UsageStats onUpgradeClick={handleUpgradeClick} />
-        </TabsContent>
-
-        <TabsContent value="demo" className="space-y-6">
-          <AIDemo />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 }

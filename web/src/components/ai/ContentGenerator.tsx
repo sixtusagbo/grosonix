@@ -28,16 +28,21 @@ import {
   MessageCircle,
   Share,
   ExternalLink,
+  Bookmark,
+  BookmarkCheck,
+  CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLinkedInShare } from "@/hooks/useLinkedInShare";
 
 interface ContentGeneratorProps {
   onContentGenerated?: (content: ContentSuggestion) => void;
+  onContentSaved?: (content: ContentSuggestion) => void;
 }
 
 export function ContentGenerator({
   onContentGenerated,
+  onContentSaved,
 }: ContentGeneratorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<ContentSuggestion[]>([]);
@@ -134,12 +139,108 @@ export function ContentGenerator({
     }
   };
 
-  const copyToClipboard = async (content: string) => {
+  const copyToClipboard = async (content: string, suggestionId: string) => {
     try {
       await navigator.clipboard.writeText(content);
+      
+      // Track the copy action for analytics
+      try {
+        await aiApiClient.trackContentInteraction(
+          suggestionId,
+          "copied",
+          formData.platform,
+          0
+        );
+      } catch (error) {
+        console.error("Error tracking copy:", error);
+      }
+      
       toast.success("Content copied to clipboard!");
     } catch (error) {
       toast.error("Failed to copy content");
+    }
+  };
+
+  const handleSaveContent = async (suggestion: ContentSuggestion) => {
+    try {
+      await aiApiClient.saveContentSuggestion(suggestion.id);
+      
+      // Update local state
+      const updatedSuggestions = suggestions.map(s => 
+        s.id === suggestion.id ? { ...s, is_saved: true } : s
+      );
+      setSuggestions(updatedSuggestions);
+      
+      // Track the save action for analytics
+      try {
+        await aiApiClient.trackContentInteraction(
+          suggestion.id,
+          "saved",
+          suggestion.platform,
+          suggestion.engagement_score
+        );
+      } catch (error) {
+        console.error("Error tracking save:", error);
+      }
+      
+      // Notify parent component
+      if (onContentSaved) {
+        onContentSaved({
+          ...suggestion,
+          is_saved: true,
+        });
+      }
+      
+      toast.success("Content saved to your library!");
+    } catch (error) {
+      console.error("Error saving content:", error);
+      toast.error("Failed to save content");
+    }
+  };
+
+  const handleUnsaveContent = async (suggestion: ContentSuggestion) => {
+    try {
+      await aiApiClient.unsaveContentSuggestion(suggestion.id);
+      
+      // Update local state
+      const updatedSuggestions = suggestions.map(s => 
+        s.id === suggestion.id ? { ...s, is_saved: false } : s
+      );
+      setSuggestions(updatedSuggestions);
+      
+      toast.success("Content removed from saved library");
+    } catch (error) {
+      console.error("Error unsaving content:", error);
+      toast.error("Failed to remove content from library");
+    }
+  };
+
+  const handleMarkAsUsed = async (suggestion: ContentSuggestion) => {
+    try {
+      await aiApiClient.markContentAsUsed(suggestion.id);
+      
+      // Update local state
+      const updatedSuggestions = suggestions.map(s => 
+        s.id === suggestion.id ? { ...s, is_used: true } : s
+      );
+      setSuggestions(updatedSuggestions);
+      
+      // Track the used action for analytics
+      try {
+        await aiApiClient.trackContentInteraction(
+          suggestion.id,
+          "used",
+          suggestion.platform,
+          suggestion.engagement_score
+        );
+      } catch (error) {
+        console.error("Error tracking used:", error);
+      }
+      
+      toast.success("Content marked as used!");
+    } catch (error) {
+      console.error("Error marking content as used:", error);
+      toast.error("Failed to mark content as used");
     }
   };
 
@@ -168,6 +269,9 @@ export function ContentGenerator({
     });
 
     if (result.success && result.share_url) {
+      // Mark as used if successfully shared
+      await handleMarkAsUsed(suggestion);
+      
       // Optionally open the shared post in a new tab
       window.open(result.share_url, '_blank');
     }
@@ -376,6 +480,16 @@ export function ContentGenerator({
                         )}`}>
                         {formatPlatformName(suggestion.platform || "twitter")}
                       </span>
+                      {suggestion.is_saved && (
+                        <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400">
+                          Saved
+                        </Badge>
+                      )}
+                      {suggestion.is_used && (
+                        <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400">
+                          Used
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span
@@ -388,10 +502,36 @@ export function ContentGenerator({
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => copyToClipboard(suggestion.content)}
+                          onClick={() => copyToClipboard(suggestion.content, suggestion.id)}
                           className="text-theme-secondary hover:text-theme-primary">
                           <Copy className="w-4 h-4" />
                         </Button>
+                        {suggestion.is_saved ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleUnsaveContent(suggestion)}
+                            className="text-emerald-500 hover:text-emerald-600">
+                            <BookmarkCheck className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleSaveContent(suggestion)}
+                            className="text-theme-secondary hover:text-emerald-500">
+                            <Bookmark className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {!suggestion.is_used && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleMarkAsUsed(suggestion)}
+                            className="text-theme-secondary hover:text-blue-500">
+                            <CheckCheck className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

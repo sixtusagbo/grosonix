@@ -4,6 +4,13 @@ export interface ContentSuggestion {
   platform: "twitter" | "instagram" | "linkedin";
   hashtags: string[];
   engagement_score: number;
+  trending_score?: number;
+  viral_potential?: number;
+  hashtag_analysis?: {
+    trending: string[];
+    recommended: string[];
+    volume_score: number;
+  };
   created_at: string;
   is_saved?: boolean;
   is_used?: boolean;
