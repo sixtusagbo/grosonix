@@ -2,6 +2,9 @@
 export { OpenAIService } from './openai';
 export type { ContentGenerationOptions, GeneratedContent } from './openai';
 
+export { EnhancedOpenAIService } from './enhanced-openai';
+export type { EnhancedContentGenerationOptions, EnhancedGeneratedContent } from './enhanced-openai';
+
 export { ContentAdapter } from './content-adapter';
 export type { PlatformContent, CrossPlatformContent } from './content-adapter';
 

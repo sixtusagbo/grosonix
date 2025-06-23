@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ContentSuggestion, ContentGenerationRequest } from "@/types/ai";
 import { aiApiClient } from "@/lib/api/ai-client";
+import { TrendingTopicsService } from "@/components/ai/TrendingTopicsService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,8 @@ import {
   Copy,
   RotateCcw,
   Flame,
+  Zap,
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +51,7 @@ export function SwipeableContentGenerator({
     topic: "",
     use_voice_style: true,
     ignore_tone: false,
+    use_trending_topics: true,
   });
 
   // Swipe animation refs
@@ -61,41 +65,48 @@ export function SwipeableContentGenerator({
   }, [formData.platform]);
 
   const loadTrendingTopics = async () => {
-    // Simulate trending topics based on platform
-    const topics = {
-      twitter: [
-        "AI Revolution",
-        "Remote Work",
-        "Sustainability",
-        "Web3",
-        "Mental Health",
-        "Productivity Hacks",
-        "Tech Innovation",
-        "Digital Marketing",
-      ],
-      instagram: [
-        "Lifestyle Tips",
-        "Wellness Journey",
-        "Creative Process",
-        "Behind the Scenes",
-        "Inspiration Monday",
-        "Self Care",
-        "Travel Stories",
-        "Food Photography",
-      ],
-      linkedin: [
-        "Leadership Insights",
-        "Career Growth",
-        "Industry Trends",
-        "Professional Development",
-        "Networking Tips",
-        "Business Strategy",
-        "Innovation",
-        "Team Building",
-      ],
-    };
-
-    setTrendingTopics(topics[formData.platform] || topics.twitter);
+    try {
+      const trendingService = TrendingTopicsService.getInstance();
+      const trends = await trendingService.getTrendingTopics(formData.platform);
+      const topicNames = trends.map(trend => trend.topic);
+      setTrendingTopics(topicNames);
+    } catch (error) {
+      console.error("Failed to load trending topics:", error);
+      // Fallback to static topics
+      const topics = {
+        twitter: [
+          "AI Revolution",
+          "Remote Work",
+          "Sustainability",
+          "Web3",
+          "Mental Health",
+          "Productivity Hacks",
+          "Tech Innovation",
+          "Digital Marketing",
+        ],
+        instagram: [
+          "Lifestyle Tips",
+          "Wellness Journey",
+          "Creative Process",
+          "Behind the Scenes",
+          "Inspiration Monday",
+          "Self Care",
+          "Travel Stories",
+          "Food Photography",
+        ],
+        linkedin: [
+          "Leadership Insights",
+          "Career Growth",
+          "Industry Trends",
+          "Professional Development",
+          "Networking Tips",
+          "Business Strategy",
+          "Innovation",
+          "Team Building",
+        ],
+      };
+      setTrendingTopics(topics[formData.platform] || topics.twitter);
+    }
   };
 
   const generateSuggestions = async (useTrending: boolean = false) => {
@@ -107,6 +118,7 @@ export function SwipeableContentGenerator({
         ...formData,
         topic,
         prompt: topic ? `Create engaging content about ${topic}` : formData.prompt || "Create engaging social media content",
+        use_trending_topics: true,
       });
 
       setSuggestions(result.suggestions);
@@ -226,7 +238,7 @@ export function SwipeableContentGenerator({
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-emerald-500" />
             <h3 className="text-lg font-semibold text-theme-primary">
-              Swipeable Content Generator
+              AI Content Generator with Trending Analysis
             </h3>
             {remainingQuota !== null && (
               <Badge variant="outline" className="ml-auto">
@@ -284,8 +296,11 @@ export function SwipeableContentGenerator({
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-electric-orange-500" />
               <span className="text-sm font-medium text-theme-secondary">
-                Trending Topics
+                Trending Topics for {formData.platform}
               </span>
+              <Badge variant="secondary" className="text-xs bg-electric-orange-500/20 text-electric-orange-400">
+                Live Data
+              </Badge>
             </div>
             <div className="flex flex-wrap gap-2">
               {trendingTopics.map((topic, index) => (
@@ -404,15 +419,86 @@ export function SwipeableContentGenerator({
 
                 {currentSuggestion.hashtags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {currentSuggestion.hashtags.map((hashtag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {hashtag}
-                      </Badge>
-                    ))}
+                    {currentSuggestion.hashtags.map((hashtag, index) => {
+                      const isTrending = currentSuggestion.hashtag_analysis?.trending.includes(hashtag);
+                      return (
+                        <Badge 
+                          key={index} 
+                          variant={isTrending ? "default" : "secondary"} 
+                          className={`text-xs ${isTrending ? "bg-electric-orange-500 text-white" : ""}`}
+                        >
+                          {hashtag}
+                          {isTrending && <TrendingUp className="w-3 h-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 )}
 
-                <div className="text-xs text-theme-muted">
+                {/* Enhanced Analytics Display */}
+                <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-surface/50 rounded-lg">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Target className="w-4 h-4 text-emerald-400" />
+                      <span className="text-xs text-theme-secondary">Engagement</span>
+                    </div>
+                    <div className="text-lg font-bold text-emerald-400">
+                      {currentSuggestion.engagement_score}%
+                    </div>
+                  </div>
+
+                  {currentSuggestion.trending_score !== undefined && (
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <TrendingUp className="w-4 h-4 text-electric-orange-400" />
+                        <span className="text-xs text-theme-secondary">Trending</span>
+                      </div>
+                      <div className="text-lg font-bold text-electric-orange-400">
+                        {Math.round(currentSuggestion.trending_score)}%
+                      </div>
+                    </div>
+                  )}
+
+                  {currentSuggestion.viral_potential !== undefined && (
+                    <div className="text-center col-span-2">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Zap className="w-4 h-4 text-neon-cyan-400" />
+                        <span className="text-xs text-theme-secondary">Viral Potential</span>
+                      </div>
+                      <div className="text-lg font-bold text-neon-cyan-400">
+                        {Math.round(currentSuggestion.viral_potential)}%
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hashtag Analysis */}
+                {currentSuggestion.hashtag_analysis && (
+                  <div className="mt-4 p-3 bg-electric-orange-500/10 rounded-lg border border-electric-orange-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Hash className="w-4 h-4 text-electric-orange-400" />
+                      <span className="text-sm font-medium text-electric-orange-400">
+                        Hashtag Analysis
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-theme-secondary">Trending: </span>
+                        <span className="text-electric-orange-400 font-medium">
+                          {currentSuggestion.hashtag_analysis.trending.length}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-theme-secondary">Volume Score: </span>
+                        <span className="text-electric-orange-400 font-medium">
+                          {currentSuggestion.hashtag_analysis.volume_score}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-xs text-theme-muted mt-3">
                   Created: {new Date(currentSuggestion.created_at).toLocaleTimeString()}
                 </div>
               </CardContent>
@@ -468,10 +554,10 @@ export function SwipeableContentGenerator({
               <Sparkles className="w-8 h-8 text-emerald-500" />
             </div>
             <h3 className="text-xl font-semibold text-theme-primary mb-2">
-              Ready to Generate Content
+              Ready to Generate Trending Content
             </h3>
             <p className="text-theme-secondary mb-6">
-              Choose your platform and tone, then generate swipeable content suggestions.
+              Choose your platform and tone, then generate AI-powered content suggestions with trending topic analysis.
             </p>
             <Button
               onClick={() => generateSuggestions()}

@@ -4,6 +4,13 @@ export interface ContentSuggestion {
   platform: "twitter" | "instagram" | "linkedin";
   hashtags: string[];
   engagement_score: number;
+  trending_score?: number;
+  viral_potential?: number;
+  hashtag_analysis?: {
+    trending: string[];
+    recommended: string[];
+    volume_score: number;
+  };
   created_at: string;
 }
 
@@ -74,6 +81,8 @@ export interface ContentGenerationRequest {
   topic?: string;
   use_voice_style?: boolean;
   ignore_tone?: boolean;
+  use_trending_topics?: boolean;
+  target_hashtags?: string[];
 }
 
 export interface StyleAnalysisRequest {

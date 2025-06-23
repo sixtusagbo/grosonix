@@ -295,3 +295,19 @@ export const getPlatformIcon = (platform: string): string => {
       return "📱";
   }
 };
+
+export const getTrendingBadge = (trendingScore?: number): string => {
+  if (!trendingScore) return "";
+  if (trendingScore >= 80) return "🔥 Viral";
+  if (trendingScore >= 60) return "📈 Trending";
+  if (trendingScore >= 40) return "⭐ Popular";
+  return "";
+};
+
+export const getViralPotentialColor = (viralPotential?: number): string => {
+  if (!viralPotential) return "text-gray-400";
+  if (viralPotential >= 80) return "text-red-400";
+  if (viralPotential >= 60) return "text-orange-400";
+  if (viralPotential >= 40) return "text-yellow-400";
+  return "text-green-400";
+};
