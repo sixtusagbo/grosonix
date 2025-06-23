@@ -94,8 +94,6 @@ body {
 .glass-card:hover {
   background: rgba(16, 185, 129, 0.12);
   border-color: var(--border-hover);
-  transform: perspective(1000px) rotateX(5deg) translateY(-5px);
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
 }
 
 .glass-input {
@@ -160,6 +158,11 @@ body {
 
 .glow-cyan {
   box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
+}
+
+.card-3d-hover:hover{
+    transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
 }
 
 /* Animated Gradients */

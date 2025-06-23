@@ -14,14 +14,6 @@ export interface ContentSuggestion {
   created_at: string;
   is_saved?: boolean;
   is_used?: boolean;
-  // New trending features
-  trending_score?: number;
-  viral_potential?: number;
-  hashtag_analysis?: {
-    trending: string[];
-    recommended: string[];
-    volume_score: number;
-  };
 }
 
 export interface StyleProfile {
