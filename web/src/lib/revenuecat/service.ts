@@ -1,6 +1,10 @@
-import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from '@revenuecat/purchases-js';
-import { REVENUECAT_CONFIG } from './config';
-import { createBrowserClient } from '@supabase/ssr';
+import Purchases, {
+  CustomerInfo,
+  PurchasesOffering,
+  PurchasesPackage,
+} from "@revenuecat/purchases-js";
+import { REVENUECAT_CONFIG } from "./config";
+import { createBrowserClient } from "@supabase/ssr";
 
 export interface SubscriptionResult {
   success: boolean;
@@ -10,7 +14,7 @@ export interface SubscriptionResult {
 
 export interface SubscriptionStatus {
   isActive: boolean;
-  tier: 'free' | 'pro' | 'agency';
+  tier: "free" | "pro" | "agency";
   expirationDate?: string;
   isInFreeTrial?: boolean;
   willRenew?: boolean;
@@ -38,12 +42,12 @@ class RevenueCatService {
         apiKey: REVENUECAT_CONFIG.apiKey,
         appUserId: userId,
       });
-      
+
       this.initialized = true;
-      console.log('RevenueCat initialized successfully');
+      console.log("RevenueCat initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize RevenueCat:', error);
-      throw new Error('Failed to initialize payment system');
+      console.error("Failed to initialize RevenueCat:", error);
+      throw new Error("Failed to initialize payment system");
     }
   }
 
@@ -53,19 +57,19 @@ class RevenueCatService {
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
       const customerInfo = await Purchases.getCustomerInfo();
-      
+
       // Check for active subscriptions
       const activeSubscriptions = customerInfo.activeSubscriptions;
-      
+
       if (activeSubscriptions.length === 0) {
         return {
           isActive: false,
-          tier: 'free',
+          tier: "free",
         };
       }
 
       // Determine tier based on active subscription
-      let tier: 'free' | 'pro' | 'agency' = 'free';
+      let tier: "free" | "pro" | "agency" = "free";
       let expirationDate: string | undefined;
       let isInFreeTrial = false;
       let willRenew = true;
@@ -74,12 +78,12 @@ class RevenueCatService {
         const entitlement = customerInfo.entitlements.active[subscription];
         if (entitlement) {
           // Determine tier from product identifier
-          if (entitlement.productIdentifier.includes('pro')) {
-            tier = 'pro';
-          } else if (entitlement.productIdentifier.includes('agency')) {
-            tier = 'agency';
+          if (entitlement.productIdentifier.includes("pro")) {
+            tier = "pro";
+          } else if (entitlement.productIdentifier.includes("agency")) {
+            tier = "agency";
           }
-          
+
           expirationDate = entitlement.expirationDate;
           isInFreeTrial = entitlement.isInFreeTrial;
           willRenew = entitlement.willRenew;
@@ -95,10 +99,10 @@ class RevenueCatService {
         willRenew,
       };
     } catch (error) {
-      console.error('Failed to get subscription status:', error);
+      console.error("Failed to get subscription status:", error);
       return {
         isActive: false,
-        tier: 'free',
+        tier: "free",
       };
     }
   }
@@ -110,11 +114,11 @@ class RevenueCatService {
     try {
       const offerings = await Purchases.getOfferings();
       const currentOffering = offerings.current;
-      
+
       if (!currentOffering) {
         return {
           success: false,
-          error: 'No subscription offerings available',
+          error: "No subscription offerings available",
         };
       }
 
@@ -126,12 +130,14 @@ class RevenueCatService {
       if (!packageToPurchase) {
         return {
           success: false,
-          error: 'Subscription plan not found',
+          error: "Subscription plan not found",
         };
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
-      
+      const { customerInfo } = await Purchases.purchasePackage(
+        packageToPurchase
+      );
+
       // Update subscription in database
       await this.updateSubscriptionInDatabase(customerInfo);
 
@@ -140,19 +146,19 @@ class RevenueCatService {
         customerInfo,
       };
     } catch (error: any) {
-      console.error('Purchase failed:', error);
-      
+      console.error("Purchase failed:", error);
+
       // Handle user cancellation
       if (error.userCancelled) {
         return {
           success: false,
-          error: 'Purchase cancelled',
+          error: "Purchase cancelled",
         };
       }
 
       return {
         success: false,
-        error: error.message || 'Purchase failed',
+        error: error.message || "Purchase failed",
       };
     }
   }
@@ -162,50 +168,49 @@ class RevenueCatService {
    */
   async startFreeTrial(): Promise<SubscriptionResult> {
     try {
-      const offerings = await Purchases.getOfferings();
-      const currentOffering = offerings.current;
-      
-      if (!currentOffering) {
+      // Import trial manager dynamically to avoid circular dependencies
+      const { trialManager } = await import("@/lib/subscription/trial-manager");
+
+      // Get current user ID
+      const customerInfo = await Purchases.getCustomerInfo();
+      const userId = customerInfo.originalAppUserId;
+
+      if (!userId) {
         return {
           success: false,
-          error: 'No trial offerings available',
+          error: "User ID not found",
         };
       }
 
-      // Find the free trial package
-      const trialPackage = currentOffering.availablePackages.find(
-        (pkg: PurchasesPackage) => pkg.product.identifier === REVENUECAT_CONFIG.freeTrial.productId
-      );
-
-      if (!trialPackage) {
+      // Check trial eligibility
+      const eligibility = await trialManager.checkTrialEligibility(userId);
+      if (!eligibility.eligible) {
         return {
           success: false,
-          error: 'Free trial not available',
+          error: eligibility.reason || "Not eligible for free trial",
         };
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(trialPackage);
-      
-      // Update subscription in database
-      await this.updateSubscriptionInDatabase(customerInfo);
+      // Start trial in database
+      const result = await trialManager.startFreeTrial(userId);
+
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || "Failed to start trial",
+        };
+      }
 
       return {
         success: true,
         customerInfo,
       };
     } catch (error: any) {
-      console.error('Free trial failed:', error);
-      
-      if (error.userCancelled) {
-        return {
-          success: false,
-          error: 'Trial cancelled',
-        };
-      }
+      console.error("Free trial failed:", error);
 
       return {
         success: false,
-        error: error.message || 'Failed to start free trial',
+        error: error.message || "Failed to start free trial",
       };
     }
   }
@@ -216,7 +221,7 @@ class RevenueCatService {
   async restorePurchases(): Promise<SubscriptionResult> {
     try {
       const customerInfo = await Purchases.restorePurchases();
-      
+
       // Update subscription in database
       await this.updateSubscriptionInDatabase(customerInfo);
 
@@ -225,10 +230,10 @@ class RevenueCatService {
         customerInfo,
       };
     } catch (error: any) {
-      console.error('Restore failed:', error);
+      console.error("Restore failed:", error);
       return {
         success: false,
-        error: error.message || 'Failed to restore purchases',
+        error: error.message || "Failed to restore purchases",
       };
     }
   }
@@ -236,27 +241,30 @@ class RevenueCatService {
   /**
    * Update subscription information in Supabase
    */
-  private async updateSubscriptionInDatabase(customerInfo: CustomerInfo): Promise<void> {
+  private async updateSubscriptionInDatabase(
+    customerInfo: CustomerInfo
+  ): Promise<void> {
     try {
       const status = await this.getSubscriptionStatus();
-      
-      const { error } = await this.supabase
-        .from('subscriptions')
-        .upsert({
+
+      const { error } = await this.supabase.from("subscriptions").upsert(
+        {
           user_id: customerInfo.originalAppUserId,
           plan: status.tier,
-          status: status.isActive ? 'active' : 'inactive',
+          status: status.isActive ? "active" : "inactive",
           current_period_end: status.expirationDate || new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id'
-        });
+        },
+        {
+          onConflict: "user_id",
+        }
+      );
 
       if (error) {
-        console.error('Failed to update subscription in database:', error);
+        console.error("Failed to update subscription in database:", error);
       }
     } catch (error) {
-      console.error('Database update error:', error);
+      console.error("Database update error:", error);
     }
   }
 
@@ -268,7 +276,7 @@ class RevenueCatService {
       const offerings = await Purchases.getOfferings();
       return offerings.current;
     } catch (error) {
-      console.error('Failed to get offerings:', error);
+      console.error("Failed to get offerings:", error);
       return null;
     }
   }
