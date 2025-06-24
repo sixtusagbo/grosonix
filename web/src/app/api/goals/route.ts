@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
         };
       }) || [];
 
-    // Calculate analytics (from HEAD version)
+    // Calculate analytics
     const analytics = {
       total_goals: goalsWithStats.length,
       active_goals: goalsWithStats.filter((g) => g.status === "active").length,

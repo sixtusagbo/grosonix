@@ -2,7 +2,13 @@
 
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -37,23 +43,41 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
-  const [selectedView, setSelectedView] = useState<"all" | "followers" | "engagement" | "posts">("all");
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">(
+    "30d"
+  );
+  const [selectedView, setSelectedView] = useState<
+    "all" | "followers" | "engagement" | "posts"
+  >("all");
   const [chartData, setChartData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   // Generate mock data based on time range
   const generateMockData = useMemo(() => {
     const now = new Date();
-    const dataPoints: { date: string; followers: number; engagement: number; posts: number }[] = [];
+    const dataPoints: {
+      date: string;
+      followers: number;
+      engagement: number;
+      posts: number;
+    }[] = [];
 
     let days: number;
     switch (timeRange) {
-      case "7d": days = 7; break;
-      case "30d": days = 30; break;
-      case "90d": days = 90; break;
-      case "1y": days = 365; break;
-      default: days = 30;
+      case "7d":
+        days = 7;
+        break;
+      case "30d":
+        days = 30;
+        break;
+      case "90d":
+        days = 90;
+        break;
+      case "1y":
+        days = 365;
+        break;
+      default:
+        days = 30;
     }
 
     // Generate data points
@@ -66,10 +90,13 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
       const variance = Math.random() * 100 - 50;
 
       dataPoints.push({
-        date: date.toISOString().split('T')[0],
+        date: date.toISOString().split("T")[0],
         followers: Math.max(0, baseFollowers + variance),
-        engagement: Math.max(0, (baseFollowers + variance) * 0.05 + Math.random() * 20),
-        posts: Math.floor(Math.random() * 5) + 1
+        engagement: Math.max(
+          0,
+          (baseFollowers + variance) * 0.05 + Math.random() * 20
+        ),
+        posts: Math.floor(Math.random() * 5) + 1,
       });
     }
 
@@ -81,14 +108,20 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
 
     // Simulate API call delay
     const timer = setTimeout(() => {
-      const labels = generateMockData.map(point => {
+      const labels = generateMockData.map((point) => {
         const date = new Date(point.date);
         if (timeRange === "7d") {
-          return date.toLocaleDateString('en-US', { weekday: 'short' });
+          return date.toLocaleDateString("en-US", { weekday: "short" });
         } else if (timeRange === "30d") {
-          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
         } else {
-          return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+          return date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          });
         }
       });
 
@@ -101,7 +134,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
           // Followers dataset (primary y-axis)
           {
             label: "Followers",
-            data: generateMockData.map(point => point.followers),
+            data: generateMockData.map((point) => point.followers),
             borderColor: "#10B981",
             backgroundColor: "rgba(16, 185, 129, 0.1)",
             fill: true,
@@ -111,12 +144,12 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 6,
-            yAxisID: 'y',
+            yAxisID: "y",
           },
           // Engagement Rate dataset (secondary y-axis)
           {
             label: "Engagement Rate (%)",
-            data: generateMockData.map(point => point.engagement),
+            data: generateMockData.map((point) => point.engagement),
             borderColor: "#F59E0B",
             backgroundColor: "rgba(245, 158, 11, 0.1)",
             fill: false,
@@ -126,12 +159,12 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
             pointBorderWidth: 2,
             pointRadius: 3,
             pointHoverRadius: 5,
-            yAxisID: 'y1',
+            yAxisID: "y1",
           },
           // Posts dataset (tertiary y-axis)
           {
             label: "Posts",
-            data: generateMockData.map(point => point.posts),
+            data: generateMockData.map((point) => point.posts),
             borderColor: "#8B5CF6",
             backgroundColor: "rgba(139, 92, 246, 0.1)",
             fill: false,
@@ -141,7 +174,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
             pointBorderWidth: 2,
             pointRadius: 3,
             pointHoverRadius: 5,
-            yAxisID: 'y2',
+            yAxisID: "y2",
           }
         );
       } else {
@@ -151,29 +184,31 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
             label: "Followers",
             color: "#10B981",
             backgroundColor: "rgba(16, 185, 129, 0.1)",
-            yAxisID: 'y',
-            fill: true
+            yAxisID: "y",
+            fill: true,
           },
           engagement: {
             label: "Engagement Rate (%)",
             color: "#F59E0B",
             backgroundColor: "rgba(245, 158, 11, 0.1)",
-            yAxisID: 'y',
-            fill: true
+            yAxisID: "y",
+            fill: true,
           },
           posts: {
             label: "Posts",
             color: "#8B5CF6",
             backgroundColor: "rgba(139, 92, 246, 0.1)",
-            yAxisID: 'y',
-            fill: true
-          }
+            yAxisID: "y",
+            fill: true,
+          },
         };
 
         const config = metricConfig[selectedView as keyof typeof metricConfig];
         datasets.push({
           label: config.label,
-          data: generateMockData.map(point => point[selectedView as keyof typeof point]),
+          data: generateMockData.map(
+            (point) => point[selectedView as keyof typeof point]
+          ),
           borderColor: config.color,
           backgroundColor: config.backgroundColor,
           fill: config.fill,
@@ -189,7 +224,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
 
       setChartData({
         labels,
-        datasets
+        datasets,
       });
       setLoading(false);
     }, 500);
@@ -201,13 +236,13 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: 'index' as const,
+      mode: "index" as const,
       intersect: false,
     },
     plugins: {
       legend: {
         display: true,
-        position: 'top' as const,
+        position: "top" as const,
         labels: {
           color: isDark ? "#E2E8F0" : "#0F172A",
           usePointStyle: true,
@@ -225,22 +260,25 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
         displayColors: true,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || '';
+            let label = context.dataset.label || "";
             if (label) {
-              label += ': ';
+              label += ": ";
             }
             if (context.parsed.y !== null) {
               if (label.includes("Followers") || selectedView === "followers") {
                 label += context.parsed.y.toLocaleString();
-              } else if (label.includes("Engagement") || selectedView === "engagement") {
-                label += context.parsed.y.toFixed(1) + '%';
+              } else if (
+                label.includes("Engagement") ||
+                selectedView === "engagement"
+              ) {
+                label += context.parsed.y.toFixed(1) + "%";
               } else {
                 label += context.parsed.y;
               }
             }
             return label;
-          }
-        }
+          },
+        },
       },
     },
     scales: {
@@ -255,42 +293,56 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
         },
       },
       y: {
-        type: 'linear' as const,
+        type: "linear" as const,
         display: true,
-        position: 'left' as const,
+        position: "left" as const,
         beginAtZero: true,
         grid: {
           color: isDark ? "rgba(226, 232, 240, 0.1)" : "rgba(15, 23, 42, 0.1)",
           drawBorder: false,
         },
         ticks: {
-          color: selectedView === "all" ? "#10B981" :
-            selectedView === "followers" ? "#10B981" :
-              selectedView === "engagement" ? "#F59E0B" : "#8B5CF6",
+          color:
+            selectedView === "all"
+              ? "#10B981"
+              : selectedView === "followers"
+              ? "#10B981"
+              : selectedView === "engagement"
+              ? "#F59E0B"
+              : "#8B5CF6",
           callback: function (value: any) {
             if (selectedView === "engagement") {
-              return value.toFixed(1) + '%';
+              return value.toFixed(1) + "%";
             }
             return value.toLocaleString();
-          }
+          },
         },
         title: {
           display: selectedView !== "all",
-          text: selectedView === "followers" ? 'Followers' :
-            selectedView === "engagement" ? 'Engagement Rate (%)' :
-              selectedView === "posts" ? 'Posts' : '',
-          color: selectedView === "followers" ? "#10B981" :
-            selectedView === "engagement" ? "#F59E0B" : "#8B5CF6",
+          text:
+            selectedView === "followers"
+              ? "Followers"
+              : selectedView === "engagement"
+              ? "Engagement Rate (%)"
+              : selectedView === "posts"
+              ? "Posts"
+              : "",
+          color:
+            selectedView === "followers"
+              ? "#10B981"
+              : selectedView === "engagement"
+              ? "#F59E0B"
+              : "#8B5CF6",
           font: {
             size: 12,
-            weight: 'bold'
-          }
-        }
+            weight: "bold",
+          },
+        },
       },
       y1: {
-        type: 'linear' as const,
+        type: "linear" as const,
         display: selectedView === "all",
-        position: 'right' as const,
+        position: "right" as const,
         beginAtZero: true,
         grid: {
           drawOnChartArea: false,
@@ -298,23 +350,23 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
         ticks: {
           color: "#F59E0B",
           callback: function (value: any) {
-            return value.toFixed(1) + '%';
-          }
+            return value.toFixed(1) + "%";
+          },
         },
         title: {
           display: selectedView === "all",
-          text: 'Engagement Rate (%)',
+          text: "Engagement Rate (%)",
           color: "#F59E0B",
           font: {
             size: 12,
-            weight: 'bold'
-          }
-        }
+            weight: "bold",
+          },
+        },
       },
       y2: {
-        type: 'linear' as const,
+        type: "linear" as const,
         display: false, // Hide this axis to avoid clutter, but data will still show
-        position: 'right' as const,
+        position: "right" as const,
         beginAtZero: true,
         grid: {
           drawOnChartArea: false,
@@ -336,7 +388,9 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
           </CardTitle>
 
           <div className="flex items-center gap-2">
-            <Select value={selectedView} onValueChange={(value: any) => setSelectedView(value)}>
+            <Select
+              value={selectedView}
+              onValueChange={(value: any) => setSelectedView(value)}>
               <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
@@ -372,7 +426,9 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
               </SelectContent>
             </Select>
 
-            <Select value={timeRange} onValueChange={(value: any) => setTimeRange(value)}>
+            <Select
+              value={timeRange}
+              onValueChange={(value: any) => setTimeRange(value)}>
               <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
@@ -410,20 +466,29 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
           <div className="mt-6 space-y-4">
             {selectedView === "all" ? (
               <>
-                <h3 className="text-lg font-semibold text-theme-primary">Current Metrics</h3>
+                <h3 className="text-lg font-semibold text-theme-primary">
+                  Current Metrics
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Followers Summary */}
                   <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      <span className="text-sm font-medium text-emerald-500">Followers</span>
+                      <span className="text-sm font-medium text-emerald-500">
+                        Followers
+                      </span>
                     </div>
                     <div className="space-y-1">
                       <div className="text-2xl font-bold text-theme-primary">
-                        {generateMockData[generateMockData.length - 1]?.followers?.toLocaleString() || 0}
+                        {generateMockData[
+                          generateMockData.length - 1
+                        ]?.followers?.toLocaleString() || 0}
                       </div>
                       <div className="text-sm text-theme-secondary">
-                        Peak: {Math.max(...generateMockData.map(d => d.followers)).toLocaleString()}
+                        Peak:{" "}
+                        {Math.max(
+                          ...generateMockData.map((d) => d.followers)
+                        ).toLocaleString()}
                       </div>
                       <div className="text-sm text-emerald-500 font-medium">
                         +{Math.round(Math.random() * 15 + 5)}% growth
@@ -435,14 +500,23 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
                   <div className="p-4 rounded-lg border border-orange-500/20 bg-orange-500/5">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                      <span className="text-sm font-medium text-orange-500">Engagement Rate</span>
+                      <span className="text-sm font-medium text-orange-500">
+                        Engagement Rate
+                      </span>
                     </div>
                     <div className="space-y-1">
                       <div className="text-2xl font-bold text-theme-primary">
-                        {generateMockData[generateMockData.length - 1]?.engagement?.toFixed(1) || 0}%
+                        {generateMockData[
+                          generateMockData.length - 1
+                        ]?.engagement?.toFixed(1) || 0}
+                        %
                       </div>
                       <div className="text-sm text-theme-secondary">
-                        Peak: {Math.max(...generateMockData.map(d => d.engagement)).toFixed(1)}%
+                        Peak:{" "}
+                        {Math.max(
+                          ...generateMockData.map((d) => d.engagement)
+                        ).toFixed(1)}
+                        %
                       </div>
                       <div className="text-sm text-orange-500 font-medium">
                         +{Math.round(Math.random() * 10 + 2)}% growth
@@ -454,17 +528,29 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
                   <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/5">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                      <span className="text-sm font-medium text-purple-500">Posts</span>
+                      <span className="text-sm font-medium text-purple-500">
+                        Posts
+                      </span>
                     </div>
                     <div className="space-y-1">
                       <div className="text-2xl font-bold text-theme-primary">
                         {generateMockData.reduce((sum, d) => sum + d.posts, 0)}
                       </div>
                       <div className="text-sm text-theme-secondary">
-                        Avg per day: {(generateMockData.reduce((sum, d) => sum + d.posts, 0) / generateMockData.length).toFixed(1)}
+                        Avg per day:{" "}
+                        {(
+                          generateMockData.reduce(
+                            (sum, d) => sum + d.posts,
+                            0
+                          ) / generateMockData.length
+                        ).toFixed(1)}
                       </div>
                       <div className="text-sm text-purple-500 font-medium">
-                        {timeRange === "7d" ? "This week" : timeRange === "30d" ? "This month" : "This period"}
+                        {timeRange === "7d"
+                          ? "This week"
+                          : timeRange === "30d"
+                          ? "This month"
+                          : "This period"}
                       </div>
                     </div>
                   </div>
@@ -473,19 +559,26 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
             ) : (
               <>
                 <h3 className="text-lg font-semibold text-theme-primary">
-                  {selectedView === "followers" ? "Followers" :
-                    selectedView === "engagement" ? "Engagement Rate" : "Posts"} Analytics
+                  {selectedView === "followers"
+                    ? "Followers"
+                    : selectedView === "engagement"
+                    ? "Engagement Rate"
+                    : "Posts"}{" "}
+                  Analytics
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border/50">
                   <div className="text-center">
                     <div className="text-sm text-theme-secondary">Current</div>
                     <div className="text-lg font-semibold text-theme-primary">
-                      {selectedView === "followers" ?
-                        generateMockData[generateMockData.length - 1]?.followers?.toLocaleString() :
-                        selectedView === "engagement" ?
-                          generateMockData[generateMockData.length - 1]?.engagement?.toFixed(1) + "%" :
-                          generateMockData.reduce((sum, d) => sum + d.posts, 0)
-                      }
+                      {selectedView === "followers"
+                        ? generateMockData[
+                            generateMockData.length - 1
+                          ]?.followers?.toLocaleString()
+                        : selectedView === "engagement"
+                        ? generateMockData[
+                            generateMockData.length - 1
+                          ]?.engagement?.toFixed(1) + "%"
+                        : generateMockData.reduce((sum, d) => sum + d.posts, 0)}
                     </div>
                   </div>
 
@@ -499,12 +592,15 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
                   <div className="text-center">
                     <div className="text-sm text-theme-secondary">Peak</div>
                     <div className="text-lg font-semibold text-theme-primary">
-                      {selectedView === "followers" ?
-                        Math.max(...generateMockData.map(d => d.followers)).toLocaleString() :
-                        selectedView === "engagement" ?
-                          Math.max(...generateMockData.map(d => d.engagement)).toFixed(1) + "%" :
-                          Math.max(...generateMockData.map(d => d.posts))
-                      }
+                      {selectedView === "followers"
+                        ? Math.max(
+                            ...generateMockData.map((d) => d.followers)
+                          ).toLocaleString()
+                        : selectedView === "engagement"
+                        ? Math.max(
+                            ...generateMockData.map((d) => d.engagement)
+                          ).toFixed(1) + "%"
+                        : Math.max(...generateMockData.map((d) => d.posts))}
                     </div>
                   </div>
 
@@ -513,12 +609,21 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
                       {selectedView === "posts" ? "Total" : "Avg Daily"}
                     </div>
                     <div className="text-lg font-semibold text-theme-primary">
-                      {selectedView === "followers" ?
-                        Math.round(generateMockData.reduce((sum, d) => sum + d.followers, 0) / generateMockData.length).toLocaleString() :
-                        selectedView === "engagement" ?
-                          (generateMockData.reduce((sum, d) => sum + d.engagement, 0) / generateMockData.length).toFixed(1) + "%" :
-                          generateMockData.reduce((sum, d) => sum + d.posts, 0)
-                      }
+                      {selectedView === "followers"
+                        ? Math.round(
+                            generateMockData.reduce(
+                              (sum, d) => sum + d.followers,
+                              0
+                            ) / generateMockData.length
+                          ).toLocaleString()
+                        : selectedView === "engagement"
+                        ? (
+                            generateMockData.reduce(
+                              (sum, d) => sum + d.engagement,
+                              0
+                            ) / generateMockData.length
+                          ).toFixed(1) + "%"
+                        : generateMockData.reduce((sum, d) => sum + d.posts, 0)}
                     </div>
                   </div>
                 </div>
