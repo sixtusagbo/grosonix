@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { Bell, Search, User as UserIcon, LogOut, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,15 +53,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 px-0 hover:bg-emerald-500/10 hover:text-emerald-400 relative">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-electric-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-xs text-white font-bold">3</span>
-              </span>
-            </Button>
+            <NotificationCenter userId={user.id} />
 
             {/* Theme Toggle */}
             <ThemeToggle />

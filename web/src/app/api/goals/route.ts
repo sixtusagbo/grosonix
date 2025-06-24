@@ -1,289 +1,309 @@
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-
   try {
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return Response.json(
-        { error: "Unauthorized", message: "Authentication required" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user goals
-    const { data: goals, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const platform = searchParams.get("platform");
+    const goalType = searchParams.get("goal_type");
+
+    let query = supabase
       .from("user_goals")
-      .select("*")
+      .select(
+        `
+        *,
+        goal_progress_log (
+          id,
+          new_value,
+          change_amount,
+          progress_percentage,
+          recorded_at,
+          source
+        ),
+        goal_milestones (
+          id,
+          milestone_percentage,
+          milestone_value,
+          is_achieved,
+          achieved_at
+        )
+      `
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
+    // Apply filters
+    if (status) {
+      query = query.eq("status", status);
+    }
+    if (platform && platform !== "all") {
+      query = query.eq("platform", platform);
+    }
+    if (goalType) {
+      query = query.eq("goal_type", goalType);
+    }
+
+    const { data: goals, error } = await query;
+
     if (error) {
       console.error("Error fetching goals:", error);
-      return Response.json(
-        { error: "Database error", message: error.message },
+      return NextResponse.json(
+        { error: "Failed to fetch goals" },
         { status: 500 }
       );
     }
 
+    // Calculate progress and statistics for each goal
+    const goalsWithStats =
+      goals?.map((goal) => {
+        const progressPercentage =
+          goal.target_value > 0
+            ? Math.min(100, (goal.current_value / goal.target_value) * 100)
+            : 0;
+
+        const daysRemaining = Math.ceil(
+          (new Date(goal.target_date).getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        const recentProgress =
+          goal.goal_progress_log
+            ?.sort(
+              (a: any, b: any) =>
+                new Date(b.recorded_at).getTime() -
+                new Date(a.recorded_at).getTime()
+            )
+            ?.slice(0, 7) || [];
+
+        return {
+          ...goal,
+          progress_percentage: Math.round(progressPercentage * 100) / 100,
+          days_remaining: daysRemaining,
+          is_overdue: daysRemaining < 0 && goal.status === "active",
+          recent_progress: recentProgress,
+          achieved_milestones:
+            goal.goal_milestones?.filter((m: any) => m.is_achieved).length || 0,
+          total_milestones: goal.goal_milestones?.length || 0,
+        };
+      }) || [];
+
     // Calculate analytics
     const analytics = {
-      total_goals: goals?.length || 0,
-      active_goals: goals?.filter(g => g.status === 'active').length || 0,
-      completed_goals: goals?.filter(g => g.status === 'completed').length || 0,
-      failed_goals: goals?.filter(g => g.status === 'failed').length || 0,
+      total_goals: goalsWithStats.length,
+      active_goals: goalsWithStats.filter((g) => g.status === "active").length,
+      completed_goals: goalsWithStats.filter((g) => g.status === "completed")
+        .length,
+      failed_goals: goalsWithStats.filter((g) => g.status === "failed").length,
+      overdue_goals: goalsWithStats.filter((g) => g.is_overdue).length,
       average_completion_rate: 0,
       goals_by_platform: {} as Record<string, number>,
-      goals_by_metric: {} as Record<string, number>,
+      goals_by_goal_type: {} as Record<string, number>,
     };
 
-    if (goals && goals.length > 0) {
-      analytics.average_completion_rate = 
-        (analytics.completed_goals / goals.length) * 100;
+    if (goalsWithStats.length > 0) {
+      analytics.average_completion_rate =
+        (analytics.completed_goals / goalsWithStats.length) * 100;
 
-      // Group by platform and metric
-      goals.forEach(goal => {
-        analytics.goals_by_platform[goal.platform] = 
+      // Group by platform and goal type
+      goalsWithStats.forEach((goal) => {
+        analytics.goals_by_platform[goal.platform] =
           (analytics.goals_by_platform[goal.platform] || 0) + 1;
-        
-        analytics.goals_by_metric[goal.metric_type] = 
-          (analytics.goals_by_metric[goal.metric_type] || 0) + 1;
+
+        analytics.goals_by_goal_type[goal.goal_type] =
+          (analytics.goals_by_goal_type[goal.goal_type] || 0) + 1;
       });
     }
 
-    return Response.json({
-      goals: goals || [],
-      analytics
+    return NextResponse.json({
+      success: true,
+      goals: goalsWithStats,
+      analytics,
+      summary: {
+        total: goalsWithStats.length,
+        active: goalsWithStats.filter((g) => g.status === "active").length,
+        completed: goalsWithStats.filter((g) => g.status === "completed")
+          .length,
+        overdue: goalsWithStats.filter((g) => g.is_overdue).length,
+      },
     });
   } catch (error) {
-    console.error("Goals API error:", error);
-    return Response.json(
-      { error: "Internal server error", message: "Failed to fetch goals" },
+    console.error("Error in goals API:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-
   try {
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return Response.json(
-        { error: "Unauthorized", message: "Authentication required" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const {
       title,
       description,
-      metric_type,
-      target_value,
-      start_value,
+      goal_type,
       platform,
-      deadline,
-      priority = 'medium',
-      milestones = []
+      target_value,
+      target_date,
+      priority = "medium",
+      is_public = false,
+      milestones = [],
     } = body;
 
     // Validate required fields
-    if (!title || !metric_type || !target_value || !platform || !deadline) {
-      return Response.json(
-        { error: "Validation error", message: "Missing required fields" },
+    if (!title || !goal_type || !target_value || !target_date) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing required fields: title, goal_type, target_value, target_date",
+        },
         { status: 400 }
       );
     }
 
-    // Create goal
-    const { data: goal, error } = await supabase
+    // Validate target_date is in the future
+    if (new Date(target_date) <= new Date()) {
+      return NextResponse.json(
+        {
+          error: "Target date must be in the future",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create the goal
+    const { data: goal, error: goalError } = await supabase
       .from("user_goals")
       .insert({
         user_id: user.id,
         title,
         description,
-        metric_type,
-        target_value: parseFloat(target_value),
-        start_value: parseFloat(start_value) || 0,
-        current_value: parseFloat(start_value) || 0,
+        goal_type,
         platform,
-        deadline,
+        target_value: parseFloat(target_value),
+        target_date,
         priority,
-        milestones: milestones || [],
-        achieved_milestones: [],
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        is_public,
       })
       .select()
       .single();
 
-    if (error) {
-      console.error("Error creating goal:", error);
-      return Response.json(
-        { error: "Database error", message: error.message },
+    if (goalError) {
+      console.error("Error creating goal:", goalError);
+      return NextResponse.json(
+        { error: "Failed to create goal" },
         { status: 500 }
       );
     }
 
-    return Response.json({
-      goal,
-      message: "Goal created successfully"
-    });
-  } catch (error) {
-    console.error("Goals API error:", error);
-    return Response.json(
-      { error: "Internal server error", message: "Failed to create goal" },
-      { status: 500 }
-    );
-  }
-}
+    // Create default milestones if none provided
+    const defaultMilestones =
+      milestones.length > 0
+        ? milestones
+        : [
+            { percentage: 25, value: target_value * 0.25 },
+            { percentage: 50, value: target_value * 0.5 },
+            { percentage: 75, value: target_value * 0.75 },
+            { percentage: 100, value: target_value },
+          ];
 
-export async function PUT(request: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+    // Create milestones
+    const milestonesToCreate = defaultMilestones.map((milestone: any) => ({
+      goal_id: goal.id,
+      milestone_percentage: milestone.percentage,
+      milestone_value: milestone.value,
+    }));
+
+    const { error: milestonesError } = await supabase
+      .from("goal_milestones")
+      .insert(milestonesToCreate);
+
+    if (milestonesError) {
+      console.error("Error creating milestones:", milestonesError);
+      // Don't fail the request, just log the error
+    }
+
+    // Log initial progress entry
+    const { error: progressError } = await supabase
+      .from("goal_progress_log")
+      .insert({
+        goal_id: goal.id,
+        previous_value: 0,
+        new_value: 0,
+        change_amount: 0,
+        progress_percentage: 0,
+        source: "manual",
+        notes: "Goal created",
+      });
+
+    if (progressError) {
+      console.error("Error creating initial progress log:", progressError);
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        goal: {
+          ...goal,
+          progress_percentage: 0,
+          days_remaining: Math.ceil(
+            (new Date(target_date).getTime() - new Date().getTime()) /
+              (1000 * 60 * 60 * 24)
+          ),
+          achieved_milestones: 0,
+          total_milestones: defaultMilestones.length,
         },
       },
-    }
-  );
-
-  try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return Response.json(
-        { error: "Unauthorized", message: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const { goal_id, current_value, status } = body;
-
-    if (!goal_id) {
-      return Response.json(
-        { error: "Validation error", message: "Goal ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Get current goal
-    const { data: existingGoal, error: fetchError } = await supabase
-      .from("user_goals")
-      .select("*")
-      .eq("id", goal_id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (fetchError || !existingGoal) {
-      return Response.json(
-        { error: "Not found", message: "Goal not found" },
-        { status: 404 }
-      );
-    }
-
-    // Prepare update data
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    };
-
-    if (current_value !== undefined) {
-      updateData.current_value = parseFloat(current_value);
-      
-      // Check for milestone achievements
-      const newMilestones = existingGoal.milestones.filter(
-        (milestone: number) => 
-          updateData.current_value >= milestone && 
-          !existingGoal.achieved_milestones.includes(milestone)
-      );
-
-      if (newMilestones.length > 0) {
-        updateData.achieved_milestones = [...existingGoal.achieved_milestones, ...newMilestones];
-      }
-
-      // Check if goal is completed
-      if (updateData.current_value >= existingGoal.target_value) {
-        updateData.status = 'completed';
-        updateData.completed_at = new Date().toISOString();
-      }
-    }
-
-    if (status) {
-      updateData.status = status;
-      if (status === 'completed') {
-        updateData.completed_at = new Date().toISOString();
-      }
-    }
-
-    // Update goal
-    const { data: updatedGoal, error } = await supabase
-      .from("user_goals")
-      .update(updateData)
-      .eq("id", goal_id)
-      .eq("user_id", user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating goal:", error);
-      return Response.json(
-        { error: "Database error", message: error.message },
-        { status: 500 }
-      );
-    }
-
-    return Response.json({
-      goal: updatedGoal,
-      message: "Goal updated successfully"
-    });
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("Goals API error:", error);
-    return Response.json(
-      { error: "Internal server error", message: "Failed to update goal" },
+    console.error("Error in goals POST API:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

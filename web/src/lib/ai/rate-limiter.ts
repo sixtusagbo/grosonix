@@ -67,21 +67,6 @@ export class RateLimiter {
     featureType: keyof UsageLimits,
     subscriptionTier: "free" | "pro" | "agency" = "free"
   ): Promise<{ allowed: boolean; quota: UsageQuota }> {
-    // TEMPORARILY DISABLED RATE LIMITING - ALWAYS ALLOW
-    console.log(`[RATE LIMITER DISABLED] Allowing ${featureType} for user ${userId}`);
-
-    return {
-      allowed: true,
-      quota: {
-        feature_type: featureType,
-        used: 0,
-        limit: -1,
-        remaining: -1,
-        resets_at: this.getNextResetTime(),
-      },
-    };
-
-    /* ORIGINAL CODE - COMMENTED OUT FOR TEMPORARY DISABLE
     const limits = RateLimiter.getUsageLimitsForTier(subscriptionTier);
     const limit = limits[featureType];
 
@@ -130,7 +115,6 @@ export class RateLimiter {
         resets_at: this.getNextResetTime(),
       },
     };
-    */
   }
 
   async incrementUsage(
@@ -246,11 +230,6 @@ export class RateLimiter {
     featureType: keyof UsageLimits,
     subscriptionTier?: "free" | "pro" | "agency"
   ): Promise<boolean> {
-    // TEMPORARILY DISABLED RATE LIMITING - ALWAYS ALLOW
-    console.log(`[RATE LIMITER DISABLED] Allowing action ${featureType} for user ${userId}`);
-    return true;
-
-    /* ORIGINAL CODE - COMMENTED OUT FOR TEMPORARY DISABLE
     if (!subscriptionTier) {
       subscriptionTier = await this.getUserSubscriptionTier(userId);
     }
@@ -261,7 +240,6 @@ export class RateLimiter {
       subscriptionTier
     );
     return allowed;
-    */
   }
 
   // Get upgrade suggestions based on usage patterns
