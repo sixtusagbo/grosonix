@@ -8,6 +8,7 @@ import {
   ContentAdaptationRequest,
   VoiceSample,
   VoiceSampleRequest,
+  ContentAnalytics,
 } from "@/types/ai";
 
 class AIApiClient {
@@ -60,6 +61,162 @@ class AIApiClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to generate custom content");
+    }
+
+    return response.json();
+  }
+
+  async getSavedContent(platform?: string): Promise<{
+    suggestions: ContentSuggestion[];
+    total_saved: number;
+  }> {
+    const params = new URLSearchParams({
+      saved_only: "true",
+    });
+
+    if (platform && platform !== "all") {
+      params.append("platform", platform);
+    }
+
+    const response = await fetch(
+      `${this.baseUrl}/content/suggestions?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to fetch saved content");
+    }
+
+    return response.json();
+  }
+
+  async saveContentSuggestion(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_saved: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to save content suggestion");
+    }
+
+    return response.json();
+  }
+
+  async unsaveContentSuggestion(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_saved: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to unsave content suggestion");
+    }
+
+    return response.json();
+  }
+
+  async markContentAsUsed(suggestionId: string): Promise<{
+    success: boolean;
+    message: string;
+    suggestion: ContentSuggestion;
+  }> {
+    const response = await fetch(`${this.baseUrl}/content/suggestions`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        is_used: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to mark content as used");
+    }
+
+    return response.json();
+  }
+
+  async getContentAnalytics(days: number = 30, platform?: string): Promise<ContentAnalytics> {
+    const params = new URLSearchParams({
+      days: days.toString(),
+    });
+
+    if (platform && platform !== "all") {
+      params.append("platform", platform);
+    }
+
+    const response = await fetch(
+      `${this.baseUrl}/content/analytics?${params}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to fetch content analytics");
+    }
+
+    return response.json();
+  }
+
+  async trackContentInteraction(
+    suggestionId: string,
+    actionType: "generated" | "viewed" | "saved" | "discarded" | "copied" | "used",
+    platform: string,
+    engagementScore?: number
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${this.baseUrl}/content/analytics`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        action_type: actionType,
+        platform,
+        engagement_score: engagementScore,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to track content interaction");
     }
 
     return response.json();
@@ -294,4 +451,20 @@ export const getPlatformIcon = (platform: string): string => {
     default:
       return "📱";
   }
+};
+
+export const getTrendingBadge = (trendingScore?: number): string => {
+  if (!trendingScore) return "";
+  if (trendingScore >= 80) return "🔥 Viral";
+  if (trendingScore >= 60) return "📈 Trending";
+  if (trendingScore >= 40) return "⭐ Popular";
+  return "";
+};
+
+export const getViralPotentialColor = (viralPotential?: number): string => {
+  if (!viralPotential) return "text-gray-400";
+  if (viralPotential >= 80) return "text-red-400";
+  if (viralPotential >= 60) return "text-orange-400";
+  if (viralPotential >= 40) return "text-yellow-400";
+  return "text-green-400";
 };

@@ -88,13 +88,12 @@ body {
   border-radius: 20px;
   box-shadow: var(--glass-shadow);
   transition: all 0.3s ease;
+  transform-style: preserve-3d;
 }
 
 .glass-card:hover {
   background: rgba(16, 185, 129, 0.12);
   border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .glass-input {
@@ -161,6 +160,11 @@ body {
   box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
 }
 
+.card-3d-hover:hover{
+    transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
+}
+
 /* Animated Gradients */
 .animated-gradient {
   background: linear-gradient(-45deg, #10b981, #ff6b35, #00f5ff, #10b981);
@@ -169,6 +173,61 @@ body {
 }
 
 @keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Swipe Animation Classes */
+.swipe-card {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
+}
+
+.swipe-card.swiping {
+  transition: none;
+}
+
+.swipe-card.swipe-left {
+  transform: translateX(-100%) rotate(-15deg);
+  opacity: 0;
+}
+
+.swipe-card.swipe-right {
+  transform: translateX(100%) rotate(15deg);
+  opacity: 0;
+}
+
+/* Trending Animation */
+@keyframes trending-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.trending-topic {
+  animation: trending-pulse 2s ease-in-out infinite;
+}
+
+/* Viral Potential Indicator */
+.viral-indicator {
+  background: linear-gradient(45deg, #ff6b35, #10b981, #00f5ff);
+  background-size: 200% 200%;
+  animation: viral-gradient 3s ease infinite;
+}
+
+@keyframes viral-gradient {
   0% {
     background-position: 0% 50%;
   }
@@ -242,4 +301,21 @@ body {
 
 .bg-theme-surface-hover {
   background-color: var(--surface-hover);
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
