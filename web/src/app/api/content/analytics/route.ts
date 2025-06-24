@@ -93,6 +93,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get analytics summary using the database function
+    // Fix: Change the parameter order to match the function definition (p_user_id, p_days)
     const { data: summaryData, error: summaryError } = await supabase.rpc(
       "get_user_analytics_summary",
       {
@@ -167,7 +168,7 @@ export async function GET(request: NextRequest) {
       acc[platform].count += 1;
 
       return acc;
-    }, {});
+    }, {} as Record<string, Record<string, number>>);
 
     // Calculate averages and rates for each platform
     const platformBreakdownArray = Object.values(platformBreakdown).map((platform: any) => ({
