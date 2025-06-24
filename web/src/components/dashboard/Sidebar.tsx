@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
@@ -90,14 +90,60 @@ const bottomNavigation = [
 
 export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // Check if current path matches a navigation item
   const isActive = (href: string) => {
     if (href === "/dashboard") {
       return pathname === "/dashboard";
     }
     return pathname.startsWith(href);
   };
+
+  // Initialize collapsed state based on screen size
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Set initial state based on screen width
+    const handleResize = () => {
+      if (window.innerWidth < 1024) { // md breakpoint is typically 768px, lg is 1024px
+        setIsCollapsed(true);
+      } else {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Clean up event listener
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Handle navigation item click
+  const handleNavClick = () => {
+    // On medium screens and below, collapse sidebar after navigation
+    if (window.innerWidth < 1024) {
+      setIsCollapsed(true);
+    }
+  };
+
+  // Don't render anything during SSR to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col h-full bg-surface/95 backdrop-blur-xl border-r border-emerald-500/20 transition-all duration-300 w-16",
+          className
+        )}
+      />
+    );
+  }
 
   return (
     <div
@@ -142,6 +188,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
                 active
@@ -208,6 +255,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
                 active
