@@ -17,6 +17,7 @@ import {
   Palette,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,12 @@ const navigation = [
     icon: Sparkles,
     description: "Generate content",
     badge: "AI",
+  },
+  {
+    name: "Saved Content",
+    href: "/dashboard/saved-content",
+    icon: BookOpen,
+    description: "Your content library",
   },
   {
     name: "Analytics",
