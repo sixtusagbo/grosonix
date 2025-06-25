@@ -312,6 +312,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Track the interaction using the database function
+    // Fix: Ensure parameters are passed in the correct order
     const { error: trackError } = await supabase.rpc("track_content_interaction", {
       p_user_id: user.id,
       p_suggestion_id: suggestion_id,
@@ -326,6 +327,7 @@ export async function POST(request: NextRequest) {
         {
           error: "Internal server error",
           message: "Failed to track interaction",
+          details: trackError
         },
         { status: 500 }
       );

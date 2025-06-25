@@ -121,6 +121,7 @@ export function SwipeableContentGenerator({
         use_trending_topics: true,
       });
 
+      // Update suggestions with proper UUIDs from the database
       setSuggestions(result.suggestions);
       setCurrentIndex(0);
       setRemainingQuota(result.remaining_quota);
