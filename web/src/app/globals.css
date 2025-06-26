@@ -319,3 +319,64 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Landing page specific styles */
+.hero-card {
+  transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+  transition: all 0.5s ease;
+}
+
+.hero-card:hover {
+  transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+}
+
+.feature-icon-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-icon-container::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-icon-container:hover::after {
+  opacity: 1;
+}
+
+.testimonial-card {
+  transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-10px);
+}
+
+.cta-gradient {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.8) 0%, rgba(0, 245, 255, 0.8) 100%);
+}
+
+.pricing-card {
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-10px);
+}
+
+.pricing-popular {
+  position: relative;
+  z-index: 10;
+  transform: scale(1.05);
+}
+
+.pricing-popular:hover {
+  transform: scale(1.08) translateY(-5px);
+}
