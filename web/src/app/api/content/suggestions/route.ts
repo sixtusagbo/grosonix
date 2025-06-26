@@ -109,9 +109,9 @@ export async function GET(request: Request) {
         .eq("is_saved", true)
         .order("created_at", { ascending: false });
 
-     if (platformFilter && platformFilter !== "all") {
-  query = query.eq("platform", platformFilter);
-}
+      if (platformFilter && platformFilter !== "all") {
+        query = query.eq("platform", platformFilter);
+      }
 
       const { data: savedSuggestions, error: savedError } = await query.limit(limit);
 
@@ -190,7 +190,7 @@ export async function GET(request: Request) {
       try {
         const generatedContent = await enhancedOpenaiService.generateEnhancedContent({
           prompt: `Create engaging content about ${topic}`,
-          platform: platformFilter as any,
+          platform: platformFilter as any || "twitter",
           tone: (styleProfile?.tone as any) || "professional",
           userStyle,
           maxTokens: 150,
@@ -206,7 +206,7 @@ export async function GET(request: Request) {
           .insert({
             user_id: user.id,
             content: generatedContent.content,
-            platformFilter,
+            platform: platformFilter || "twitter",
             hashtags: generatedContent.hashtags,
             engagement_score: Math.round(generatedContent.engagement_score),
             prompt: `Content about ${topic}`,
@@ -225,7 +225,7 @@ export async function GET(request: Request) {
         const suggestion = {
           id: storedSuggestion.id, // Use the UUID from the database
           content: generatedContent.content,
-          platformFilter,
+          platform: platformFilter || "twitter",
           hashtags: generatedContent.hashtags,
           engagement_score: generatedContent.engagement_score,
           trending_score: generatedContent.trending_score,
@@ -243,7 +243,7 @@ export async function GET(request: Request) {
             user.id,
             storedSuggestion.id, // Use the UUID from the database
             "generated",
-            platformFilter,
+            platformFilter || "twitter",
             Math.round(generatedContent.engagement_score),
           ]);
         } catch (trackError) {

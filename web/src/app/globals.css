@@ -371,12 +371,22 @@ body {
   transform: translateY(-10px);
 }
 
-.pricing-popular {
-  position: relative;
-  z-index: 10;
-  transform: scale(1.05);
-}
-
-.pricing-popular:hover {
-  transform: scale(1.08) translateY(-5px);
+/* Mobile-first responsive adjustments */
+@media (max-width: 640px) {
+  .glass-card {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  
+  .hero-card {
+    transform: none;
+  }
+  
+  .pricing-popular {
+    transform: none;
+  }
+  
+  .pricing-popular:hover {
+    transform: translateY(-10px);
+  }
 }
