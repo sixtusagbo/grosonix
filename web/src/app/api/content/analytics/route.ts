@@ -313,13 +313,13 @@ export async function POST(request: NextRequest) {
 
     // Track the interaction using the database function
     // Fix: Ensure parameters are passed in the correct order
-    const { error: trackError } = await supabase.rpc("track_content_interaction", {
-      p_user_id: user.id,
-      p_suggestion_id: suggestion_id,
-      p_action_type: action_type,
-      p_platform: platform,
-      p_engagement_score: engagement_score,
-    });
+    const { error: trackError } = await supabase.rpc("track_content_interaction", [
+      user.id,
+      suggestion_id,
+      action_type,
+      platform,
+      engagement_score,
+    ]);
 
     if (trackError) {
       console.error("Error tracking interaction:", trackError);

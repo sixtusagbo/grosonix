@@ -208,7 +208,7 @@ export async function GET(request: Request) {
             content: generatedContent.content,
             platform,
             hashtags: generatedContent.hashtags,
-            engagement_score: generatedContent.engagement_score,
+            engagement_score: Math.round(generatedContent.engagement_score),
             prompt: `Content about ${topic}`,
             tone: styleProfile?.tone || "professional",
             is_saved: false,
@@ -239,13 +239,13 @@ export async function GET(request: Request) {
 
         // Track content generation for analytics
         try {
-          await supabase.rpc("track_content_interaction", {
-            p_user_id: user.id,
-            p_suggestion_id: storedSuggestion.id, // Use the UUID from the database
-            p_action_type: "generated",
-            p_platform: platform,
-            p_engagement_score: generatedContent.engagement_score,
-          });
+          await supabase.rpc("track_content_interaction", [
+            user.id,
+            storedSuggestion.id, // Use the UUID from the database
+            "generated",
+            platform,
+            Math.round(generatedContent.engagement_score),
+          ]);
         } catch (trackError) {
           console.error("Error tracking content generation:", trackError);
         }
@@ -482,7 +482,7 @@ Please generate content that matches this specific voice and writing style.`;
         content: generatedContent.content,
         platform,
         hashtags: generatedContent.hashtags,
-        engagement_score: generatedContent.engagement_score,
+        engagement_score: Math.round(generatedContent.engagement_score),
         prompt,
         tone,
         is_saved: false,
@@ -504,7 +504,7 @@ Please generate content that matches this specific voice and writing style.`;
       content: generatedContent.content,
       platform,
       hashtags: generatedContent.hashtags,
-      engagement_score: generatedContent.engagement_score,
+      engagement_score: Math.round(generatedContent.engagement_score),
       trending_score: generatedContent.trending_score,
       viral_potential: generatedContent.viral_potential,
       hashtag_analysis: generatedContent.hashtag_analysis,
@@ -514,13 +514,13 @@ Please generate content that matches this specific voice and writing style.`;
 
     // Track content generation for analytics
     try {
-      await supabase.rpc("track_content_interaction", {
-        p_user_id: user.id,
-        p_suggestion_id: storedSuggestion.id, // Use the UUID from the database
-        p_action_type: "generated",
-        p_platform: platform,
-        p_engagement_score: generatedContent.engagement_score,
-      });
+      await supabase.rpc("track_content_interaction", [
+        user.id,
+        storedSuggestion.id, // Use the UUID from the database
+        "generated",
+        platform,
+        Math.round(generatedContent.engagement_score),
+      ]);
     } catch (trackError) {
       console.error("Error tracking content generation:", trackError);
     }
@@ -691,23 +691,23 @@ export async function PATCH(request: NextRequest) {
     // Track the action if saving or marking as used
     try {
       if (typeof is_saved === "boolean") {
-        await supabase.rpc("track_content_interaction", {
-          p_user_id: user.id,
-          p_suggestion_id: suggestion_id,
-          p_action_type: is_saved ? "saved" : "discarded",
-          p_platform: updatedSuggestion.platform,
-          p_engagement_score: updatedSuggestion.engagement_score || 0,
-        });
+        await supabase.rpc("track_content_interaction", [
+          user.id,
+          suggestion_id,
+          is_saved ? "saved" : "discarded",
+          updatedSuggestion.platform,
+          Math.round(updatedSuggestion.engagement_score || 0),
+        ]);
       }
 
       if (typeof is_used === "boolean" && is_used) {
-        await supabase.rpc("track_content_interaction", {
-          p_user_id: user.id,
-          p_suggestion_id: suggestion_id,
-          p_action_type: "used",
-          p_platform: updatedSuggestion.platform,
-          p_engagement_score: updatedSuggestion.engagement_score || 0,
-        });
+        await supabase.rpc("track_content_interaction", [
+          user.id,
+          suggestion_id,
+          "used",
+          updatedSuggestion.platform,
+          Math.round(updatedSuggestion.engagement_score || 0),
+        ]);
       }
     } catch (trackError) {
       console.error("Error tracking suggestion update:", trackError);
