@@ -134,10 +134,6 @@ export function SavedContentList({
     setContentToSchedule(null);
   };
 
-  const filteredSavedContent = savedContent.filter(content => 
-    savedContentFilter === "all" || content.platform === savedContentFilter
-  );
-
   return (
     <div className={className}>
       {showHeader && (
@@ -147,7 +143,7 @@ export function SavedContentList({
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-emerald-500" />
                 <CardTitle className="text-theme-primary">
-                  Saved Content ({filteredSavedContent.length})
+                  Saved Content ({savedContent.length})
                 </CardTitle>
               </div>
               <div className="flex items-center gap-2">
@@ -188,9 +184,9 @@ export function SavedContentList({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
               <p className="text-theme-secondary mt-2">Loading saved content...</p>
             </div>
-          ) : filteredSavedContent.length > 0 ? (
+          ) : savedContent.length > 0 ? (
             <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {filteredSavedContent.slice(0, limit).map((content) => (
+              {savedContent.slice(0, limit).map((content) => (
                 <div 
                   key={content.id} 
                   className="p-4 bg-surface rounded-lg border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
