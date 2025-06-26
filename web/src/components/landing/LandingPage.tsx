@@ -471,10 +471,10 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="glass-card border-emerald-500/20 p-10 rounded-2xl bg-mesh-gradient bg-cover bg-center relative overflow-hidden">
             <div className="relative z-10 max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-black">
                 Ready to Transform Your Social Media Presence?
               </h2>
-              <p className="text-xl text-white/90 mb-8">
+              <p className="text-xl text-black/90 mb-8">
                 Join thousands of creators and businesses using Grosonix to grow their audience and engagement.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -485,12 +485,12 @@ export function LandingPage() {
                   </Button>
                 </Link>
                 <Link href="/auth/login">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="border-white text-emerald-500 hover:bg-white/10">
                     Login
                   </Button>
                 </Link>
               </div>
-              <p className="mt-6 text-sm text-white/80">
+              <p className="mt-6 text-sm text-black/80">
                 No credit card required. Free plan available with no time limit.
               </p>
             </div>
