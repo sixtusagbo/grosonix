@@ -43,7 +43,7 @@ export function ProfileSettings({ profile }: ProfileSettingsProps) {
 
   return (
     <div className="glass-card p-6">
-      <h2 className="text-xl font-semibold text-white mb-6">
+      <h2 className="text-xl font-semibold text-black mb-6">
         Profile Settings
       </h2>
 
