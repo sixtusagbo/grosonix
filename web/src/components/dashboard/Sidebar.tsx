@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,15 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
     }
   };
 
+  // Handle toggle click
+  const handleToggleClick = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setIsCollapsedInternal(!isCollapsedInternal);
+    }
+  };
+
   // Don't render anything during SSR to prevent hydration mismatch
   if (!isMounted) {
     return (
@@ -175,6 +185,23 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
             </span>
           </Link>
         )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleToggleClick}
+          className={cn(
+            "h-8 w-8 p-0 hover:bg-emerald-500/10 hover:text-emerald-400",
+            collapsed && isMobile && "mx-auto"
+          )}>
+          {isMobile && !collapsed ? (
+            <X className="h-4 w-4" />
+          ) : collapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
       </div>
 
       {/* Navigation */}
