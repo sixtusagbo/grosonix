@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 
 export default async function DashboardLayout({
   children,
@@ -32,18 +33,5 @@ export default async function DashboardLayout({
     redirect("/auth/login");
   }
 
-  return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <DashboardNav user={user} />
-        <main className="flex-1 p-6 bg-background">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
-      </div>
-    </div>
-  );
+  return <DashboardLayoutClient user={user}>{children}</DashboardLayoutClient>;
 }

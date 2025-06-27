@@ -120,7 +120,7 @@ export function DashboardMetrics({ socialAccounts }: DashboardMetricsProps) {
       {/* Enhanced Header with Real-time Controls */}
       <Card className="glass-card border-emerald-500/20">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
             <div>
               <CardTitle className="flex items-center gap-2 text-theme-primary">
                 <BarChart3 className="w-5 h-5 text-emerald-500" />
@@ -137,7 +137,7 @@ export function DashboardMetrics({ socialAccounts }: DashboardMetricsProps) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <PlatformSelector
                 selectedPlatform={selectedPlatform}
                 onPlatformChange={setSelectedPlatform}

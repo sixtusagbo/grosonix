@@ -180,9 +180,9 @@
 
 - [x] Platform-specific content formatting
 - [x] Character limits and format adjustments
-- [ ] Hashtag optimization per platform
-- [ ] Preview system for adapted content
-- [ ] Feature usage limits implementation (Free: 5 suggestions/day)
+- [x] Hashtag optimization per platform
+- [x] Preview system for adapted content
+- [x] Feature usage limits implementation (Free: 5 suggestions/day)
 - [ ] Usage tracking and analytics
 
 #### Deliverables

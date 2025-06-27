@@ -381,13 +381,13 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
   return (
     <Card className="glass-card border-emerald-500/20">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-theme-primary">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <CardTitle className="flex items-center gap-2 text-theme-primary mb-2 md:mb-0">
             <TrendingUp className="w-5 h-5 text-emerald-500" />
             Growth Analytics
           </CardTitle>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select
               value={selectedView}
               onValueChange={(value: any) => setSelectedView(value)}>

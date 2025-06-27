@@ -25,10 +25,10 @@ export class ContentFormatter {
         formattedContent = this.formatForTwitter(formattedContent, maxLength);
         break;
       case 'instagram':
-        formattedContent = this.formatForInstagram(formattedContent);
+        formattedContent = this.formatForInstagram(formattedContent, maxLength);
         break;
       case 'linkedin':
-        formattedContent = this.formatForLinkedIn(formattedContent);
+        formattedContent = this.formatForLinkedIn(formattedContent, maxLength);
         break;
     }
     
@@ -54,24 +54,36 @@ export class ContentFormatter {
   private static formatForTwitter(content: string, maxLength: number = 280): string {
     // Ensure content fits Twitter's character limit
     if (content.length > maxLength) {
-      // Try to cut at a sentence boundary
-      const sentences = content.split(/(?<=[.!?])\s+/);
-      let truncated = '';
-      
-      for (const sentence of sentences) {
-        if ((truncated + sentence).length <= maxLength - 3) {
-          truncated += (truncated ? ' ' : '') + sentence;
-        } else {
-          break;
-        }
-      }
-      
-      content = truncated || content.substring(0, maxLength - 3);
-      content += '...';
+      content = this.truncateToLastCompleteSentence(content, maxLength);
     }
     
     // Add strategic line breaks for readability
     return this.addTwitterLineBreaks(content);
+  }
+
+  /**
+   * Truncate text to the last complete sentence within maxLength
+   */
+  private static truncateToLastCompleteSentence(text: string, maxLength: number): string {
+    if (text.length <= maxLength) return text;
+    
+    // Find the last sentence boundary within the maxLength
+    const truncated = text.substring(0, maxLength);
+    const sentenceEndMatch = truncated.match(/[.!?][^\w]*$/);
+    
+    if (sentenceEndMatch) {
+      // Found a sentence end, truncate there
+      return truncated.substring(0, sentenceEndMatch.index + 1);
+    } else {
+      // Try to find the last complete word
+      const lastSpaceIndex = truncated.lastIndexOf(' ');
+      if (lastSpaceIndex > maxLength * 0.8) { // Only truncate at word if it's not too far back
+        return truncated.substring(0, lastSpaceIndex) + '...';
+      } else {
+        // If no good truncation point, just cut at maxLength - 3 and add ellipsis
+        return truncated.substring(0, maxLength - 3) + '...';
+      }
+    }
   }
 
   /**
@@ -106,7 +118,12 @@ export class ContentFormatter {
   /**
    * Format content for Instagram
    */
-  private static formatForInstagram(content: string): string {
+  private static formatForInstagram(content: string, maxLength?: number): string {
+    // Apply length limit if specified
+    if (maxLength && content.length > maxLength) {
+      content = this.truncateToLastCompleteSentence(content, maxLength);
+    }
+    
     // Instagram benefits from visual breaks and engaging structure
     const sentences = content.split(/(?<=[.!?])\s+/);
     
@@ -141,7 +158,12 @@ export class ContentFormatter {
   /**
    * Format content for LinkedIn with professional structure
    */
-  private static formatForLinkedIn(content: string): string {
+  private static formatForLinkedIn(content: string, maxLength?: number): string {
+    // Apply length limit if specified
+    if (maxLength && content.length > maxLength) {
+      content = this.truncateToLastCompleteSentence(content, maxLength);
+    }
+    
     // If content already has proper formatting, preserve it
     if (content.includes('\n\n')) {
       return content;

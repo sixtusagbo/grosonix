@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { PLATFORM_LIMITS } from "../../types/ai";
+import { ContentFormatter } from "./content-formatter";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -278,10 +280,10 @@ export class OpenAIService {
     platform: string
   ): GeneratedContent {
     // Try to parse structured response first
-    const structuredContent = this.parseStructuredResponse(text);
+    const structuredContent = this.parseStructuredResponse(text, platform);
     if (structuredContent) {
       return {
-        content: this.optimizeForPlatform(structuredContent.content, platform),
+        content: structuredContent.content,
         hashtags: structuredContent.hashtags,
         engagement_score: structuredContent.score,
         platform_optimized: true,
@@ -291,16 +293,25 @@ export class OpenAIService {
     // Fallback: treat entire text as content
     const content = text.trim();
     const hashtags = this.extractHashtagsFromText(content);
+    
+    // Format the content using ContentFormatter
+    const platformType = platform as 'twitter' | 'instagram' | 'linkedin';
+    const maxLength = PLATFORM_LIMITS[platformType]?.maxCharacters;
+    const formattedContent = ContentFormatter.formatForPlatform(content, {
+      platform: platformType,
+      maxLength,
+      preserveLineBreaks: true
+    });
 
     return {
-      content: this.optimizeForPlatform(content, platform),
+      content: formattedContent,
       hashtags,
       engagement_score: 75,
       platform_optimized: true,
     };
   }
 
-  private parseStructuredResponse(text: string): {
+  private parseStructuredResponse(text: string, platform: string): {
     content: string;
     hashtags: string[];
     score: number;
@@ -316,14 +327,14 @@ export class OpenAIService {
     // Clean up content - remove any trailing HASHTAGS or SCORE lines
     content = content.replace(/\s*(HASHTAGS:|SCORE:)[\s\S]*$/i, '').trim();
 
-    // Ensure proper paragraph formatting for LinkedIn
-    if (content.includes('\n') && !content.includes('\n\n')) {
-      // Convert single line breaks to double line breaks for paragraph separation
-      const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-      if (lines.length > 1) {
-        content = lines.join('\n\n');
-      }
-    }
+    // Format the content using ContentFormatter
+    const platformType = platform as 'twitter' | 'instagram' | 'linkedin';
+    const maxLength = PLATFORM_LIMITS[platformType]?.maxCharacters;
+    const formattedContent = ContentFormatter.formatForPlatform(content, {
+      platform: platformType,
+      maxLength,
+      preserveLineBreaks: true
+    });
 
     const hashtags = hashtagsMatch
       ? hashtagsMatch[1]
@@ -336,7 +347,7 @@ export class OpenAIService {
     const score = scoreMatch ? parseInt(scoreMatch[1]) : 75;
 
     return {
-      content,
+      content: formattedContent,
       hashtags,
       score: Math.min(Math.max(score, 1), 100)
     };
@@ -345,84 +356,6 @@ export class OpenAIService {
   private extractHashtagsFromText(text: string): string[] {
     const hashtagRegex = /#[\w]+/g;
     return text.match(hashtagRegex) || [];
-  }
-
-  private optimizeForPlatform(content: string, platform: string): string {
-    // First, ensure proper formatting
-    content = this.formatContent(content, platform);
-
-    switch (platform) {
-      case "twitter":
-        // Ensure Twitter character limit
-        if (content.length > 280) {
-          content = content.substring(0, 277) + "...";
-        }
-        break;
-
-      case "instagram":
-        // Instagram allows longer content, ensure good formatting
-        content = this.ensureInstagramFormatting(content);
-        break;
-
-      case "linkedin":
-        // LinkedIn allows long content, ensure professional formatting
-        content = this.ensureLinkedInFormatting(content);
-        break;
-    }
-
-    return content;
-  }
-
-  private formatContent(content: string, platform: string): string {
-    // Clean up any existing formatting issues
-    content = content.replace(/\n{3,}/g, '\n\n'); // Replace 3+ line breaks with 2
-    content = content.replace(/^\s+|\s+$/g, ''); // Trim whitespace
-
-    return content;
-  }
-
-  private ensureInstagramFormatting(content: string): string {
-    // Ensure Instagram content has good visual breaks
-    const sentences = content.split(/(?<=[.!?])\s+/);
-    if (sentences.length > 3) {
-      // Group sentences into paragraphs for better readability
-      const paragraphs = [];
-      for (let i = 0; i < sentences.length; i += 2) {
-        const paragraph = sentences.slice(i, i + 2).join(' ');
-        paragraphs.push(paragraph);
-      }
-      return paragraphs.join('\n\n');
-    }
-    return content;
-  }
-
-  private ensureLinkedInFormatting(content: string): string {
-    // Ensure LinkedIn content has professional paragraph structure
-    if (!content.includes('\n\n')) {
-      // If no paragraph breaks exist, create them intelligently
-      const sentences = content.split(/(?<=[.!?])\s+/);
-      if (sentences.length > 2) {
-        const paragraphs = [];
-
-        // First paragraph (hook/opening)
-        paragraphs.push(sentences[0]);
-
-        // Middle paragraphs (main content)
-        if (sentences.length > 3) {
-          const middleContent = sentences.slice(1, -1).join(' ');
-          paragraphs.push(middleContent);
-        }
-
-        // Last paragraph (call to action/conclusion)
-        if (sentences.length > 1) {
-          paragraphs.push(sentences[sentences.length - 1]);
-        }
-
-        return paragraphs.join('\n\n');
-      }
-    }
-
-    return content;
   }
 }
 

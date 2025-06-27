@@ -100,7 +100,10 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+      <DropdownMenuContent 
+        align="end" 
+        className="w-full sm:w-80 max-h-[80vh] overflow-y-auto"
+      >
         <div className="flex items-center justify-between p-4">
           <h3 className="font-semibold">Notifications</h3>
           <div className="flex items-center gap-2">

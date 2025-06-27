@@ -108,7 +108,8 @@ export function PlatformSelector({
         style={{
           top: buttonRect.bottom + window.scrollY + 8,
           left: buttonRect.left + window.scrollX,
-          width: buttonRect.width,
+          width: Math.max(buttonRect.width, 200),
+          maxWidth: "calc(100vw - 32px)",
         }}>
         {platforms.map((platform) => (
           <button
@@ -146,13 +147,13 @@ export function PlatformSelector({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 bg-surface border border-emerald-500/20 rounded-lg px-4 py-3 hover:border-emerald-500/40 transition-all min-w-[200px]">
+        className="flex items-center space-x-3 bg-surface border border-emerald-500/20 rounded-lg px-3 py-2 sm:px-4 sm:py-3 hover:border-emerald-500/40 transition-all min-w-[160px] sm:min-w-[200px]">
         <span className="text-xl">{selectedPlatformData?.icon}</span>
         <div className="flex-1 text-left">
           <div className={`font-medium ${selectedPlatformData?.color}`}>
             {selectedPlatformData?.name}
           </div>
-          <div className="text-xs text-text-muted">
+          <div className="text-xs text-text-muted hidden sm:block">
             {selectedPlatformData?.description}
           </div>
         </div>

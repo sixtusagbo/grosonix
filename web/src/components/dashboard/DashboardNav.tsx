@@ -6,7 +6,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
-import { Bell, Search, User as UserIcon, LogOut, Crown } from "lucide-react";
+import { Bell, Search, User as UserIcon, LogOut, Crown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,9 +19,11 @@ import {
 
 interface DashboardNavProps {
   user: User;
+  toggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }
 
-export function DashboardNav({ user }: DashboardNavProps) {
+export function DashboardNav({ user, toggleSidebar, isSidebarOpen }: DashboardNavProps) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -36,22 +38,36 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
   return (
     <nav className="bg-surface/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-40">
-      <div className="px-6">
+      <div className="px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
+          {/* Sidebar Toggle for Mobile */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="lg:hidden mr-2"
+          >
+            {isSidebarOpen ? (
+              <ChevronLeft className="h-5 w-5" />
+            ) : (
+              <ChevronRight className="h-5 w-5" />
+            )}
+          </Button>
+
           {/* Search Bar */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-xs sm:max-w-md">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search content, analytics, settings..."
+                placeholder="Search..."
                 className="glass-input w-full pl-10 pr-4 py-2 text-sm"
               />
             </div>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notifications */}
             <NotificationCenter userId={user.id} />
 
@@ -63,12 +79,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-9 px-3 hover:bg-emerald-500/10 hover:text-emerald-400">
+                  className="h-9 px-2 sm:px-3 hover:bg-emerald-500/10 hover:text-emerald-400">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-hero-gradient rounded-full flex items-center justify-center">
                       <UserIcon className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-text-secondary">
+                    <span className="text-sm font-medium text-text-secondary hidden sm:inline">
                       {user.email?.split("@")[0]}
                     </span>
                   </div>

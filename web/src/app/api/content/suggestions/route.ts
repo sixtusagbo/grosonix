@@ -70,7 +70,7 @@ import { RateLimiter } from "@/lib/ai/rate-limiter";
 export async function GET(request: Request) {
   const cookieStore = cookies();
   const { searchParams } = new URL(request.url);
-  const platform = searchParams.get("platform") || "twitter";
+  const platformFilter = searchParams.get("platform");
   const topic = searchParams.get("topic") || "general";
   const limit = parseInt(searchParams.get("limit") || "10");
   const savedOnly = searchParams.get("saved_only") === "true";
@@ -109,8 +109,8 @@ export async function GET(request: Request) {
         .eq("is_saved", true)
         .order("created_at", { ascending: false });
 
-      if (platform !== "all") {
-        query = query.eq("platform", platform);
+      if (platformFilter && platformFilter !== "all") {
+        query = query.eq("platform", platformFilter);
       }
 
       const { data: savedSuggestions, error: savedError } = await query.limit(limit);
@@ -190,7 +190,7 @@ export async function GET(request: Request) {
       try {
         const generatedContent = await enhancedOpenaiService.generateEnhancedContent({
           prompt: `Create engaging content about ${topic}`,
-          platform: platform as any,
+          platform: platformFilter as any || "twitter",
           tone: (styleProfile?.tone as any) || "professional",
           userStyle,
           maxTokens: 150,
@@ -200,10 +200,32 @@ export async function GET(request: Request) {
           topic,
         });
 
+        // Store suggestion in database first to get a proper UUID
+        const { data: storedSuggestion, error: insertError } = await supabase
+          .from("content_suggestions")
+          .insert({
+            user_id: user.id,
+            content: generatedContent.content,
+            platform: platformFilter || "twitter",
+            hashtags: generatedContent.hashtags,
+            engagement_score: Math.round(generatedContent.engagement_score),
+            prompt: `Content about ${topic}`,
+            tone: styleProfile?.tone || "professional",
+            is_saved: false,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Error storing suggestion:", insertError);
+          continue;
+        }
+
+        // Use the database-generated UUID for the suggestion
         const suggestion = {
-          id: `suggestion-${Date.now()}-${i}`,
+          id: storedSuggestion.id, // Use the UUID from the database
           content: generatedContent.content,
-          platform,
+          platform: platformFilter || "twitter",
           hashtags: generatedContent.hashtags,
           engagement_score: generatedContent.engagement_score,
           trending_score: generatedContent.trending_score,
@@ -215,17 +237,18 @@ export async function GET(request: Request) {
 
         suggestions.push(suggestion);
 
-        // Store suggestion in database
-        await supabase.from("content_suggestions").insert({
-          user_id: user.id,
-          content: suggestion.content,
-          platform,
-          hashtags: suggestion.hashtags,
-          engagement_score: suggestion.engagement_score,
-          prompt: `Content about ${topic}`,
-          tone: styleProfile?.tone || "professional",
-          is_saved: false,
-        });
+        // Track content generation for analytics
+        try {
+          await supabase.rpc("track_content_interaction", [
+            user.id,
+            storedSuggestion.id, // Use the UUID from the database
+            "generated",
+            platformFilter || "twitter",
+            Math.round(generatedContent.engagement_score),
+          ]);
+        } catch (trackError) {
+          console.error("Error tracking content generation:", trackError);
+        }
       } catch (error) {
         console.error("Error generating suggestion:", error);
         // Continue with other suggestions even if one fails
@@ -451,34 +474,55 @@ Please generate content that matches this specific voice and writing style.`;
       topic,
     });
 
+    // Store suggestion in database to get a proper UUID
+    const { data: storedSuggestion, error: insertError } = await supabase
+      .from("content_suggestions")
+      .insert({
+        user_id: user.id,
+        content: generatedContent.content,
+        platform,
+        hashtags: generatedContent.hashtags,
+        engagement_score: Math.round(generatedContent.engagement_score),
+        prompt,
+        tone,
+        is_saved: false,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Error storing suggestion:", insertError);
+      return Response.json(
+        { error: "Database error", message: "Failed to store suggestion" },
+        { status: 500 }
+      );
+    }
+
+    // Create the response object with the database-generated UUID
     const customSuggestion = {
-      id: `custom-${Date.now()}`,
+      id: storedSuggestion.id, // Use the UUID from the database
       content: generatedContent.content,
       platform,
       hashtags: generatedContent.hashtags,
-      engagement_score: generatedContent.engagement_score,
+      engagement_score: Math.round(generatedContent.engagement_score),
       trending_score: generatedContent.trending_score,
       viral_potential: generatedContent.viral_potential,
       hashtag_analysis: generatedContent.hashtag_analysis,
-      created_at: new Date().toISOString(),
+      created_at: storedSuggestion.created_at,
       is_saved: false,
     };
 
-    // Store suggestion in database
-    const { data: storedSuggestion } = await supabase.from("content_suggestions").insert({
-      user_id: user.id,
-      content: customSuggestion.content,
-      platform,
-      hashtags: customSuggestion.hashtags,
-      engagement_score: customSuggestion.engagement_score,
-      prompt,
-      tone,
-      is_saved: false,
-    }).select().single();
-
-    // Update the suggestion ID with the database ID
-    if (storedSuggestion) {
-      customSuggestion.id = storedSuggestion.id;
+    // Track content generation for analytics
+    try {
+      await supabase.rpc("track_content_interaction", [
+        user.id,
+        storedSuggestion.id, // Use the UUID from the database
+        "generated",
+        platform,
+        Math.round(generatedContent.engagement_score),
+      ]);
+    } catch (trackError) {
+      console.error("Error tracking content generation:", trackError);
     }
 
     // Increment usage tracking
@@ -593,6 +637,17 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Check if the suggestion ID is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(suggestion_id)) {
+      // If it's not a UUID, try to find the suggestion by content
+      console.error("Invalid UUID format for suggestion_id:", suggestion_id);
+      return Response.json(
+        { error: "Bad request", message: "Invalid suggestion ID format" },
+        { status: 400 }
+      );
+    }
+
     // Prepare update data
     const updateData: any = {};
     if (typeof is_saved === "boolean") {
@@ -621,7 +676,7 @@ export async function PATCH(request: NextRequest) {
     if (updateError) {
       console.error("Error updating suggestion:", updateError);
       return Response.json(
-        { error: "Internal server error", message: "Failed to update suggestion" },
+        { error: "Internal server error", message: "Failed to update suggestion", details: updateError },
         { status: 500 }
       );
     }
@@ -631,6 +686,32 @@ export async function PATCH(request: NextRequest) {
         { error: "Not found", message: "Suggestion not found or access denied" },
         { status: 404 }
       );
+    }
+
+    // Track the action if saving or marking as used
+    try {
+      if (typeof is_saved === "boolean") {
+        await supabase.rpc("track_content_interaction", [
+          user.id,
+          suggestion_id,
+          is_saved ? "saved" : "discarded",
+          updatedSuggestion.platform,
+          Math.round(updatedSuggestion.engagement_score || 0),
+        ]);
+      }
+
+      if (typeof is_used === "boolean" && is_used) {
+        await supabase.rpc("track_content_interaction", [
+          user.id,
+          suggestion_id,
+          "used",
+          updatedSuggestion.platform,
+          Math.round(updatedSuggestion.engagement_score || 0),
+        ]);
+      }
+    } catch (trackError) {
+      console.error("Error tracking suggestion update:", trackError);
+      // Continue despite tracking error
     }
 
     // Transform to API format

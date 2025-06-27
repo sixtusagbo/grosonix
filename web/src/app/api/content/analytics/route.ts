@@ -93,6 +93,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get analytics summary using the database function
+    // Fix: Change the parameter order to match the function definition (p_user_id, p_days)
     const { data: summaryData, error: summaryError } = await supabase.rpc(
       "get_user_analytics_summary",
       {
@@ -167,7 +168,7 @@ export async function GET(request: NextRequest) {
       acc[platform].count += 1;
 
       return acc;
-    }, {});
+    }, {} as Record<string, Record<string, number>>);
 
     // Calculate averages and rates for each platform
     const platformBreakdownArray = Object.values(platformBreakdown).map((platform: any) => ({
@@ -311,13 +312,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Track the interaction using the database function
-    const { error: trackError } = await supabase.rpc("track_content_interaction", {
-      p_user_id: user.id,
-      p_suggestion_id: suggestion_id,
-      p_action_type: action_type,
-      p_platform: platform,
-      p_engagement_score: engagement_score,
-    });
+    // Fix: Ensure parameters are passed in the correct order
+    const { error: trackError } = await supabase.rpc("track_content_interaction", [
+      user.id,
+      suggestion_id,
+      action_type,
+      platform,
+      engagement_score,
+    ]);
 
     if (trackError) {
       console.error("Error tracking interaction:", trackError);
@@ -325,6 +327,7 @@ export async function POST(request: NextRequest) {
         {
           error: "Internal server error",
           message: "Failed to track interaction",
+          details: trackError
         },
         { status: 500 }
       );

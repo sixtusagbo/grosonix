@@ -1,12 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Goal, GoalTracker } from "@/lib/analytics/goal-tracker";
+import { Progress } from "@/components/ui/progress";
+import { useGoals } from "@/hooks/useGoals";
 import {
   AlertTriangle,
   Calendar,
@@ -18,7 +19,6 @@ import {
   Trash2,
   X
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface GoalSettingProps {
@@ -26,43 +26,50 @@ interface GoalSettingProps {
 }
 
 export function GoalSetting({ socialAccounts }: GoalSettingProps) {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [editingGoal, setEditingGoal] = useState<any | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [isDemoMode, setIsDemoMode] = useState(false);
 
-  const [newGoal, setNewGoal] = useState({
-    title: "",
-    description: "",
-    metric_type: "followers",
-    target_value: 0,
-    start_value: 0,
-    platform: "",
-    deadline: "",
-    priority: "medium",
-    milestones: [] as number[]
-  });
+  const {
+    goals,
+    loading,
+    error,
+    summary,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    updateProgress,
+    refetch
+  } = useGoals();
 
   // Enhanced goal form state for better UX
   const [goalForm, setGoalForm] = useState({
     title: "",
     description: "",
-    metric_type: "followers" as Goal['metric_type'],
+    goal_type: "followers" as any,
     target_value: "",
     start_value: "",
     platform: "",
     deadline: "",
-    priority: "medium" as Goal['priority'],
+    priority: "medium" as any,
     milestones: [] as number[]
   });
 
-  const goalTracker = new GoalTracker();
-
-  useEffect(() => {
-    fetchGoals();
-  }, []);
+  // Reset form function
+  const resetGoalForm = () => {
+    setGoalForm({
+      title: "",
+      description: "",
+      goal_type: "followers",
+      target_value: "",
+      start_value: "",
+      platform: "",
+      deadline: "",
+      priority: "medium",
+      milestones: []
+    });
+    setValidationErrors({});
+  };
 
   // Validation function
   const validateGoalForm = (form: typeof goalForm): Record<string, string> => {
@@ -106,22 +113,6 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     return errors;
   };
 
-  // Reset form function
-  const resetGoalForm = () => {
-    setGoalForm({
-      title: "",
-      description: "",
-      metric_type: "followers",
-      target_value: "",
-      start_value: "",
-      platform: "",
-      deadline: "",
-      priority: "medium",
-      milestones: []
-    });
-    setValidationErrors({});
-  };
-
   // Add milestone function
   const addMilestone = () => {
     const targetValue = parseInt(goalForm.target_value);
@@ -151,75 +142,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     });
   };
 
-  // Create demo goals for when API is not available
-  const createDemoGoals = (): Goal[] => {
-    const now = new Date();
-    const futureDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-    const farFutureDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 days from now
-
-    return [
-      {
-        id: 'demo-1',
-        user_id: 'demo-user',
-        title: 'Reach 10K Twitter Followers',
-        description: 'Grow Twitter following through consistent content and engagement',
-        metric_type: 'followers',
-        target_value: 10000,
-        start_value: 7500,
-        current_value: 8200,
-        platform: 'twitter',
-        deadline: futureDate.toISOString().split('T')[0],
-        priority: 'high',
-        milestones: [8000, 9000, 9500],
-        achieved_milestones: [8000],
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'demo-2',
-        user_id: 'demo-user',
-        title: 'Improve Instagram Engagement',
-        description: 'Increase engagement rate through better content strategy',
-        metric_type: 'engagement',
-        target_value: 5,
-        start_value: 2,
-        current_value: 3.2,
-        platform: 'instagram',
-        deadline: farFutureDate.toISOString().split('T')[0],
-        priority: 'medium',
-        milestones: [3, 4, 4.5],
-        achieved_milestones: [3],
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
-  };
-
-  const fetchGoals = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/goals");
-      if (response.ok) {
-        const data = await response.json();
-        setGoals(data.goals || []);
-        setIsDemoMode(false);
-      } else {
-        // Handle API errors gracefully - load demo goals instead
-        console.log("Goals API not available, loading demo goals");
-        setGoals(createDemoGoals());
-        setIsDemoMode(true);
-      }
-    } catch (error) {
-      // Network errors are expected in demo mode - load demo goals
-      console.log("Goals API not available, loading demo goals");
-      setGoals(createDemoGoals());
-      setIsDemoMode(true);
-    } finally {
-      setLoading(false);
+  // Initialize form data when goal changes
+  useEffect(() => {
+    if (editingGoal) {
+      setGoalForm({
+        title: editingGoal.title,
+        description: editingGoal.description || "",
+        goal_type: editingGoal.goal_type,
+        target_value: editingGoal.target_value.toString(),
+        start_value: editingGoal.start_value.toString(),
+        platform: editingGoal.platform || "",
+        deadline: editingGoal.target_date,
+        priority: editingGoal.priority,
+        milestones: editingGoal.milestones || []
+      });
     }
-  };
+  }, [editingGoal]);
 
   const handleCreateGoal = async () => {
     // Validate form
@@ -235,70 +173,26 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
       const goalData = {
         title: goalForm.title,
         description: goalForm.description,
-        metric_type: goalForm.metric_type,
+        goal_type: goalForm.goal_type,
         target_value: parseInt(goalForm.target_value),
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
-        deadline: goalForm.deadline,
+        target_date: goalForm.deadline,
         priority: goalForm.priority,
+        is_public: false,
         milestones: goalForm.milestones
       };
 
-      const goal = await goalTracker.createGoal(goalData);
-      if (goal) {
-        setGoals([...goals, goal]);
-        setShowNewGoalForm(false);
-        resetGoalForm();
-        toast.success("Goal created successfully");
-      } else {
-        // If API fails, create a mock goal for demo purposes
-        const mockGoal: Goal = {
-          id: `mock-${Date.now()}`,
-          user_id: 'demo-user',
-          title: goalData.title,
-          description: goalData.description,
-          metric_type: goalData.metric_type,
-          target_value: goalData.target_value,
-          start_value: goalData.start_value,
-          current_value: goalData.start_value,
-          platform: goalData.platform,
-          deadline: goalData.deadline,
-          priority: goalData.priority,
-          milestones: goalData.milestones,
-          achieved_milestones: [],
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        setGoals([...goals, mockGoal]);
-        setShowNewGoalForm(false);
-        resetGoalForm();
-        toast.success("Goal created successfully (demo mode)");
-      }
-    } catch (error) {
-      console.error("Error creating goal:", error);
+      await createGoal(goalData);
+      setShowNewGoalForm(false);
+      resetGoalForm();
+      toast.success("Goal created successfully");
+    } catch (err) {
+      console.error("Error creating goal:", err);
       toast.error("Failed to create goal");
     }
   };
 
-  // Edit goal function
-  const handleEditGoal = (goal: Goal) => {
-    setEditingGoal(goal);
-    setGoalForm({
-      title: goal.title,
-      description: goal.description || "",
-      metric_type: goal.metric_type,
-      target_value: goal.target_value.toString(),
-      start_value: goal.start_value.toString(),
-      platform: goal.platform,
-      deadline: goal.deadline,
-      priority: goal.priority,
-      milestones: goal.milestones
-    });
-    setShowNewGoalForm(true);
-  };
-
-  // Update goal function
   const handleUpdateGoal = async () => {
     if (!editingGoal) return;
 
@@ -312,20 +206,19 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
 
     try {
       const updatedGoalData = {
-        ...editingGoal,
         title: goalForm.title,
         description: goalForm.description,
-        metric_type: goalForm.metric_type,
+        goal_type: goalForm.goal_type,
         target_value: parseInt(goalForm.target_value),
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
-        deadline: goalForm.deadline,
+        target_date: goalForm.deadline,
         priority: goalForm.priority,
+        is_public: false,
         milestones: goalForm.milestones
       };
 
-      // Update in local state (in real app, would call API)
-      setGoals(goals.map(g => g.id === editingGoal.id ? updatedGoalData : g));
+      await updateGoal(editingGoal.id, updatedGoalData);
       setShowNewGoalForm(false);
       setEditingGoal(null);
       resetGoalForm();
@@ -343,29 +236,23 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     resetGoalForm();
   };
 
-  const handleUpdateGoalStatus = async (goalId: string, status: Goal['status']) => {
+  const handleUpdateGoalStatus = async (goalId: string, status: 'active' | 'paused' | 'completed') => {
     try {
-      const success = await goalTracker.updateGoalStatus(goalId, status);
-      if (success) {
-        setGoals(goals.map(g => g.id === goalId ? { ...g, status } : g));
-        toast.success(`Goal ${status === 'completed' ? 'completed' : 'updated'}`);
-      }
+      await updateGoal(goalId, { status });
+      toast.success(`Goal ${status === 'completed' ? 'completed' : 'updated'}`);
     } catch (error) {
       console.error("Error updating goal status:", error);
       toast.error("Failed to update goal");
     }
   };
 
-  const handleDeleteGoal = async (goalId: string) => {
+  const handleProgressUpdate = async (goalId: string, newValue: number) => {
     try {
-      const success = await goalTracker.deleteGoal(goalId);
-      if (success) {
-        setGoals(goals.filter(g => g.id !== goalId));
-        toast.success("Goal deleted");
-      }
+      await updateProgress(goalId, { new_value: newValue, source: 'manual' });
+      toast.success("Progress updated successfully");
     } catch (error) {
-      console.error("Error deleting goal:", error);
-      toast.error("Failed to delete goal");
+      console.error("Error updating progress:", error);
+      toast.error("Failed to update progress");
     }
   };
 
@@ -378,10 +265,10 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
               <Target className="w-5 h-5 text-purple-500" />
               Goals & Targets
             </CardTitle>
-            {isDemoMode && (
+            {error && (
               <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs font-medium">
                 <AlertTriangle className="w-3 h-3" />
-                Demo Mode
+                Error loading goals
               </div>
             )}
           </div>
@@ -395,9 +282,9 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
             New Goal
           </Button>
         </div>
-        {isDemoMode && (
+        {error && (
           <p className="text-sm text-orange-500 mt-2">
-            Running in demo mode with sample goals. Goals are stored locally and will reset on page refresh.
+            {typeof error === 'string' ? error : 'Failed to load goals. Please try again.'}
           </p>
         )}
       </CardHeader>
@@ -485,16 +372,16 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                     Metric Type
                   </label>
                   <Select
-                    value={goalForm.metric_type}
-                    onValueChange={(value: Goal['metric_type']) => setGoalForm({ ...goalForm, metric_type: value })}
+                    value={goalForm.goal_type}
+                    onValueChange={(value) => setGoalForm({ ...goalForm, goal_type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="followers">Followers</SelectItem>
-                      <SelectItem value="engagement">Engagement Rate</SelectItem>
-                      <SelectItem value="posts">Posts Count</SelectItem>
+                      <SelectItem value="engagement_rate">Engagement Rate</SelectItem>
+                      <SelectItem value="posts_count">Posts Count</SelectItem>
                       <SelectItem value="likes">Likes</SelectItem>
                       <SelectItem value="comments">Comments</SelectItem>
                       <SelectItem value="shares">Shares</SelectItem>
@@ -543,7 +430,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   </label>
                   <Select
                     value={goalForm.priority}
-                    onValueChange={(value: Goal['priority']) => setGoalForm({ ...goalForm, priority: value })}
+                    onValueChange={(value) => setGoalForm({ ...goalForm, priority: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -650,7 +537,12 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
 
         {/* Goals List */}
         <div className="space-y-6">
-          {goals.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-theme-secondary">Loading goals...</p>
+            </div>
+          ) : goals.length === 0 ? (
             <Card className="border-dashed border-2 border-border/50">
               <CardContent className="text-center py-12">
                 <Target className="w-12 h-12 mx-auto mb-4 text-theme-secondary/50" />
@@ -672,11 +564,9 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
           ) : (
             goals.map((goal) => {
               const progress = Math.min((goal.current_value / goal.target_value) * 100, 100);
-              const isCompleted = goal.status === 'completed' || progress >= 100;
-              const isOverdue = new Date(goal.deadline) < new Date() && !isCompleted;
-              const daysUntilDeadline = Math.ceil(
-                (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-              );
+              const isCompleted = goal.status === 'completed';
+              const isOverdue = goal.is_overdue;
+              const daysRemaining = goal.days_remaining || 0;
 
               return (
                 <Card key={goal.id} className={`border transition-all duration-200 ${isCompleted ? 'border-emerald-500/30 bg-emerald-500/5' :
@@ -716,7 +606,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                             {goal.platform}
                           </Badge>
                           <Badge variant="outline" className="capitalize">
-                            {goal.metric_type}
+                            {goal.goal_type}
                           </Badge>
                           <Badge variant="outline" className={
                             goal.priority === 'high' ? 'border-red-500/20 text-red-500' :
@@ -734,7 +624,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditGoal(goal)}
+                          onClick={() => setEditingGoal(goal)}
                           className="border-emerald-500/20 hover:border-emerald-500/40"
                         >
                           <Edit3 className="w-4 h-4" />
@@ -752,7 +642,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteGoal(goal.id)}
+                          onClick={() => deleteGoal(goal.id)}
                           className="border-red-500/20 hover:border-red-500/40"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -766,7 +656,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                         <div className="flex justify-between items-center text-sm">
                           <span className="font-medium text-theme-primary">Progress</span>
                           <span className="text-theme-secondary">
-                            {goal.current_value.toLocaleString()} / {goal.target_value.toLocaleString()} {goal.metric_type}
+                            {goal.current_value.toLocaleString()} / {goal.target_value.toLocaleString()} {goal.goal_type}
                           </span>
                         </div>
 
@@ -787,11 +677,11 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                       </div>
 
                       {/* Milestones */}
-                      {goal.milestones.length > 0 && (
+                      {goal.milestones && goal.milestones.length > 0 && (
                         <div className="space-y-2">
                           <span className="text-sm font-medium text-theme-primary">Milestones</span>
                           <div className="flex flex-wrap gap-2">
-                            {goal.milestones.map((milestone, index) => {
+                            {goal.milestones.map((milestone: number, index: number) => {
                               const achieved = goal.current_value >= milestone;
                               return (
                                 <div
@@ -828,10 +718,10 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
 
                         <div className="text-center">
                           <div className="text-xs text-theme-secondary">Deadline</div>
-                          <div className={`text-sm font-semibold flex items-center justify-center gap-1 ${isOverdue ? 'text-red-500' : daysUntilDeadline <= 7 ? 'text-orange-500' : 'text-theme-primary'
+                          <div className={`text-sm font-semibold flex items-center justify-center gap-1 ${isOverdue ? 'text-red-500' : daysRemaining <= 7 ? 'text-orange-500' : 'text-theme-primary'
                             }`}>
                             <Calendar className="w-3 h-3" />
-                            {isOverdue ? 'Overdue' : `${daysUntilDeadline}d left`}
+                            {isOverdue ? 'Overdue' : `${daysRemaining}d left`}
                           </div>
                         </div>
 

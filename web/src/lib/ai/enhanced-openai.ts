@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { TrendingTopicsService } from "@/components/ai/TrendingTopicsService";
+import { ContentFormatter } from "./content-formatter";
+import { PLATFORM_LIMITS } from "../../types/ai";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -117,7 +119,24 @@ export class EnhancedOpenAIService {
       });
 
       const generatedText = completion.choices[0]?.message?.content || "";
-      const baseContent = this.parseGeneratedContent(generatedText, platform);
+      
+      // Parse the raw generated content
+      const parsedContent = this._parseRawGeneratedContent(generatedText, platform);
+      
+      // Apply platform-specific formatting
+      const platformType = platform as 'twitter' | 'instagram' | 'linkedin';
+      const maxLength = PLATFORM_LIMITS[platformType]?.maxCharacters;
+      const formattedContent = ContentFormatter.formatForPlatform(parsedContent.content, {
+        platform: platformType,
+        maxLength,
+        preserveLineBreaks: true
+      });
+
+      // Create the base content with formatted text
+      const baseContent = {
+        ...parsedContent,
+        content: formattedContent
+      };
 
       // Enhance with trending analysis
       const hashtagAnalysis = await this.analyzeHashtags(
@@ -378,7 +397,7 @@ export class EnhancedOpenAIService {
     }
   }
 
-  private parseGeneratedContent(text: string, platform: string): any {
+  private _parseRawGeneratedContent(text: string, platform: string): any {
     const lines = text.split("\n");
     let content = "";
     let hashtags: string[] = [];
@@ -413,7 +432,7 @@ export class EnhancedOpenAIService {
     hashtags = hashtags.map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
 
     return {
-      content: this.optimizeForPlatform(content, platform),
+      content,
       hashtags,
       engagement_score: Math.min(Math.max(score, 1), 100),
       platform_optimized: true,
@@ -424,24 +443,6 @@ export class EnhancedOpenAIService {
   private extractHashtagsFromText(text: string): string[] {
     const hashtagRegex = /#[\w]+/g;
     return text.match(hashtagRegex) || [];
-  }
-
-  private optimizeForPlatform(content: string, platform: string): string {
-    switch (platform) {
-      case "twitter":
-        if (content.length > 280) {
-          content = content.substring(0, 277) + "...";
-        }
-        break;
-      case "instagram":
-        // Instagram allows longer content, no truncation needed
-        break;
-      case "linkedin":
-        // LinkedIn allows long content, but ensure professional tone
-        break;
-    }
-
-    return content;
   }
 }
 

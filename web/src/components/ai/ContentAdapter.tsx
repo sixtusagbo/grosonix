@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PlatformContent, PLATFORM_LIMITS } from "@/types/ai";
 import {
   aiApiClient,
@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { useLinkedInShare } from "@/hooks/useLinkedInShare";
 import { ContentScheduler } from "./ContentScheduler";
+import { PlatformContentPreview } from "./PlatformContentPreview";
 
 interface ContentAdapterProps {
   initialContent?: string;
@@ -408,6 +409,8 @@ export function ContentAdapter({
                         </Button>
                       </div>
                     )}
+
+                    <PlatformContentPreview adaptation={adaptation} className="mt-4" />
 
                     {/* Character Count & Validation */}
                     <div className="space-y-3">
