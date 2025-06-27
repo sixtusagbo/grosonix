@@ -30,7 +30,7 @@ export function SocialAccounts({ accounts }: SocialAccountsProps) {
   ];
 
   return (
-    <div className="glass-card p-6">
+    <div className="glass-card p-4 sm:p-6">
       <h2 className="text-xl font-semibold text-text-primary mb-4">
         Social Accounts
       </h2>

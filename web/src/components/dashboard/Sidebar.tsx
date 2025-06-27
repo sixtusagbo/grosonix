@@ -18,12 +18,15 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  Menu,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
   className?: string;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
 }
 
 const navigation = [
@@ -95,11 +98,14 @@ const bottomNavigation = [
   },
 ];
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  // Use the prop if provided, otherwise use internal state
+  const collapsed = isCollapsed !== undefined ? isCollapsed : isCollapsedInternal;
 
   // Check if current path matches a navigation item
   const isActive = (href: string) => {
@@ -116,9 +122,9 @@ export function Sidebar({ className }: SidebarProps) {
     // Set initial state based on screen width
     const handleResize = () => {
       if (window.innerWidth < 1024) { // md breakpoint is typically 768px, lg is 1024px
-        setIsCollapsed(true);
+        setIsCollapsedInternal(true);
       } else {
-        setIsCollapsed(false);
+        setIsCollapsedInternal(false);
       }
     };
 
@@ -136,7 +142,20 @@ export function Sidebar({ className }: SidebarProps) {
   const handleNavClick = () => {
     // On medium screens and below, collapse sidebar after navigation
     if (window.innerWidth < 1024) {
-      setIsCollapsed(true);
+      if (onToggle) {
+        onToggle();
+      } else {
+        setIsCollapsedInternal(true);
+      }
+    }
+  };
+
+  // Handle toggle click
+  const handleToggleClick = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setIsCollapsedInternal(!isCollapsedInternal);
     }
   };
 
@@ -145,7 +164,7 @@ export function Sidebar({ className }: SidebarProps) {
     return (
       <div
         className={cn(
-          "flex flex-col h-full bg-surface/95 backdrop-blur-xl border-r border-emerald-500/20 transition-all duration-300 w-16",
+          "flex flex-col h-full bg-surface/95 backdrop-blur-xl border-r border-emerald-500/20 transition-all duration-300",
           className
         )}
       />
@@ -155,13 +174,13 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-surface/95 backdrop-blur-xl border-r border-emerald-500/20 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64",
+        "flex flex-col h-full bg-surface/95 backdrop-blur-xl border-r border-emerald-500/20 transition-all duration-300 fixed lg:static z-50",
+        collapsed ? "w-16" : "w-64",
         className
       )}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-emerald-500/20">
-        {!isCollapsed && (
+        {!collapsed && (
           <Link href="/dashboard" className="flex items-center space-x-2 group">
             <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
@@ -175,9 +194,9 @@ export function Sidebar({ className }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={handleToggleClick}
           className="h-8 w-8 p-0 hover:bg-emerald-500/10 hover:text-emerald-400">
-          {isCollapsed ? (
+          {collapsed ? (
             <ChevronRight className="h-4 w-4" />
           ) : (
             <ChevronLeft className="h-4 w-4" />
@@ -201,7 +220,7 @@ export function Sidebar({ className }: SidebarProps) {
                 active
                   ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/25"
                   : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
-                isCollapsed ? "justify-center" : "justify-start"
+                collapsed ? "justify-center" : "justify-start"
               )}>
               {/* Active indicator */}
               {active && (
@@ -212,11 +231,11 @@ export function Sidebar({ className }: SidebarProps) {
                 className={cn(
                   "flex-shrink-0 transition-all duration-200",
                   active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
-                  isCollapsed ? "mx-0" : "mr-3"
+                  collapsed ? "mx-0" : "mr-3"
                 )}
               />
 
-              {!isCollapsed && (
+              {!collapsed && (
                 <>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -268,17 +287,17 @@ export function Sidebar({ className }: SidebarProps) {
                 active
                   ? "bg-emerald-500/20 text-emerald-400"
                   : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
-                isCollapsed ? "justify-center" : "justify-start"
+                collapsed ? "justify-center" : "justify-start"
               )}>
               <Icon
                 className={cn(
                   "flex-shrink-0 transition-all duration-200",
                   active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
-                  isCollapsed ? "mx-0" : "mr-3"
+                  collapsed ? "mx-0" : "mr-3"
                 )}
               />
 
-              {!isCollapsed && (
+              {!collapsed && (
                 <div className="flex-1">
                   <span className="truncate">{item.name}</span>
                   <p className="text-xs text-text-muted mt-0.5 truncate">
@@ -295,7 +314,7 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Upgrade Banner */}
-      {!isCollapsed && (
+      {!collapsed && (
         <div className="p-4">
           <div className="neo-brutal-card p-4 bg-gradient-to-br from-electric-orange-500/10 to-emerald-500/10">
             <div className="flex items-center space-x-2 mb-2">
