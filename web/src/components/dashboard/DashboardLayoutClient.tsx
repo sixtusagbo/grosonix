@@ -45,7 +45,11 @@ export function DashboardLayoutClient({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden w-full">
-        <DashboardNav user={user} toggleSidebar={toggleSidebar} />
+        <DashboardNav 
+          user={user} 
+          toggleSidebar={toggleSidebar} 
+          isSidebarOpen={isSidebarOpen}
+        />
         <main className="flex-1 p-4 sm:p-6 bg-background overflow-auto">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>

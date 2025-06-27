@@ -6,7 +6,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
-import { Bell, Search, User as UserIcon, LogOut, Crown, Menu } from "lucide-react";
+import { Bell, Search, User as UserIcon, LogOut, Crown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,9 +20,10 @@ import {
 interface DashboardNavProps {
   user: User;
   toggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }
 
-export function DashboardNav({ user, toggleSidebar }: DashboardNavProps) {
+export function DashboardNav({ user, toggleSidebar, isSidebarOpen }: DashboardNavProps) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -39,14 +40,18 @@ export function DashboardNav({ user, toggleSidebar }: DashboardNavProps) {
     <nav className="bg-surface/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-40">
       <div className="px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Hamburger Menu for Mobile */}
+          {/* Sidebar Toggle for Mobile */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
             className="lg:hidden mr-2"
           >
-            <Menu className="h-5 w-5" />
+            {isSidebarOpen ? (
+              <ChevronLeft className="h-5 w-5" />
+            ) : (
+              <ChevronRight className="h-5 w-5" />
+            )}
           </Button>
 
           {/* Search Bar */}
