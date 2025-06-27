@@ -103,6 +103,7 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
   const router = useRouter();
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Use the prop if provided, otherwise use internal state
   const collapsed = isCollapsed !== undefined ? isCollapsed : isCollapsedInternal;
@@ -121,7 +122,10 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
     
     // Set initial state based on screen width
     const handleResize = () => {
-      if (window.innerWidth < 1024) { // md breakpoint is typically 768px, lg is 1024px
+      const isMobileView = window.innerWidth < 1024;
+      setIsMobile(isMobileView);
+      
+      if (isMobileView) {
         setIsCollapsedInternal(true);
       } else {
         setIsCollapsedInternal(false);
@@ -171,6 +175,10 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
     );
   }
 
+  // Determine if we should hide navigation items
+  // Hide when collapsed on mobile, show when collapsed on desktop
+  const shouldShowNavItems = !collapsed || !isMobile;
+
   return (
     <div
       className={cn(
@@ -195,7 +203,10 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
           variant="ghost"
           size="sm"
           onClick={handleToggleClick}
-          className="h-8 w-8 p-0 hover:bg-emerald-500/10 hover:text-emerald-400">
+          className={cn(
+            "h-8 w-8 p-0 hover:bg-emerald-500/10 hover:text-emerald-400",
+            collapsed && isMobile && "mx-auto"
+          )}>
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
           ) : (
@@ -205,116 +216,120 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {navigation.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
+      {shouldShowNavItems && (
+        <nav className="flex-1 p-4 space-y-2">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={handleNavClick}
-              className={cn(
-                "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
-                active
-                  ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/25"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
-                collapsed ? "justify-center" : "justify-start"
-              )}>
-              {/* Active indicator */}
-              {active && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400 rounded-r-full" />
-              )}
-
-              <Icon
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
                 className={cn(
-                  "flex-shrink-0 transition-all duration-200",
-                  active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
-                  collapsed ? "mx-0" : "mr-3"
+                  "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
+                  active
+                    ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/25"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
+                  collapsed ? "justify-center" : "justify-start"
+                )}>
+                {/* Active indicator */}
+                {active && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400 rounded-r-full" />
                 )}
-              />
 
-              {!collapsed && (
-                <>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="truncate">{item.name}</span>
-                      {item.badge && (
-                        <span
-                          className={cn(
-                            "px-2 py-0.5 text-xs font-semibold rounded-full",
-                            item.badge === "AI" &&
-                              "bg-emerald-500/20 text-emerald-400",
-                            item.badge === "New" &&
-                              "bg-electric-orange-500/20 text-electric-orange-400",
-                            item.badge === "Soon" &&
-                              "bg-neon-cyan-500/20 text-neon-cyan-400",
-                            item.badge === "Pro" &&
-                              "bg-electric-orange-500/20 text-electric-orange-400"
-                          )}>
-                          {item.badge}
-                        </span>
-                      )}
+                <Icon
+                  className={cn(
+                    "flex-shrink-0 transition-all duration-200",
+                    active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
+                    collapsed ? "mx-0" : "mr-3"
+                  )}
+                />
+
+                {!collapsed && (
+                  <>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="truncate">{item.name}</span>
+                        {item.badge && (
+                          <span
+                            className={cn(
+                              "px-2 py-0.5 text-xs font-semibold rounded-full",
+                              item.badge === "AI" &&
+                                "bg-emerald-500/20 text-emerald-400",
+                              item.badge === "New" &&
+                                "bg-electric-orange-500/20 text-electric-orange-400",
+                              item.badge === "Soon" &&
+                                "bg-neon-cyan-500/20 text-neon-cyan-400",
+                              item.badge === "Pro" &&
+                                "bg-electric-orange-500/20 text-electric-orange-400"
+                            )}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-text-muted mt-0.5 truncate">
+                        {item.description}
+                      </p>
                     </div>
+                  </>
+                )}
+
+                {/* Hover effect */}
+                <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+              </Link>
+            );
+          })}
+        </nav>
+      )}
+
+      {/* Bottom Navigation */}
+      {shouldShowNavItems && (
+        <div className="p-4 border-t border-emerald-500/20 space-y-2">
+          {bottomNavigation.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={handleNavClick}
+                className={cn(
+                  "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
+                  active
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
+                  collapsed ? "justify-center" : "justify-start"
+                )}>
+                <Icon
+                  className={cn(
+                    "flex-shrink-0 transition-all duration-200",
+                    active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
+                    collapsed ? "mx-0" : "mr-3"
+                  )}
+                />
+
+                {!collapsed && (
+                  <div className="flex-1">
+                    <span className="truncate">{item.name}</span>
                     <p className="text-xs text-text-muted mt-0.5 truncate">
                       {item.description}
                     </p>
                   </div>
-                </>
-              )}
-
-              {/* Hover effect */}
-              <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Bottom Navigation */}
-      <div className="p-4 border-t border-emerald-500/20 space-y-2">
-        {bottomNavigation.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={handleNavClick}
-              className={cn(
-                "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden",
-                active
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/50",
-                collapsed ? "justify-center" : "justify-start"
-              )}>
-              <Icon
-                className={cn(
-                  "flex-shrink-0 transition-all duration-200",
-                  active ? "w-5 h-5 text-emerald-400" : "w-5 h-5",
-                  collapsed ? "mx-0" : "mr-3"
                 )}
-              />
 
-              {!collapsed && (
-                <div className="flex-1">
-                  <span className="truncate">{item.name}</span>
-                  <p className="text-xs text-text-muted mt-0.5 truncate">
-                    {item.description}
-                  </p>
-                </div>
-              )}
-
-              {/* Hover effect */}
-              <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
-            </Link>
-          );
-        })}
-      </div>
+                {/* Hover effect */}
+                <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* Upgrade Banner */}
-      {!collapsed && (
+      {!collapsed && shouldShowNavItems && (
         <div className="p-4">
           <div className="neo-brutal-card p-4 bg-gradient-to-br from-electric-orange-500/10 to-emerald-500/10">
             <div className="flex items-center space-x-2 mb-2">
