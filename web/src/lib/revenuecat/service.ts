@@ -1,8 +1,24 @@
-import Purchases, {
-  CustomerInfo,
-  PurchasesOffering,
-  PurchasesPackage,
-} from "@revenuecat/purchases-js";
+// Dynamic import for RevenueCat to ensure it loads properly in browser
+let Purchases: any = null;
+
+// Types for TypeScript
+interface CustomerInfo {
+  originalAppUserId: string;
+  activeSubscriptions: string[];
+  entitlements: {
+    active: Record<string, any>;
+  };
+}
+
+interface PurchasesOffering {
+  availablePackages: PurchasesPackage[];
+}
+
+interface PurchasesPackage {
+  product: {
+    identifier: string;
+  };
+}
 import { REVENUECAT_CONFIG } from "./config";
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -38,6 +54,18 @@ class RevenueCatService {
     if (this.initialized) return;
 
     try {
+      // Dynamically import RevenueCat
+      if (!Purchases) {
+        const revenueCatModule = await import("@revenuecat/purchases-js");
+        Purchases = revenueCatModule.default;
+      }
+
+      // Check if Purchases is available
+      if (!Purchases || !Purchases.configure) {
+        console.error("RevenueCat Purchases object not available");
+        throw new Error("RevenueCat library not loaded");
+      }
+
       await Purchases.configure({
         apiKey: REVENUECAT_CONFIG.apiKey,
         appUserId: userId,
@@ -56,6 +84,10 @@ class RevenueCatService {
    */
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
       const customerInfo = await Purchases.getCustomerInfo();
 
       // Check for active subscriptions
@@ -112,6 +144,10 @@ class RevenueCatService {
    */
   async purchaseSubscription(productId: string): Promise<SubscriptionResult> {
     try {
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
       const offerings = await Purchases.getOfferings();
       const currentOffering = offerings.current;
 
@@ -172,6 +208,10 @@ class RevenueCatService {
       const { trialManager } = await import("@/lib/subscription/trial-manager");
 
       // Get current user ID
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
       const customerInfo = await Purchases.getCustomerInfo();
       const userId = customerInfo.originalAppUserId;
 
@@ -220,6 +260,10 @@ class RevenueCatService {
    */
   async restorePurchases(): Promise<SubscriptionResult> {
     try {
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
       const customerInfo = await Purchases.restorePurchases();
 
       // Update subscription in database
@@ -273,6 +317,10 @@ class RevenueCatService {
    */
   async getOfferings(): Promise<PurchasesOffering | null> {
     try {
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
       const offerings = await Purchases.getOfferings();
       return offerings.current;
     } catch (error) {
