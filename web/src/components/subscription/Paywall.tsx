@@ -109,15 +109,43 @@ export function Paywall({
         return;
       }
 
-      await revenueCatService.initialize(user.id);
-      const result = await revenueCatService.startFreeTrial();
+      try {
+        // Try RevenueCat first
+        await revenueCatService.initialize(user.id);
+        const result = await revenueCatService.startFreeTrial();
 
-      if (result.success) {
+        if (result.success) {
+          toast.success("Free trial started! Enjoy 7 days of Pro features.");
+          onSubscriptionSuccess?.();
+          onClose();
+          return;
+        }
+      } catch (revenueCatError) {
+        console.warn(
+          "RevenueCat failed, using database fallback:",
+          revenueCatError
+        );
+      }
+
+      // Fallback: Start trial directly in database
+      const { trialManager } = await import("@/lib/subscription/trial-manager");
+
+      // Check eligibility
+      const eligibility = await trialManager.checkTrialEligibility(user.id);
+      if (!eligibility.eligible) {
+        toast.error(eligibility.reason || "Not eligible for free trial");
+        return;
+      }
+
+      // Start trial
+      const trialResult = await trialManager.startFreeTrial(user.id);
+
+      if (trialResult.success) {
         toast.success("Free trial started! Enjoy 7 days of Pro features.");
         onSubscriptionSuccess?.();
         onClose();
       } else {
-        toast.error(result.error || "Failed to start free trial");
+        toast.error(trialResult.error || "Failed to start free trial");
       }
     } catch (error) {
       console.error("Free trial error:", error);
