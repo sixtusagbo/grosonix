@@ -71,8 +71,8 @@ export const REVENUECAT_CONFIG: RevenueCatConfig = {
       name: 'Pro',
       description: 'For serious content creators',
       price: {
-        monthly: 29,
-        yearly: 290, // ~$24/month when billed yearly
+        monthly: 5,
+        yearly: 50, // ~$24/month when billed yearly
       },
       features: [
         '50 AI content generations per day',
@@ -95,8 +95,8 @@ export const REVENUECAT_CONFIG: RevenueCatConfig = {
       name: 'Agency',
       description: 'For teams and agencies',
       price: {
-        monthly: 99,
-        yearly: 990, // ~$82.50/month when billed yearly
+        monthly: 8,
+        yearly: 80, // ~$82.50/month when billed yearly
       },
       features: [
         '200 AI content generations per day',

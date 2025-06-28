@@ -153,7 +153,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         description: editingGoal.description || "",
         goal_type: editingGoal.goal_type,
         target_value: editingGoal.target_value.toString(),
-        start_value: editingGoal.current_value.toString(),
+        start_value: (editingGoal.start_value || 0).toString(),
         platform: editingGoal.platform || "",
         deadline: editingGoal.target_date,
         priority: editingGoal.priority,
