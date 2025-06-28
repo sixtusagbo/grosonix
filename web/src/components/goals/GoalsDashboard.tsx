@@ -143,9 +143,9 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Goals</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Goals</h1>
           <p className="text-text-secondary">
             Set, track, and achieve your social media growth goals
           </p>
@@ -156,13 +156,15 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
             onClick={syncGoals}
             disabled={syncing}
             className="flex items-center gap-2"
+            size="sm"
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Goals'}
+            {syncing ? 'Syncing...' : 'Sync'}
           </Button>
           <Button
             onClick={() => setShowCreateForm(true)}
             className="bg-emerald-500 hover:bg-emerald-600"
+            size="sm"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Goal
@@ -171,58 +173,58 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-blue-500/20">
-                <Target className="w-5 h-5 text-blue-500" />
+                <Target className="w-4 h-4 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm text-text-secondary">Total Goals</p>
-                <p className="text-2xl font-bold text-text-primary">{summary.total}</p>
+                <p className="text-xs text-text-secondary">Total Goals</p>
+                <p className="text-xl font-bold text-text-primary">{summary.total}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-green-500/20">
-                <TrendingUp className="w-5 h-5 text-green-500" />
+                <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-text-secondary">Active Goals</p>
-                <p className="text-2xl font-bold text-text-primary">{summary.active}</p>
+                <p className="text-xs text-text-secondary">Active</p>
+                <p className="text-xl font-bold text-text-primary">{summary.active}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-emerald-500/20">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                <CheckCircle className="w-4 h-4 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm text-text-secondary">Completed</p>
-                <p className="text-2xl font-bold text-text-primary">{summary.completed}</p>
+                <p className="text-xs text-text-secondary">Completed</p>
+                <p className="text-xl font-bold text-text-primary">{summary.completed}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-red-500/20">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <AlertTriangle className="w-4 h-4 text-red-500" />
               </div>
               <div>
-                <p className="text-sm text-text-secondary">Overdue</p>
-                <p className="text-2xl font-bold text-text-primary">{summary.overdue}</p>
+                <p className="text-xs text-text-secondary">Overdue</p>
+                <p className="text-xl font-bold text-text-primary">{summary.overdue}</p>
               </div>
             </div>
           </CardContent>
@@ -231,8 +233,8 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
 
       {/* Filters and Search */}
       <Card className="glass-card">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
@@ -245,14 +247,14 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Select
                 value={filters.goal_type || 'all'}
                 onValueChange={(value) => updateFilters({ 
                   goal_type: value === 'all' ? undefined : value as any 
                 })}
               >
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="Goal Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -271,7 +273,7 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
                   platform: value === 'all' ? undefined : value as any 
                 })}
               >
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="Platform" />
                 </SelectTrigger>
                 <SelectContent>
@@ -284,7 +286,7 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
               </Select>
 
               {(filters.search || filters.goal_type || filters.platform) && (
-                <Button variant="outline" onClick={clearFilters}>
+                <Button variant="outline" onClick={clearFilters} size="sm">
                   Clear
                 </Button>
               )}
@@ -298,20 +300,20 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
         <div className="lg:col-span-2">
           {/* Goals Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="all">
-                All Goals ({nonChallengeGoals.length})
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 overflow-x-auto">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">
+                All ({nonChallengeGoals.length})
               </TabsTrigger>
-              <TabsTrigger value="active">
+              <TabsTrigger value="active" className="text-xs sm:text-sm">
                 Active ({summary.active})
               </TabsTrigger>
-              <TabsTrigger value="completed">
-                Completed ({summary.completed})
+              <TabsTrigger value="completed" className="text-xs sm:text-sm">
+                Done ({summary.completed})
               </TabsTrigger>
-              <TabsTrigger value="overdue">
+              <TabsTrigger value="overdue" className="text-xs sm:text-sm">
                 Overdue ({summary.overdue})
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="flex items-center gap-1">
+              <TabsTrigger value="challenges" className="flex items-center gap-1 text-xs sm:text-sm">
                 <Zap className="w-3 h-3" />
                 Challenges
               </TabsTrigger>
@@ -320,7 +322,7 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
             <TabsContent value={activeTab} className="mt-6">
               {filteredGoals.length === 0 ? (
                 <Card className="glass-card">
-                  <CardContent className="p-12 text-center">
+                  <CardContent className="p-6 sm:p-12 text-center">
                     <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-semibold text-text-primary mb-2">
                       {activeTab === 'all' ? 'No goals yet' : `No ${activeTab} goals`}
@@ -354,7 +356,7 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredGoals.map((goal) => (
                     <GoalCard
                       key={goal.id}

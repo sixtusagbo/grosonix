@@ -169,12 +169,12 @@ export function ChallengeCard({
           </motion.div>
         )}
         
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           {/* Challenge Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-1 sm:gap-2">
               {getChallengeTypeIcon()}
-              <span className="font-medium text-sm">{getChallengeTypeLabel()}</span>
+              <span className="font-medium text-xs sm:text-sm">{getChallengeTypeLabel()}</span>
               <Badge className={`text-xs ${getFrequencyBadgeColor()}`}>
                 {challenge.challenge_frequency}
               </Badge>
@@ -189,22 +189,22 @@ export function ChallengeCard({
           </div>
           
           {/* Challenge Title */}
-          <h3 className="font-semibold text-base mb-2">{challenge.title}</h3>
+          <h3 className="font-semibold text-sm sm:text-base mb-2">{challenge.title}</h3>
           
           {/* Description */}
           {challenge.description && (
-            <p className="text-sm text-muted-foreground mb-3">{challenge.description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">{challenge.description}</p>
           )}
           
           {/* Parent Goal Link */}
           {challenge.parent_goal_id && challenge.parent_goal_title && (
-            <div className="mb-3 text-xs bg-blue-500/10 text-blue-600 p-2 rounded-md">
+            <div className="mb-2 sm:mb-3 text-xs bg-blue-500/10 text-blue-600 p-1 sm:p-2 rounded-md">
               <span className="font-medium">Contributes to:</span> {challenge.parent_goal_title}
             </div>
           )}
           
           {/* Progress */}
-          <div className="space-y-2 mb-3">
+          <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-3">
             <div className="flex items-center justify-between text-xs">
               <span>Progress</span>
               <span>{challenge.current_value} / {challenge.target_value}</span>
@@ -213,7 +213,7 @@ export function ChallengeCard({
           </div>
           
           {/* Status Indicators */}
-          <div className="flex items-center justify-between mb-3 text-xs">
+          <div className="flex items-center justify-between mb-2 sm:mb-3 text-xs">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               <span>Due: {new Date(challenge.target_date).toLocaleDateString()}</span>
@@ -241,7 +241,7 @@ export function ChallengeCard({
                   size="sm" 
                   onClick={handleIncrementProgress}
                   disabled={isUpdating}
-                  className="flex-1"
+                  className="flex-1 h-9"
                 >
                   +1 Progress
                 </Button>
@@ -252,7 +252,7 @@ export function ChallengeCard({
                 size="sm" 
                 onClick={handleCompleteChallenge}
                 disabled={isUpdating}
-                className={`flex-1 ${challenge.current_value >= challenge.target_value ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
+                className={`flex-1 h-9 ${challenge.current_value >= challenge.target_value ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
               >
                 {challenge.current_value >= challenge.target_value ? (
                   <>
