@@ -14,7 +14,16 @@ export type GoalPriority = 'low' | 'medium' | 'high';
 
 export type Platform = 'twitter' | 'linkedin' | 'instagram' | 'all';
 
-export type ProgressSource = 'manual' | 'automatic' | 'api_sync';
+export type ProgressSource = 'manual' | 'automatic' | 'api_sync' | 'challenge_completion';
+
+export type ChallengeFrequency = 'daily' | 'weekly' | 'one-time';
+
+export type ChallengeType = 
+  | 'content_generation'
+  | 'style_analysis'
+  | 'adapt_content'
+  | 'schedule_post'
+  | 'engage_followers';
 
 export interface Goal {
   id: string;
@@ -33,6 +42,14 @@ export interface Goal {
   created_at: string;
   updated_at: string;
   completed_at?: string;
+  
+  // Challenge fields
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
+  parent_goal_title?: string;
   
   // Computed fields
   progress_percentage?: number;
@@ -78,6 +95,11 @@ export interface CreateGoalRequest {
     percentage: number;
     value: number;
   }>;
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
 }
 
 export interface UpdateGoalRequest {
@@ -89,6 +111,11 @@ export interface UpdateGoalRequest {
   priority?: GoalPriority;
   is_public?: boolean;
   current_value?: number;
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
 }
 
 export interface UpdateProgressRequest {
@@ -257,4 +284,12 @@ export const PRIORITY_COLORS: Record<GoalPriority, string> = {
   low: 'bg-gray-500',
   medium: 'bg-blue-500',
   high: 'bg-red-500'
+};
+
+export const CHALLENGE_TYPE_LABELS: Record<string, string> = {
+  content_generation: 'Content Creation',
+  style_analysis: 'Style Analysis',
+  adapt_content: 'Content Adaptation',
+  schedule_post: 'Post Scheduling',
+  engage_followers: 'Follower Engagement'
 };

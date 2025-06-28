@@ -25,11 +25,14 @@ import {
   Users,
   BarChart3,
   RefreshCw,
+  Zap,
 } from 'lucide-react';
 import { useGoals } from '@/hooks/useGoals';
 import { useGoalIntegration } from '@/hooks/useGoalIntegration';
 import { GoalCard } from './GoalCard';
 import { GoalForm } from './GoalForm';
+import { ChallengesList } from './ChallengesList';
+import { toast } from 'sonner';
 import {
   Goal,
   GoalFilters,
@@ -88,31 +91,54 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
     await updateProgress(goalId, { new_value: newValue, source: 'manual' });
   };
 
+  const handleGenerateChallenge = async (parentGoalId?: string, frequency: string = 'daily') => {
+    try {
+      const response = await fetch('/api/goals/challenges/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          parent_goal_id: parentGoalId,
+          frequency 
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate challenge');
+      }
+      
+      const data = await response.json();
+      toast.success('New challenge generated!');
+      
+      // Refresh goals list to show the new challenge
+      refetch();
+      
+      return data.challenge;
+    } catch (error) {
+      console.error('Error generating challenge:', error);
+      toast.error('Failed to generate challenge');
+      throw error;
+    }
+  };
+
   const getFilteredGoals = () => {
     switch (activeTab) {
       case 'active':
-        return goals.filter(g => g.status === 'active');
+        return goals.filter(g => g.status === 'active' && !g.is_challenge);
       case 'completed':
-        return goals.filter(g => g.status === 'completed');
+        return goals.filter(g => g.status === 'completed' && !g.is_challenge);
       case 'overdue':
-        return goals.filter(g => g.is_overdue);
+        return goals.filter(g => g.is_overdue && !g.is_challenge);
+      case 'challenges':
+        return goals.filter(g => g.is_challenge);
       default:
-        return goals;
+        return goals.filter(g => !g.is_challenge); // 'all' tab excludes challenges
     }
   };
 
   const filteredGoals = getFilteredGoals();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading goals...</p>
-        </div>
-      </div>
-    );
-  }
+  const nonChallengeGoals = goals.filter(g => !g.is_challenge);
 
   return (
     <div className="space-y-6">
@@ -267,70 +293,100 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Goals Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">
-            All Goals ({summary.total})
-          </TabsTrigger>
-          <TabsTrigger value="active">
-            Active ({summary.active})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed ({summary.completed})
-          </TabsTrigger>
-          <TabsTrigger value="overdue">
-            Overdue ({summary.overdue})
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Goals Section */}
+        <div className="lg:col-span-2">
+          {/* Goals Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="all">
+                All Goals ({nonChallengeGoals.length})
+              </TabsTrigger>
+              <TabsTrigger value="active">
+                Active ({summary.active})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed ({summary.completed})
+              </TabsTrigger>
+              <TabsTrigger value="overdue">
+                Overdue ({summary.overdue})
+              </TabsTrigger>
+              <TabsTrigger value="challenges" className="flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                Challenges
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value={activeTab} className="mt-6">
-          {filteredGoals.length === 0 ? (
-            <Card className="glass-card">
-              <CardContent className="p-12 text-center">
-                <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold text-text-primary mb-2">
-                  {activeTab === 'all' ? 'No goals yet' : `No ${activeTab} goals`}
-                </h3>
-                <p className="text-text-secondary mb-4">
-                  {activeTab === 'all' 
-                    ? 'Create your first goal to start tracking your progress'
-                    : `You don't have any ${activeTab} goals at the moment`
-                  }
-                </p>
-                {activeTab === 'all' && (
-                  <Button 
-                    onClick={() => setShowCreateForm(true)}
-                    className="bg-emerald-500 hover:bg-emerald-600"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Goal
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGoals.map((goal) => (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onEdit={setEditingGoal}
-                  onDelete={deleteGoal}
-                  onUpdateProgress={handleProgressUpdate}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+            <TabsContent value={activeTab} className="mt-6">
+              {filteredGoals.length === 0 ? (
+                <Card className="glass-card">
+                  <CardContent className="p-12 text-center">
+                    <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold text-text-primary mb-2">
+                      {activeTab === 'all' ? 'No goals yet' : `No ${activeTab} goals`}
+                    </h3>
+                    <p className="text-text-secondary mb-4">
+                      {activeTab === 'all' 
+                        ? 'Create your first goal to start tracking your progress'
+                        : activeTab === 'challenges'
+                        ? 'Generate your first challenge to start earning XP'
+                        : `You don't have any ${activeTab} goals at the moment`
+                      }
+                    </p>
+                    {activeTab === 'all' && (
+                      <Button 
+                        onClick={() => setShowCreateForm(true)}
+                        className="bg-emerald-500 hover:bg-emerald-600"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Your First Goal
+                      </Button>
+                    )}
+                    {activeTab === 'challenges' && (
+                      <Button 
+                        onClick={() => handleGenerateChallenge(undefined, 'daily')}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Generate Challenge
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredGoals.map((goal) => (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      onEdit={setEditingGoal}
+                      onDelete={deleteGoal}
+                      onUpdateProgress={handleProgressUpdate}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        {/* Challenges Section */}
+        <div className="lg:col-span-1">
+          <ChallengesList 
+            userId={userId}
+            onUpdateProgress={handleProgressUpdate}
+            onGenerateChallenge={handleGenerateChallenge}
+          />
+        </div>
+      </div>
 
       {/* Goal Form Modals */}
       <GoalForm
         isOpen={showCreateForm}
         onClose={() => setShowCreateForm(false)}
         onSubmit={handleCreateGoal}
+        parentGoals={nonChallengeGoals}
       />
 
       <GoalForm
@@ -338,6 +394,7 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
         isOpen={!!editingGoal}
         onClose={() => setEditingGoal(null)}
         onSubmit={handleUpdateGoal}
+        parentGoals={nonChallengeGoals}
       />
     </div>
   );

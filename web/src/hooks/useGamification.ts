@@ -37,6 +37,7 @@ interface GamificationActions {
   updateStreak: (newStreak: number) => void;
   markAchievementAsSeen: (achievementId: string) => void;
   calculateXPReward: (goalType: string, targetValue: number, difficulty: 'easy' | 'medium' | 'hard') => number;
+  addXP?: (amount: number, source: string) => void;
 }
 
 export function useGamification(userId?: string): {
@@ -332,7 +333,8 @@ export function useGamification(userId?: string): {
       triggerMilestoneAchievement,
       updateStreak,
       markAchievementAsSeen,
-      calculateXPReward
+      calculateXPReward,
+      addXP
     },
     isLoading,
     showCelebration
