@@ -56,8 +56,18 @@ class RevenueCatService {
     try {
       // Dynamically import RevenueCat
       if (!Purchases) {
-        const revenueCatModule = await import("@revenuecat/purchases-js");
-        Purchases = revenueCatModule.default;
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined') {
+          throw new Error("RevenueCat can only be initialized in browser environment");
+        }
+        
+        try {
+          const revenueCatModule = await import("@revenuecat/purchases-js");
+          Purchases = revenueCatModule.default;
+        } catch (importError) {
+          console.error("Failed to import RevenueCat:", importError);
+          throw new Error("Failed to load RevenueCat library");
+        }
       }
 
       // Check if Purchases is available
