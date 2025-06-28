@@ -35,9 +35,10 @@ import { cookies } from "next/headers";
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   
+  // Create a Supabase client with the service role key for admin operations
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role key to bypass RLS
     {
       cookies: {
         get(name: string) {
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
   );
 
   try {
+    // First get the user to verify authentication
     const {
       data: { user },
       error: authError,
@@ -122,7 +124,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error("Failed to update subscription:", updateError);
       return Response.json(
-        { error: "Update failed", message: "Failed to update subscription" },
+        { error: "Update failed", message: "Failed to update subscription", details: updateError },
         { status: 500 }
       );
     }
