@@ -85,6 +85,12 @@ const navigation = [
 
 const bottomNavigation = [
   {
+    name: "Subscription",
+    href: "/dashboard/subscription",
+    icon: Crown,
+    description: "Billing & plans",
+  },
+  {
     name: "API Docs",
     href: "/docs",
     icon: FileText,

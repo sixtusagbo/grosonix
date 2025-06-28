@@ -59,8 +59,8 @@
   --border: rgba(16, 185, 129, 0.3);
   --border-hover: rgba(16, 185, 129, 0.5);
   --text-primary: #0f172a;
-  --text-secondary: #1e293b;
-  --text-muted: #475569;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
   --glass-bg: rgba(16, 185, 129, 0.05);
   --glass-border: rgba(16, 185, 129, 0.2);
 }
@@ -160,8 +160,8 @@ body {
   box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
 }
 
-.card-3d-hover:hover{
-    transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+.card-3d-hover:hover {
+  transform: perspective(1000px) rotateX(5deg) translateY(-5px);
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
 }
 
@@ -206,7 +206,8 @@ body {
 
 /* Trending Animation */
 @keyframes trending-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
