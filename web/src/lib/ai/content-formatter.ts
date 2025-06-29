@@ -71,7 +71,7 @@ export class ContentFormatter {
     const truncated = text.substring(0, maxLength);
     const sentenceEndMatch = truncated.match(/[.!?][^\w]*$/);
     
-    if (sentenceEndMatch) {
+    if (sentenceEndMatch && sentenceEndMatch.index !== undefined) {
       // Found a sentence end, truncate there
       return truncated.substring(0, sentenceEndMatch.index + 1);
     } else {
