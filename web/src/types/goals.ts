@@ -58,6 +58,10 @@ export interface Goal {
   achieved_milestones?: number;
   total_milestones?: number;
   recent_progress?: GoalProgressLog[];
+  
+  // Add milestones property
+  milestones?: GoalMilestone[];
+  start_value?: number;
 }
 
 export interface GoalProgressLog {
@@ -293,3 +297,14 @@ export const CHALLENGE_TYPE_LABELS: Record<string, string> = {
   schedule_post: 'Post Scheduling',
   engage_followers: 'Follower Engagement'
 };
+
+export interface GoalProgress {
+  goal_id: string;
+  progress_percentage: number;
+  days_remaining: number;
+  daily_target: number;
+  current_pace: number;
+  projected_completion: string;
+  is_on_track: boolean;
+  next_milestone: number | null;
+}
