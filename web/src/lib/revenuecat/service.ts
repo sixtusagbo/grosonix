@@ -1,3 +1,6 @@
+import { REVENUECAT_CONFIG } from "./config";
+import { createBrowserClient } from "@supabase/ssr";
+
 // Dynamic import for RevenueCat to ensure it loads properly in browser
 let Purchases: any = null;
 
@@ -19,8 +22,6 @@ interface PurchasesPackage {
     identifier: string;
   };
 }
-import { REVENUECAT_CONFIG } from "./config";
-import { createBrowserClient } from "@supabase/ssr";
 
 export interface SubscriptionResult {
   success: boolean;
@@ -205,6 +206,76 @@ class RevenueCatService {
       return {
         success: false,
         error: error.message || "Purchase failed",
+      };
+    }
+  }
+
+  /**
+   * Change subscription plan
+   */
+  async changeSubscription(newProductId: string): Promise<SubscriptionResult> {
+    try {
+      if (!Purchases) {
+        throw new Error("RevenueCat not initialized");
+      }
+
+      const offerings = await Purchases.getOfferings();
+      const currentOffering = offerings.current;
+
+      if (!currentOffering) {
+        return {
+          success: false,
+          error: "No subscription offerings available",
+        };
+      }
+
+      // Find the package with the specified product ID
+      const newPackage = currentOffering.availablePackages.find(
+        (pkg: PurchasesPackage) => pkg.product.identifier === newProductId
+      );
+
+      if (!newPackage) {
+        return {
+          success: false,
+          error: "New subscription plan not found",
+        };
+      }
+
+      // Get current customer info
+      const customerInfo = await Purchases.getCustomerInfo();
+      
+      // Check if user has an active subscription
+      if (customerInfo.activeSubscriptions.length === 0) {
+        // No active subscription, proceed with regular purchase
+        return this.purchaseSubscription(newProductId);
+      }
+
+      // Perform the subscription change
+      const { customerInfo: updatedInfo } = await Purchases.purchasePackage(
+        newPackage
+      );
+
+      // Update subscription in database
+      await this.updateSubscriptionInDatabase(updatedInfo);
+
+      return {
+        success: true,
+        customerInfo: updatedInfo,
+      };
+    } catch (error: any) {
+      console.error("Subscription change failed:", error);
+
+      // Handle user cancellation
+      if (error.userCancelled) {
+        return {
+          success: false,
+          error: "Subscription change cancelled",
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || "Failed to change subscription",
       };
     }
   }

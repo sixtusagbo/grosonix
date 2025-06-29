@@ -22,6 +22,10 @@ export interface UseSubscriptionReturn {
       | "cross_platform_adaptation"
       | "style_analysis"
   ) => Promise<boolean>;
+  changeSubscription: (productId: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
 }
 
 export function useSubscription(): UseSubscriptionReturn {
@@ -156,6 +160,43 @@ export function useSubscription(): UseSubscriptionReturn {
     [subscription]
   );
 
+  const changeSubscription = useCallback(async (productId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not authenticated',
+        };
+      }
+
+      // Initialize RevenueCat
+      await revenueCatService.initialize(user.id);
+      
+      // Change subscription
+      const result = await revenueCatService.changeSubscription(productId);
+      
+      if (result.success) {
+        await refreshSubscription();
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: result.error || 'Failed to change subscription',
+        };
+      }
+    } catch (error) {
+      console.error('Failed to change subscription:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    }
+  }, [refreshSubscription]);
+
   // Initialize subscription on mount
   useEffect(() => {
     refreshSubscription();
@@ -171,5 +212,6 @@ export function useSubscription(): UseSubscriptionReturn {
     isPaywallOpen,
     paywallReason,
     checkFeatureAccess,
+    changeSubscription,
   };
 }

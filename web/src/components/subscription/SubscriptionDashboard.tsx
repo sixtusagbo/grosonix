@@ -13,13 +13,17 @@ import {
   TrendingUp,
   Gift,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TrialStatusBanner } from './TrialStatusBanner';
 import { UsageLimitBanner } from './UsageLimitBanner';
 import { Paywall } from './Paywall';
 import { formatPrice, REVENUECAT_CONFIG } from '@/lib/revenuecat/config';
+import { SubscriptionChangeModal } from './SubscriptionChangeModal';
+import { toast } from 'sonner';
 
 interface SubscriptionDashboardProps {
   userId: string;
@@ -33,12 +37,15 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
     error, 
     refreshSubscription,
     showPaywall,
+    hidePaywall,
     isPaywallOpen,
-    hidePaywall
+    changeSubscription
   } = useSubscription();
   
   const [usageStats, setUsageStats] = useState<any>(null);
   const [managementOptions, setManagementOptions] = useState<any>(null);
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [changeType, setChangeType] = useState<'upgrade' | 'downgrade' | 'change-billing'>('upgrade');
 
   useEffect(() => {
     fetchUsageStats();
@@ -80,9 +87,11 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
       if (response.ok) {
         await refreshSubscription();
         await fetchManagementOptions();
+        toast.success('Subscription cancelled successfully');
       }
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
+      toast.error('Failed to cancel subscription');
     }
   };
 
@@ -97,9 +106,46 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
       if (response.ok) {
         await refreshSubscription();
         await fetchManagementOptions();
+        toast.success('Subscription reactivated successfully');
       }
     } catch (error) {
       console.error('Failed to reactivate subscription:', error);
+      toast.error('Failed to reactivate subscription');
+    }
+  };
+
+  const handleOpenChangeModal = (type: 'upgrade' | 'downgrade' | 'change-billing') => {
+    setChangeType(type);
+    setShowChangeModal(true);
+  };
+
+  const handleChangeSubscription = async (newPlan: string, billingPeriod: 'monthly' | 'yearly') => {
+    // Determine the product ID based on the new plan and billing period
+    let productId = '';
+    if (newPlan === 'pro') {
+      productId = billingPeriod === 'yearly' 
+        ? REVENUECAT_CONFIG.products.pro_yearly 
+        : REVENUECAT_CONFIG.products.pro_monthly;
+    } else if (newPlan === 'agency') {
+      productId = billingPeriod === 'yearly'
+        ? REVENUECAT_CONFIG.products.agency_yearly
+        : REVENUECAT_CONFIG.products.agency_monthly;
+    }
+
+    if (!productId) {
+      toast.error('Invalid subscription plan selected');
+      return;
+    }
+
+    const result = await changeSubscription(productId);
+    
+    if (result.success) {
+      toast.success('Subscription updated successfully');
+      setShowChangeModal(false);
+      await refreshSubscription();
+      await fetchManagementOptions();
+    } else {
+      toast.error(result.error || 'Failed to update subscription');
     }
   };
 
@@ -173,15 +219,60 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
             </div>
 
             <div className="flex gap-2">
-              {managementOptions?.canUpgrade && (
+              {/* Upgrade/Downgrade Buttons */}
+              {subscription?.tier === 'free' && (
                 <Button
-                  onClick={() => showPaywall('Upgrade plan')}
+                  onClick={() => handleOpenChangeModal('upgrade')}
                   className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600"
                 >
+                  <ArrowUpRight className="w-4 h-4 mr-2" />
                   Upgrade
                 </Button>
               )}
               
+              {subscription?.tier === 'pro' && (
+                <>
+                  <Button
+                    onClick={() => handleOpenChangeModal('upgrade')}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  >
+                    <ArrowUpRight className="w-4 h-4 mr-2" />
+                    Upgrade to Agency
+                  </Button>
+                  <Button
+                    onClick={() => handleOpenChangeModal('downgrade')}
+                    variant="outline"
+                    className="border-red-500 text-red-500 hover:bg-red-500/10"
+                  >
+                    <ArrowDownRight className="w-4 h-4 mr-2" />
+                    Downgrade
+                  </Button>
+                </>
+              )}
+              
+              {subscription?.tier === 'agency' && (
+                <Button
+                  onClick={() => handleOpenChangeModal('downgrade')}
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-500/10"
+                >
+                  <ArrowDownRight className="w-4 h-4 mr-2" />
+                  Downgrade
+                </Button>
+              )}
+              
+              {/* Change Billing Period */}
+              {subscription?.tier !== 'free' && (
+                <Button
+                  onClick={() => handleOpenChangeModal('change-billing')}
+                  variant="outline"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Change Billing
+                </Button>
+              )}
+              
+              {/* Cancel/Reactivate Buttons */}
               {managementOptions?.canCancel && (
                 <Button
                   variant="outline"
@@ -235,7 +326,7 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                       )}
                     </div>
-                    <p className="text-2xl font-bold mb-2">
+                    <p className="text-2xl font-bold text-text-primary mb-2">
                       {tierKey === 'free' ? 'Free' : formatPrice(tierData.price.monthly)}
                       {tierKey !== 'free' && <span className="text-sm font-normal">/month</span>}
                     </p>
@@ -330,11 +421,11 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
                   <div className="pt-4 border-t">
                     <Button
                       variant="outline"
-                      onClick={() => showPaywall('Manage billing')}
+                      onClick={() => handleOpenChangeModal('change-billing')}
                       className="w-full"
                     >
                       <Settings className="w-4 h-4 mr-2" />
-                      Manage Billing
+                      Change Billing Period
                     </Button>
                   </div>
                 </div>
@@ -350,6 +441,15 @@ export function SubscriptionDashboard({ userId, currentSubscription }: Subscript
         onClose={hidePaywall}
         currentTier={subscription?.tier || 'free'}
         onSubscriptionSuccess={refreshSubscription}
+      />
+
+      {/* Subscription Change Modal */}
+      <SubscriptionChangeModal
+        isOpen={showChangeModal}
+        onClose={() => setShowChangeModal(false)}
+        changeType={changeType}
+        currentTier={subscription?.tier || 'free'}
+        onChangeSubscription={handleChangeSubscription}
       />
     </div>
   );
