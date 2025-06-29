@@ -180,6 +180,13 @@ export interface GoalFilters {
   search?: string;
 }
 
+// Error Response type
+export interface ErrorResponse {
+  success: false;
+  error: string;
+  message?: string;
+}
+
 // API Response types
 export interface GoalsResponse {
   success: boolean;
