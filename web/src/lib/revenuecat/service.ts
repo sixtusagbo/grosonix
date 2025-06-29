@@ -63,7 +63,7 @@ class RevenueCatService {
         try {
           console.log("Attempting to import RevenueCat...");
           const revenueCatModule = await import("@revenuecat/purchases-js");
-          this.Purchases = revenueCatModule.default;
+          this.Purchases = revenueCatModule;
           console.log("RevenueCat import successful:", !!this.Purchases);
         } catch (importError) {
           console.error("Failed to import RevenueCat:", importError);
