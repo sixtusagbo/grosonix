@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useGoals } from "@/hooks/useGoals";
+import { GoalType, GoalPriority, Platform } from "@/types/goals";
 
 interface GoalSettingProps {
   socialAccounts: any[] | null;
@@ -48,16 +49,26 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
   } = useGoals();
 
   // Enhanced goal form state for better UX
-  const [goalForm, setGoalForm] = useState({
+  const [goalForm, setGoalForm] = useState<{
+    title: string;
+    description: string;
+    goal_type: GoalType;
+    target_value: string;
+    start_value: string;
+    platform: Platform | undefined;
+    deadline: string;
+    priority: GoalPriority;
+    milestones: number[];
+  }>({
     title: "",
     description: "",
-    goal_type: "followers" as any,
+    goal_type: "followers",
     target_value: "",
     start_value: "",
-    platform: "",
+    platform: undefined,
     deadline: "",
-    priority: "medium" as any,
-    milestones: [] as number[]
+    priority: "medium",
+    milestones: []
   });
 
   // Reset form function
@@ -68,7 +79,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
       goal_type: "followers",
       target_value: "",
       start_value: "",
-      platform: "",
+      platform: undefined,
       deadline: "",
       priority: "medium",
       milestones: []
@@ -156,7 +167,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         goal_type: editingGoal.goal_type,
         target_value: editingGoal.target_value.toString(),
         start_value: (editingGoal.start_value || 0).toString(),
-        platform: editingGoal.platform || "",
+        platform: editingGoal.platform || undefined,
         deadline: editingGoal.target_date,
         priority: editingGoal.priority,
         milestones: editingGoal.milestones || []
@@ -181,7 +192,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         goal_type: goalForm.goal_type,
         target_value: parseInt(goalForm.target_value),
         start_value: parseInt(goalForm.start_value) || 0,
-        platform: goalForm.platform || undefined,
+        platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
@@ -216,7 +227,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         goal_type: goalForm.goal_type,
         target_value: parseInt(goalForm.target_value),
         start_value: parseInt(goalForm.start_value) || 0,
-        platform: goalForm.platform || undefined,
+        platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
@@ -333,8 +344,11 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                     Platform *
                   </label>
                   <select
-                    value={goalForm.platform}
-                    onChange={(e) => setGoalForm({ ...goalForm, platform: e.target.value })}
+                    value={goalForm.platform || ""}
+                    onChange={(e) => setGoalForm({ 
+                      ...goalForm, 
+                      platform: e.target.value === "" ? undefined : e.target.value as Platform
+                    })}
                     className={`w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
                       validationErrors.platform ? "border-red-500" : ""
                     }`}
@@ -373,7 +387,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   </label>
                   <select
                     value={goalForm.goal_type}
-                    onChange={(e) => setGoalForm({ ...goalForm, goal_type: e.target.value })}
+                    onChange={(e) => setGoalForm({ ...goalForm, goal_type: e.target.value as GoalType })}
                     className="w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   >
                     <option value="followers">Followers</option>
@@ -426,7 +440,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   </label>
                   <select
                     value={goalForm.priority}
-                    onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value })}
+                    onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value as GoalPriority })}
                     className="w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   >
                     <option value="low">Low Priority</option>
