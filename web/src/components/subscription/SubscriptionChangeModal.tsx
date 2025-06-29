@@ -16,7 +16,8 @@ import {
   Calendar, 
   CheckCircle, 
   X,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 import { formatPrice, REVENUECAT_CONFIG, getYearlySavingsPercentage } from '@/lib/revenuecat/config';
 
