@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants, AnimationProps } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ReactNode } from 'react';
 
 // Common animation variants
