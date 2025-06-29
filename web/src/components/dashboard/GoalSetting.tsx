@@ -27,7 +27,6 @@ interface GoalSettingProps {
 
 export function GoalSetting({ socialAccounts }: GoalSettingProps) {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
-  const [showNewGoalForm, setShowNewGoalForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -259,7 +258,6 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
 
   return (
     <Card className="glass-card border-purple-500/20">
-    <Card className="glass-card border-purple-500/20">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -290,7 +288,6 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
             variant="outline"
             size="sm"
             onClick={() => setShowNewGoalForm(!showNewGoalForm)}
-            className="border-purple-500/20 hover:border-purple-500/40"
             className="border-purple-500/20 hover:border-purple-500/40"
           >
             <Plus className="w-4 h-4 mr-1" />
