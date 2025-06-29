@@ -184,7 +184,7 @@ export class CalendarService {
     try {
       const { data, error } = await this.supabase
         .from('scheduled_posts')
-        .select('platform, status')
+        .select('platform, status, scheduled_at')
         .eq('user_id', userId)
         .gte('scheduled_at', startDate)
         .lte('scheduled_at', endDate);
