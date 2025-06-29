@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const goalIntegrationService = new GoalIntegrationService();
+    const goalIntegrationService = new GoalIntegrationService(supabase);
     
     // Sync goals with current metrics
     await goalIntegrationService.syncGoalsWithMetrics(user.id);
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const goalIntegrationService = new GoalIntegrationService();
+    const goalIntegrationService = new GoalIntegrationService(supabase);
     
     // Get goal suggestion based on current metrics
     const suggestion = await goalIntegrationService.suggestGoalFromMetrics(
