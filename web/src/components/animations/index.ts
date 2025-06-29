@@ -1,5 +1,7 @@
 // Animation utilities and base components
 export * from './AnimationUtils';
+// Explicitly re-export BaseAnimatedButton to avoid confusion
+export { BaseAnimatedButton } from './AnimationUtils';
 
 // Progress and counter animations
 export * from './AnimatedProgress';
@@ -10,7 +12,7 @@ export * from './CelebrationModal';
 // Reward notifications and badges
 export * from './RewardNotifications';
 
-// Micro-interactions and feedback
+// Micro-interactions and feedback (includes the main AnimatedButton)
 export * from './MicroInteractions';
 
 // Gamification dashboard widgets

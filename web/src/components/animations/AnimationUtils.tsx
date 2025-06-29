@@ -129,7 +129,7 @@ export function AnimatedContainer({
   );
 }
 
-export function AnimatedButton({ 
+export function BaseAnimatedButton({ 
   children, 
   className = "",
   onClick,
