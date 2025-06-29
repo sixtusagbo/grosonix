@@ -313,5 +313,5 @@ export interface GoalProgress {
   current_pace: number;
   projected_completion: string;
   is_on_track: boolean;
-  next_milestone: number | null;
+  next_milestone: GoalMilestone | null;
 }
