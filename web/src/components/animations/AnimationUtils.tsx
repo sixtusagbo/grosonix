@@ -73,6 +73,32 @@ export const celebration: Variants = {
   }
 };
 
+// Badge-specific animation variants
+export const badgeNewVariant: Variants = {
+  initial: { scale: 0, rotate: -180 },
+  animate: { 
+    scale: 1, 
+    rotate: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 500,
+      damping: 15
+    }
+  }
+};
+
+export const badgeAchievementVariant: Variants = {
+  initial: { scale: 0, y: -50 },
+  animate: { 
+    scale: [0, 1.2, 1], 
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  }
+};
+
 // Reusable animated components
 interface AnimatedContainerProps {
   children: ReactNode;
@@ -214,33 +240,12 @@ export function AnimatedBadge({
   className?: string;
   variant?: "default" | "new" | "achievement";
 }) {
-  const getAnimation = () => {
+  const getVariant = (): Variants => {
     switch (variant) {
       case "new":
-        return {
-          initial: { scale: 0, rotate: -180 },
-          animate: { 
-            scale: 1, 
-            rotate: 0,
-            transition: {
-              type: "spring" as const,
-              stiffness: 500,
-              damping: 15
-            }
-          }
-        };
+        return badgeNewVariant;
       case "achievement":
-        return {
-          initial: { scale: 0, y: -50 },
-          animate: { 
-            scale: [0, 1.2, 1], 
-            y: 0,
-            transition: {
-              duration: 0.6,
-              ease: "easeOut"
-            }
-          }
-        };
+        return badgeAchievementVariant;
       default:
         return fadeInScale;
     }
@@ -248,7 +253,9 @@ export function AnimatedBadge({
 
   return (
     <motion.div
-      {...getAnimation()}
+      variants={getVariant()}
+      initial="initial"
+      animate="animate"
       className={className}
     >
       {children}
