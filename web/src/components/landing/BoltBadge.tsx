@@ -24,7 +24,7 @@ export function BoltBadge() {
   }, []);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed top-4 right-4 z-50">
       <a href="https://bolt.new/?rid=os72mi" target="_blank" rel="noopener noreferrer" 
          className="block transition-all duration-300 hover:shadow-2xl">
         <img 
