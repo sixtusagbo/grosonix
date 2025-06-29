@@ -173,64 +173,6 @@ export function AnimatedButton({
   );
 }
 
-export function AnimatedCounter({ 
-  value, 
-  duration = 1,
-  className = ""
-}: {
-  value: number;
-  duration?: number;
-  className?: string;
-}) {
-  return (
-    <motion.span
-      key={value}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration }}
-      className={className}
-    >
-      {value.toLocaleString()}
-    </motion.span>
-  );
-}
-
-export function AnimatedProgressBar({ 
-  progress, 
-  className = "",
-  showGlow = false
-}: {
-  progress: number;
-  className?: string;
-  showGlow?: boolean;
-}) {
-  return (
-    <div className={`relative overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${className}`}>
-      <motion.div
-        className={`h-full bg-gradient-to-r from-emerald-500 to-emerald-600 ${
-          showGlow ? 'shadow-lg shadow-emerald-500/50' : ''
-        }`}
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
-      />
-      {showGlow && (
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-30"
-          animate={{
-            x: ["-100%", "100%"],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
 export function AnimatedBadge({ 
   children, 
   className = "",
