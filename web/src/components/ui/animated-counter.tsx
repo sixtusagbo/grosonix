@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { ReactNode } from "react";
 
 interface AnimatedCounterProps {
   value: number;
@@ -82,11 +83,11 @@ export function AnimatedCounter({
   );
 }
 
-interface MetricCounterProps {
+export interface MetricCounterProps {
   value: number;
   previousValue?: number;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   trend?: "up" | "down" | "neutral";
   className?: string;
   showChange?: boolean;
@@ -155,16 +156,7 @@ export function MetricCounter({
 }
 
 interface RealTimeMetricsProps {
-  metrics: Array<{
-    id: string;
-    label: string;
-    value: number;
-    previousValue?: number;
-    icon?: React.ReactNode;
-    trend?: "up" | "down" | "neutral";
-    prefix?: string;
-    suffix?: string;
-  }>;
+  metrics: Array<MetricCounterProps>;
   className?: string;
   updateInterval?: number;
 }

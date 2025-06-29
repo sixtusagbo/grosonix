@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-// Import animated components
+// Import the correct type for metrics
+import type { MetricCounterProps } from "@/components/ui/animated-counter";
 
 interface StatsGridProps {
   socialAccounts: any[] | null;
@@ -166,14 +167,14 @@ export function StatsGrid({
     ];
 
   // Prepare metrics for RealTimeMetrics component
-  const realTimeMetrics = [
+  const realTimeMetrics: MetricCounterProps[] = [
     {
       id: "platforms",
       label: selectedPlatform === "overview" ? "Connected Platforms" : `${getPlatformDisplayName()} Status`,
       value: selectedPlatform === "overview" ? connectedPlatforms : (metrics.length > 0 ? 1 : 0),
       previousValue: selectedPlatform === "overview" ? Math.max(0, connectedPlatforms - 1) : undefined,
       icon: <BarChart3 className="w-4 h-4" />,
-      trend: connectedPlatforms > 0 ? "up" : "neutral" as const,
+      trend: connectedPlatforms > 0 ? "up" : "neutral",
     },
     {
       id: "followers",
@@ -181,7 +182,7 @@ export function StatsGrid({
       value: totalFollowers,
       previousValue: Math.max(0, totalFollowers - Math.round(totalFollowers * (avgGrowthRate / 100))),
       icon: <Users className="w-4 h-4" />,
-      trend: avgGrowthRate > 0 ? "up" : avgGrowthRate < 0 ? "down" : "neutral" as const,
+      trend: avgGrowthRate > 0 ? "up" : avgGrowthRate < 0 ? "down" : "neutral",
     },
     {
       id: "engagement",
@@ -189,7 +190,7 @@ export function StatsGrid({
       value: Math.round(avgEngagementRate * 100) / 100,
       previousValue: Math.max(0, avgEngagementRate - 0.5),
       icon: <Heart className="w-4 h-4" />,
-      trend: avgEngagementRate > 2 ? "up" : avgEngagementRate < 1 ? "down" : "neutral" as const,
+      trend: avgEngagementRate > 2 ? "up" : avgEngagementRate < 1 ? "down" : "neutral",
       suffix: "%",
     },
     {
@@ -198,7 +199,7 @@ export function StatsGrid({
       value: totalPosts,
       previousValue: Math.max(0, totalPosts - Math.round(totalPosts * 0.1)),
       icon: <MessageCircle className="w-4 h-4" />,
-      trend: totalPosts > 0 ? "up" : "neutral" as const,
+      trend: totalPosts > 0 ? "up" : "neutral",
     },
   ];
 
