@@ -27,6 +27,7 @@ interface GoalSettingProps {
 
 export function GoalSetting({ socialAccounts }: GoalSettingProps) {
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
+  const [showNewGoalForm, setShowNewGoalForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -258,8 +259,21 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
 
   return (
     <Card className="glass-card border-purple-500/20">
+    <Card className="glass-card border-purple-500/20">
       <CardHeader>
         <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-purple-500" />
+              Goals & Targets
+            </CardTitle>
+            {error && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs font-medium">
+                <AlertTriangle className="w-3 h-3" />
+                Error loading goals
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <CardTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-purple-500" />
@@ -276,6 +290,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
             variant="outline"
             size="sm"
             onClick={() => setShowNewGoalForm(!showNewGoalForm)}
+            className="border-purple-500/20 hover:border-purple-500/40"
             className="border-purple-500/20 hover:border-purple-500/40"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -539,6 +554,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         <div className="space-y-6">
           {loading ? (
             <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
               <p className="text-theme-secondary">Loading goals...</p>
             </div>
