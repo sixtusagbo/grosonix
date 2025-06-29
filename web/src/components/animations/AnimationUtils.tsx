@@ -28,7 +28,7 @@ export const bounceIn: Variants = {
     opacity: 1, 
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 400,
       damping: 10
     }
@@ -226,7 +226,7 @@ export function AnimatedBadge({
             scale: 1, 
             rotate: 0,
             transition: {
-              type: "spring",
+              type: "spring" as const,
               stiffness: 500,
               damping: 15
             }
