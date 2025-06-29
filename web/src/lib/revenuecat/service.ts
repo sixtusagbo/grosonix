@@ -1,9 +1,6 @@
 import { REVENUECAT_CONFIG } from "./config";
 import { createBrowserClient } from "@supabase/ssr";
 
-// Dynamic import for RevenueCat to ensure it loads properly in browser
-let Purchases: any = null;
-
 // Types for TypeScript
 interface CustomerInfo {
   originalAppUserId: string;
@@ -40,6 +37,7 @@ export interface SubscriptionStatus {
 class RevenueCatService {
   private initialized = false;
   private supabase;
+  private Purchases: any = null;
 
   constructor() {
     this.supabase = createBrowserClient(
@@ -55,16 +53,18 @@ class RevenueCatService {
     if (this.initialized) return;
 
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        throw new Error("RevenueCat can only be initialized in browser environment");
+      }
+      
       // Dynamically import RevenueCat
-      if (!Purchases) {
-        // Check if we're in a browser environment
-        if (typeof window === 'undefined') {
-          throw new Error("RevenueCat can only be initialized in browser environment");
-        }
-        
+      if (!this.Purchases) {
         try {
+          console.log("Attempting to import RevenueCat...");
           const revenueCatModule = await import("@revenuecat/purchases-js");
-          Purchases = revenueCatModule.default;
+          this.Purchases = revenueCatModule.default;
+          console.log("RevenueCat import successful:", !!this.Purchases);
         } catch (importError) {
           console.error("Failed to import RevenueCat:", importError);
           throw new Error("Failed to load RevenueCat library");
@@ -72,12 +72,18 @@ class RevenueCatService {
       }
 
       // Check if Purchases is available
-      if (!Purchases || !Purchases.configure) {
-        console.error("RevenueCat Purchases object not available");
-        throw new Error("RevenueCat library not loaded");
+      if (!this.Purchases || !this.Purchases.configure) {
+        console.error("RevenueCat Purchases object not available:", this.Purchases);
+        throw new Error("RevenueCat library not loaded properly");
       }
 
-      await Purchases.configure({
+      // Check if API key is available
+      if (!REVENUECAT_CONFIG.apiKey || REVENUECAT_CONFIG.apiKey === 'your_revenuecat_api_key_here') {
+        console.error("RevenueCat API key is missing or invalid");
+        throw new Error("Invalid RevenueCat API key");
+      }
+
+      await this.Purchases.configure({
         apiKey: REVENUECAT_CONFIG.apiKey,
         appUserId: userId,
       });
@@ -95,11 +101,12 @@ class RevenueCatService {
    */
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const customerInfo = await Purchases.getCustomerInfo();
+      const customerInfo = await this.Purchases.getCustomerInfo();
 
       // Check for active subscriptions
       const activeSubscriptions = customerInfo.activeSubscriptions;
@@ -155,11 +162,12 @@ class RevenueCatService {
    */
   async purchaseSubscription(productId: string): Promise<SubscriptionResult> {
     try {
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const offerings = await Purchases.getOfferings();
+      const offerings = await this.Purchases.getOfferings();
       const currentOffering = offerings.current;
 
       if (!currentOffering) {
@@ -181,7 +189,7 @@ class RevenueCatService {
         };
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(
+      const { customerInfo } = await this.Purchases.purchasePackage(
         packageToPurchase
       );
 
@@ -215,11 +223,12 @@ class RevenueCatService {
    */
   async changeSubscription(newProductId: string): Promise<SubscriptionResult> {
     try {
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const offerings = await Purchases.getOfferings();
+      const offerings = await this.Purchases.getOfferings();
       const currentOffering = offerings.current;
 
       if (!currentOffering) {
@@ -242,7 +251,7 @@ class RevenueCatService {
       }
 
       // Get current customer info
-      const customerInfo = await Purchases.getCustomerInfo();
+      const customerInfo = await this.Purchases.getCustomerInfo();
       
       // Check if user has an active subscription
       if (customerInfo.activeSubscriptions.length === 0) {
@@ -251,7 +260,7 @@ class RevenueCatService {
       }
 
       // Perform the subscription change
-      const { customerInfo: updatedInfo } = await Purchases.purchasePackage(
+      const { customerInfo: updatedInfo } = await this.Purchases.purchasePackage(
         newPackage
       );
 
@@ -289,11 +298,12 @@ class RevenueCatService {
       const { trialManager } = await import("@/lib/subscription/trial-manager");
 
       // Get current user ID
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const customerInfo = await Purchases.getCustomerInfo();
+      const customerInfo = await this.Purchases.getCustomerInfo();
       const userId = customerInfo.originalAppUserId;
 
       if (!userId) {
@@ -341,11 +351,12 @@ class RevenueCatService {
    */
   async restorePurchases(): Promise<SubscriptionResult> {
     try {
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const customerInfo = await Purchases.restorePurchases();
+      const customerInfo = await this.Purchases.restorePurchases();
 
       // Update subscription in database
       await this.updateSubscriptionInDatabase(customerInfo);
@@ -398,11 +409,12 @@ class RevenueCatService {
    */
   async getOfferings(): Promise<PurchasesOffering | null> {
     try {
-      if (!Purchases) {
+      if (!this.Purchases) {
+        console.error("RevenueCat not initialized - Purchases object:", this.Purchases);
         throw new Error("RevenueCat not initialized");
       }
 
-      const offerings = await Purchases.getOfferings();
+      const offerings = await this.Purchases.getOfferings();
       return offerings.current;
     } catch (error) {
       console.error("Failed to get offerings:", error);

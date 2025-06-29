@@ -36,7 +36,7 @@ export interface RevenueCatConfig {
 
 export const REVENUECAT_CONFIG: RevenueCatConfig = {
   // RevenueCat public API key (replace with your actual key)
-  apiKey: process.env.NEXT_PUBLIC_REVENUECAT_API_KEY || 'your_revenuecat_api_key_here',
+  apiKey: process.env.NEXT_PUBLIC_REVENUECAT_API_KEY || '',
   
   // Product IDs from RevenueCat dashboard
   products: {
