@@ -92,6 +92,7 @@ interface MetricCounterProps {
   showChange?: boolean;
   prefix?: string;
   suffix?: string;
+  trendValue?: number;
 }
 
 export function MetricCounter({
@@ -104,6 +105,7 @@ export function MetricCounter({
   showChange = true,
   prefix = "",
   suffix = "",
+  trendValue,
 }: MetricCounterProps) {
   const change = previousValue !== undefined ? value - previousValue : 0;
   const changePercentage = previousValue && previousValue !== 0
