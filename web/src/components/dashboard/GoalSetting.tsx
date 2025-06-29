@@ -682,8 +682,9 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                         <div className="space-y-2">
                           <span className="text-sm font-medium text-theme-primary">Milestones</span>
                           <div className="flex flex-wrap gap-2">
-                            {goal.milestones.map((milestone: number, index: number) => {
-                              const achieved = goal.current_value >= milestone;
+                            {goal.milestones.map((milestone: any, index: number) => {
+                              const milestoneValue = typeof milestone === 'object' ? milestone.milestone_value || milestone.value : milestone;
+                              const achieved = goal.current_value >= milestoneValue;
                               return (
                                 <div
                                   key={index}
@@ -693,7 +694,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                                     }`}
                                 >
                                   {achieved && <Check className="w-3 h-3" />}
-                                  {milestone.toLocaleString()}
+                                  {milestoneValue.toLocaleString()}
                                 </div>
                               );
                             })}
