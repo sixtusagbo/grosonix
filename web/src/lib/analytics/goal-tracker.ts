@@ -22,7 +22,7 @@ export class GoalTracker {
     );
 
     const now = new Date();
-    const deadline = new Date(goal.deadline);
+    const deadline = new Date(goal.target_date);
     const daysRemaining = Math.max(
       Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
       0
