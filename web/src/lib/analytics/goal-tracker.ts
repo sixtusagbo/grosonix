@@ -38,7 +38,7 @@ export class GoalTracker {
 
     const daysPassed = totalDays - daysRemaining;
     const currentPace = daysPassed > 0 
-      ? (goal.current_value - goal.start_value) / daysPassed
+      ? (goal.current_value - (goal.start_value || 0)) / daysPassed
       : 0;
 
     const projectedValue = goal.current_value + (currentPace * daysRemaining);
