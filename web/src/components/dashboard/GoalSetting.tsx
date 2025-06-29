@@ -186,17 +186,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     }
 
     try {
+      const targetValue = parseInt(goalForm.target_value);
+      
       const goalData = {
         title: goalForm.title,
         description: goalForm.description,
         goal_type: goalForm.goal_type,
-        target_value: parseInt(goalForm.target_value),
+        target_value: targetValue,
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
-        milestones: goalForm.milestones
+        milestones: goalForm.milestones.map(milestoneValue => ({
+          value: milestoneValue,
+          percentage: (milestoneValue / targetValue) * 100
+        }))
       };
 
       await createGoal(goalData);
@@ -221,17 +226,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     }
 
     try {
+      const targetValue = parseInt(goalForm.target_value);
+      
       const updatedGoalData = {
         title: goalForm.title,
         description: goalForm.description,
         goal_type: goalForm.goal_type,
-        target_value: parseInt(goalForm.target_value),
+        target_value: targetValue,
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
-        milestones: goalForm.milestones
+        milestones: goalForm.milestones.map(milestoneValue => ({
+          value: milestoneValue,
+          percentage: (milestoneValue / targetValue) * 100
+        }))
       };
 
       await updateGoal(editingGoal.id, updatedGoalData);
