@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { MetricCounter, RealTimeMetrics } from "@/components/ui/animated-counter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,12 +8,14 @@ import { PlatformFilter } from "@/lib/social";
 import {
   Activity,
   BarChart3,
-  Heart,
-  MessageCircle,
   RefreshCw,
-  Users
+  Settings,
+  Zap
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { GoalSetting } from "./GoalSetting";
+import { GrowthChart } from "./GrowthChart";
+import { PlatformSelector } from "./PlatformSelector";
 
 // Import the correct type for metrics
 import type { MetricCounterProps } from "@/components/ui/animated-counter";
@@ -23,26 +26,14 @@ interface StatsGridProps {
   onRefresh?: () => void;
 }
 
-type ChangeType = "increase" | "decrease" | "neutral";
-
-interface SocialMetrics {
-  platform: string;
-  followers_count: number;
-  following_count: number;
-  posts_count: number;
-  engagement_rate: number;
-  growth_rate: number;
-  last_updated: string;
-}
-
 export function StatsGrid({
   socialAccounts,
   selectedPlatform = "overview",
   onRefresh,
 }: StatsGridProps) {
-  const [metrics, setMetrics] = useState<SocialMetrics[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [metrics, setMetrics] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const connectedPlatforms = socialAccounts?.length || 0;
 
@@ -53,7 +44,7 @@ export function StatsGrid({
   }, [connectedPlatforms, selectedPlatform]);
 
   const fetchMetrics = async () => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const platformParam =
         selectedPlatform === "overview" ? "" : `?platform=${selectedPlatform}`;
@@ -68,7 +59,7 @@ export function StatsGrid({
     } catch (error) {
       console.error("Failed to fetch metrics:", error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -93,79 +84,6 @@ export function StatsGrid({
     return selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1);
   };
 
-  const stats: Array<{
-    name: string;
-    value: string | number;
-    change: string;
-    changeType: ChangeType;
-    loading?: boolean;
-  }> = [
-      {
-        name:
-          selectedPlatform === "overview"
-            ? "Connected Platforms"
-            : `${getPlatformDisplayName()} Status`,
-        value:
-          selectedPlatform === "overview"
-            ? connectedPlatforms
-            : metrics.length > 0
-              ? "Connected"
-              : "Not Connected",
-        change:
-          selectedPlatform === "overview"
-            ? connectedPlatforms > 0
-              ? `+${connectedPlatforms}`
-              : "0"
-            : metrics.length > 0
-              ? "Active"
-              : "Inactive",
-        changeType:
-          selectedPlatform === "overview"
-            ? connectedPlatforms > 0
-              ? "increase"
-              : "neutral"
-            : metrics.length > 0
-              ? "increase"
-              : "decrease",
-      },
-      {
-        name: "Total Followers",
-        value: loading ? "..." : totalFollowers.toLocaleString(),
-        change: avgGrowthRate > 0 ? `+${avgGrowthRate.toFixed(1)}%` : "0%",
-        changeType:
-          avgGrowthRate > 0
-            ? "increase"
-            : avgGrowthRate < 0
-              ? "decrease"
-              : "neutral",
-        loading,
-      },
-      {
-        name: "Engagement Rate",
-        value: loading ? "..." : `${avgEngagementRate.toFixed(1)}%`,
-        change:
-          avgEngagementRate > 2
-            ? "+Good"
-            : avgEngagementRate > 1
-              ? "+Fair"
-              : "Low",
-        changeType:
-          avgEngagementRate > 2
-            ? "increase"
-            : avgEngagementRate > 1
-              ? "neutral"
-              : "decrease",
-        loading,
-      },
-      {
-        name: "Total Posts",
-        value: loading ? "..." : totalPosts.toLocaleString(),
-        change: totalPosts > 0 ? `${totalPosts} posts` : "No posts",
-        changeType: totalPosts > 0 ? "increase" : "neutral",
-        loading,
-      },
-    ];
-
   // Prepare metrics for RealTimeMetrics component
   const realTimeMetrics: MetricCounterProps[] = [
     {
@@ -181,7 +99,7 @@ export function StatsGrid({
       label: "Total Followers",
       value: totalFollowers,
       previousValue: Math.max(0, totalFollowers - Math.round(totalFollowers * (avgGrowthRate / 100))),
-      icon: <Users className="w-4 h-4" />,
+      icon: <Activity className="w-4 h-4" />,
       trend: avgGrowthRate > 0 ? "up" : avgGrowthRate < 0 ? "down" : "neutral",
     },
     {
@@ -189,7 +107,7 @@ export function StatsGrid({
       label: "Engagement Rate",
       value: Math.round(avgEngagementRate * 100) / 100,
       previousValue: Math.max(0, avgEngagementRate - 0.5),
-      icon: <Heart className="w-4 h-4" />,
+      icon: <Zap className="w-4 h-4" />,
       trend: avgEngagementRate > 2 ? "up" : avgEngagementRate < 1 ? "down" : "neutral",
       suffix: "%",
     },
@@ -198,7 +116,7 @@ export function StatsGrid({
       label: "Total Posts",
       value: totalPosts,
       previousValue: Math.max(0, totalPosts - Math.round(totalPosts * 0.1)),
-      icon: <MessageCircle className="w-4 h-4" />,
+      icon: <BarChart3 className="w-4 h-4" />,
       trend: totalPosts > 0 ? "up" : "neutral",
     },
   ];
@@ -222,11 +140,11 @@ export function StatsGrid({
               variant="outline"
               size="sm"
               onClick={fetchMetrics}
-              disabled={loading}
+              disabled={isLoading}
               className="border-emerald-500/20 hover:border-emerald-500/40"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-              {loading ? "Refreshing..." : "Refresh"}
+              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+              {isLoading ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
         </div>
@@ -241,7 +159,7 @@ export function StatsGrid({
         />
 
         {/* Loading State */}
-        {loading && (
+        {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
             <span className="ml-2 text-theme-secondary">Refreshing metrics...</span>
@@ -249,7 +167,7 @@ export function StatsGrid({
         )}
 
         {/* No Data State */}
-        {!loading && connectedPlatforms === 0 && (
+        {!isLoading && connectedPlatforms === 0 && (
           <div className="text-center py-8 text-theme-secondary">
             <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p>No social media accounts connected</p>
@@ -258,7 +176,7 @@ export function StatsGrid({
         )}
 
         {/* Platform-specific metrics */}
-        {!loading && metrics.length > 0 && selectedPlatform !== "overview" && (
+        {!isLoading && metrics.length > 0 && selectedPlatform !== "overview" && (
           <div className="mt-6 pt-6 border-t border-border/50">
             <h4 className="text-lg font-semibold text-theme-primary mb-4">
               {getPlatformDisplayName()} Details
@@ -269,14 +187,14 @@ export function StatsGrid({
                   <MetricCounter
                     value={metric.followers_count}
                     label="Followers"
-                    icon={<Users className="w-4 h-4" />}
+                    icon={<Activity className="w-4 h-4" />}
                     trend={metric.growth_rate > 0 ? "up" : metric.growth_rate < 0 ? "down" : "neutral"}
                     showChange={true}
                   />
                   <MetricCounter
                     value={metric.engagement_rate}
                     label="Engagement Rate"
-                    icon={<Heart className="w-4 h-4" />}
+                    icon={<Zap className="w-4 h-4" />}
                     trend={metric.engagement_rate > 2 ? "up" : metric.engagement_rate < 1 ? "down" : "neutral"}
                     suffix="%"
                     showChange={false}
@@ -284,7 +202,7 @@ export function StatsGrid({
                   <MetricCounter
                     value={metric.posts_count}
                     label="Posts"
-                    icon={<MessageCircle className="w-4 h-4" />}
+                    icon={<BarChart3 className="w-4 h-4" />}
                     trend="neutral"
                     showChange={false}
                   />

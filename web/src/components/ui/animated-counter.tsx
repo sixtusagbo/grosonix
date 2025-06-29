@@ -84,6 +84,7 @@ export function AnimatedCounter({
 }
 
 export interface MetricCounterProps {
+  id?: string; // Make id optional
   value: number;
   previousValue?: number;
   label: string;
@@ -208,7 +209,7 @@ export function RealTimeMetrics({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => (
           <div
-            key={metric.id}
+            key={metric.id || metric.label}
             className={cn(
               "p-4 rounded-lg border transition-all duration-200",
               "bg-surface/50 border-border/50",
