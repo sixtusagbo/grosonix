@@ -94,9 +94,6 @@ export function AnimatedContainer({
   return (
     <motion.div
       variants={variant}
-      initial="initial"
-      animate="animate"
-      exit="exit"
       transition={{ duration, delay }}
       className={className}
       onClick={onClick}
