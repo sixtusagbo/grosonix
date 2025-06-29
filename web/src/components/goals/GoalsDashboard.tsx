@@ -67,16 +67,18 @@ export function GoalsDashboard({ userId }: GoalsDashboardProps) {
     refetch
   } = useGoals();
 
-  const handleCreateGoal = async (data: CreateGoalRequest) => {
-    const newGoal = await createGoal(data);
+  const handleCreateGoal = async (data: CreateGoalRequest | UpdateGoalRequest) => {
+    const createData = data as CreateGoalRequest;
+    const newGoal = await createGoal(createData);
     if (newGoal) {
       setShowCreateForm(false);
     }
   };
 
-  const handleUpdateGoal = async (data: UpdateGoalRequest) => {
+  const handleUpdateGoal = async (data: CreateGoalRequest | UpdateGoalRequest) => {
     if (editingGoal) {
-      const updatedGoal = await updateGoal(editingGoal.id, data);
+      const updateData = data as UpdateGoalRequest;
+      const updatedGoal = await updateGoal(editingGoal.id, updateData);
       if (updatedGoal) {
         setEditingGoal(null);
       }
