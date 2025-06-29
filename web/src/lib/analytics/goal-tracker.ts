@@ -49,8 +49,8 @@ export class GoalTracker {
     const isOnTrack = projectedValue >= goal.target_value;
 
     const nextMilestone = (goal.milestones || [])
-      .filter(m => m > goal.current_value)
-      .sort((a, b) => a - b)[0] || null;
+      .filter(m => m.milestone_value > goal.current_value)
+      .sort((a, b) => a.milestone_value - b.milestone_value)[0] || null;
 
     return {
       goal_id: goal.id,
