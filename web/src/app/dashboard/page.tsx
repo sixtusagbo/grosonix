@@ -6,6 +6,8 @@ import { SocialAccounts } from "@/components/dashboard/SocialAccounts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const cookieStore = cookies();
 

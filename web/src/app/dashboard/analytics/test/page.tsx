@@ -16,7 +16,9 @@ import {
   Zap,
   BarChart3,
   Activity
-} from "lucide-react";
+} from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export default function AnalyticsTestPage() {
   const [testMetrics, setTestMetrics] = useState([
