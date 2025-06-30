@@ -5,6 +5,8 @@ import { SocialConnections } from "@/components/dashboard/SocialConnections";
 import { CacheManager } from "@/components/dashboard/CacheManager";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
   const cookieStore = cookies();
 
