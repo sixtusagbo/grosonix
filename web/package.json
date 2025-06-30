@@ -50,6 +50,8 @@
     "twitter-api-v2": "^1.15.2"
   },
   "devDependencies": {
+    "supabase": "^2.26.9",
+    "@netlify/plugin-nextjs": "^5.11.4",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
