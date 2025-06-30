@@ -364,14 +364,6 @@ npm run lint
 npx tsc --noEmit
 ```
 
-## Deployment
-
-```
-# Via Netlify CLI
-
-netlify deploy --prod --dir=.next
-```
-
 ## 📁 Project Structure
 
 ```
@@ -538,6 +530,13 @@ For production deployment:
 
 2. **Set production environment variables**
 3. **Deploy to your preferred platform** (Vercel, Netlify, etc.)
+
+   ```
+   # Via Netlify CLI
+
+   netlify deploy --prod --dir=.next
+   ```
+
 4. **Update OAuth redirect URIs** to production URLs
 
 ## 📝 Additional Resources
