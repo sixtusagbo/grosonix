@@ -40,27 +40,6 @@ cp .env.example .env.local
 
 Open `.env.local` and fill in the following variables:
 
-```env
-# Supabase Configuration (Required)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:4001
-
-# OpenAI API (Required for AI features)
-OPENAI_API_KEY=your_openai_api_key
-
-# Social Media API Keys (Optional - for social integrations)
-TWITTER_CLIENT_ID=your_twitter_client_id
-TWITTER_CLIENT_SECRET=your_twitter_client_secret
-INSTAGRAM_CLIENT_ID=your_facebook_app_id
-INSTAGRAM_CLIENT_SECRET=your_facebook_app_secret
-LINKEDIN_CLIENT_ID=your_linkedin_client_id
-LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
-```
-
 ### 4. Supabase Setup
 
 #### Option A: Use Existing Supabase Project
