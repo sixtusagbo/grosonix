@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { SubscriptionDashboard } from "@/components/subscription/SubscriptionDashboard";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SubscriptionPage() {
   const cookieStore = cookies();
 
