@@ -37,9 +37,9 @@ const nextConfig = {
       },
     ];
   },
-  
-  // Add output option to export
-  output: 'standalone',
+
+  // Remove standalone output for Netlify
+  // output: 'standalone',
 };
 
 module.exports = nextConfig;
