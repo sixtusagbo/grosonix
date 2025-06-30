@@ -2,6 +2,8 @@ import { ContentCalendar } from '@/components/calendar/ContentCalendar';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CalendarPage() {
   const cookieStore = cookies();
 
