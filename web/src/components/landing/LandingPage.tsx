@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { 
-  Sparkles, 
-  BarChart3, 
-  Zap, 
-  Calendar, 
-  Target, 
-  ArrowRight, 
+import {
+  Sparkles,
+  BarChart3,
+  Zap,
+  Calendar,
+  Target,
+  ArrowRight,
   CheckCircle,
   Users,
   Brain,
-  Shuffle
+  Shuffle,
 } from "lucide-react";
 import { BoltBadge } from "./BoltBadge";
 
@@ -23,10 +23,14 @@ export function LandingPage() {
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-hero-gradient rounded-lg flex items-center justify-center">
             <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <span className="text-xl sm:text-2xl font-bold bg-hero-gradient bg-clip-text text-transparent">Grosonix</span>
+          <span className="text-xl sm:text-2xl font-bold bg-hero-gradient bg-clip-text text-transparent">
+            Grosonix
+          </span>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-4">
-          <Link href="/auth/login" className="text-text-primary hover:text-emerald-500 transition-colors text-sm sm:text-base">
+          <Link
+            href="/auth/login"
+            className="text-text-primary hover:text-emerald-500 transition-colors text-sm sm:text-base">
             Login
           </Link>
           <Link href="/auth/signup">
@@ -41,20 +45,30 @@ export function LandingPage() {
       <section className="container mx-auto px-4 py-10 sm:py-20 flex flex-col lg:flex-row items-center">
         <div className="w-full lg:w-1/2 mb-10 lg:mb-0">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="bg-hero-gradient bg-clip-text text-transparent">AI-Powered</span> Social Media Growth
+            <span className="bg-hero-gradient bg-clip-text text-transparent">
+              AI-Powered
+            </span>{" "}
+            Social Media Growth
           </h1>
           <p className="text-lg sm:text-xl text-text-secondary mb-6 sm:mb-8 max-w-lg">
-            Transform your social media presence with AI-driven content suggestions, cross-platform optimization, and data-backed growth strategies.
+            Transform your social media presence with AI-driven content
+            suggestions, cross-platform optimization, and data-backed growth
+            strategies.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/auth/signup" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white">
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="/auth/login" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
                 Login
               </Button>
             </Link>
@@ -69,32 +83,46 @@ export function LandingPage() {
           <div className="relative z-10 glass-card border-emerald-500/20 p-6 rounded-xl shadow-xl transform rotate-2 hover:rotate-0 transition-all duration-300 mx-auto max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <Sparkles className="w-5 h-5 text-emerald-500" />
-              <h3 className="text-lg font-semibold text-text-primary">AI Content Suggestions</h3>
+              <h3 className="text-lg font-semibold text-text-primary">
+                AI Content Suggestions
+              </h3>
             </div>
             <p className="text-text-secondary mb-4">
-              "🚀 Just discovered how AI is revolutionizing social media marketing! The future is here and it's incredible. What's your take on AI-powered content creation? #AI #SocialMedia #Marketing"
+              "🚀 Just discovered how AI is revolutionizing social media
+              marketing! The future is here and it's incredible. What's your
+              take on AI-powered content creation? #AI #SocialMedia #Marketing"
             </p>
             <div className="flex justify-between items-center">
               <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs rounded-full">92% Engagement</span>
-                <span className="px-2 py-1 bg-electric-orange-500/10 text-electric-orange-500 text-xs rounded-full">Trending</span>
+                <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs rounded-full">
+                  92% Engagement
+                </span>
+                <span className="px-2 py-1 bg-electric-orange-500/10 text-electric-orange-500 text-xs rounded-full">
+                  Trending
+                </span>
               </div>
               <span className="text-sm text-text-secondary">Twitter</span>
             </div>
           </div>
-          
+
           {/* Second card - hidden on mobile, absolute positioned on desktop */}
           <div className="relative z-0 glass-card border-neon-cyan-500/20 p-6 rounded-xl shadow-xl transform -rotate-3 hover:rotate-0 transition-all duration-300 mt-6 lg:mt-0 mx-auto max-w-md lg:absolute lg:top-20 lg:-right-4">
             <div className="flex items-center gap-3 mb-4">
               <Shuffle className="w-5 h-5 text-neon-cyan-500" />
-              <h3 className="text-lg font-semibold text-text-primary">Cross-Platform Adaptation</h3>
+              <h3 className="text-lg font-semibold text-text-primary">
+                Cross-Platform Adaptation
+              </h3>
             </div>
             <p className="text-text-secondary mb-4">
-              "✨ AI is transforming how we create and share content! What innovative ways are you using AI in your workflow? #Innovation #AITools #ContentCreation"
+              "✨ AI is transforming how we create and share content! What
+              innovative ways are you using AI in your workflow? #Innovation
+              #AITools #ContentCreation"
             </p>
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
-                <span className="px-2 py-1 bg-neon-cyan-500/10 text-neon-cyan-500 text-xs rounded-full">LinkedIn Optimized</span>
+                <span className="px-2 py-1 bg-neon-cyan-500/10 text-neon-cyan-500 text-xs rounded-full">
+                  LinkedIn Optimized
+                </span>
               </div>
               <span className="text-sm text-text-secondary">LinkedIn</span>
             </div>
@@ -110,7 +138,8 @@ export function LandingPage() {
               Powerful Features
             </h2>
             <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto">
-              Everything you need to grow your social media presence with AI-powered tools and data-driven insights.
+              Everything you need to grow your social media presence with
+              AI-powered tools and data-driven insights.
             </p>
           </div>
 
@@ -120,22 +149,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Sparkles className="w-6 h-6 text-emerald-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">AI Content Intelligence</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                AI Content Intelligence
+              </h3>
               <p className="text-text-secondary mb-4">
-                Get personalized content suggestions based on your unique voice and style. Our AI learns from your best-performing posts.
+                Get personalized content suggestions based on your unique voice
+                and style. Our AI learns from your best-performing posts.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-emerald-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Personalized suggestions</span>
+                  <span className="text-sm text-text-secondary">
+                    Personalized suggestions
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-emerald-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Trending topic analysis</span>
+                  <span className="text-sm text-text-secondary">
+                    Trending topic analysis
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-emerald-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Engagement optimization</span>
+                  <span className="text-sm text-text-secondary">
+                    Engagement optimization
+                  </span>
                 </li>
               </ul>
             </div>
@@ -145,22 +183,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-electric-orange-500/10 rounded-lg flex items-center justify-center mb-4">
                 <BarChart3 className="w-6 h-6 text-electric-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">Growth Tracking</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                Growth Tracking
+              </h3>
               <p className="text-text-secondary mb-4">
-                Monitor your social media growth with real-time analytics and actionable insights across all platforms.
+                Monitor your social media growth with real-time analytics and
+                actionable insights across all platforms.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-electric-orange-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Real-time metrics</span>
+                  <span className="text-sm text-text-secondary">
+                    Real-time metrics
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-electric-orange-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Performance analytics</span>
+                  <span className="text-sm text-text-secondary">
+                    Performance analytics
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-electric-orange-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Growth predictions</span>
+                  <span className="text-sm text-text-secondary">
+                    Growth predictions
+                  </span>
                 </li>
               </ul>
             </div>
@@ -170,22 +217,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-neon-cyan-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Calendar className="w-6 h-6 text-neon-cyan-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">Smart Scheduling</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                Smart Scheduling
+              </h3>
               <p className="text-text-secondary mb-4">
-                Schedule your content at optimal times for maximum engagement based on AI-powered analysis.
+                Schedule your content at optimal times for maximum engagement
+                based on AI-powered analysis.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-neon-cyan-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Optimal posting times</span>
+                  <span className="text-sm text-text-secondary">
+                    Optimal posting times
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-neon-cyan-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Content calendar</span>
+                  <span className="text-sm text-text-secondary">
+                    Content calendar
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-neon-cyan-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Auto-scheduling</span>
+                  <span className="text-sm text-text-secondary">
+                    Auto-scheduling
+                  </span>
                 </li>
               </ul>
             </div>
@@ -195,22 +251,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Target className="w-6 h-6 text-purple-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">Goal Setting</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                Goal Setting
+              </h3>
               <p className="text-text-secondary mb-4">
-                Set and track your social media growth goals with gamified progress tracking and milestones.
+                Set and track your social media growth goals with gamified
+                progress tracking and milestones.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-purple-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Custom goal tracking</span>
+                  <span className="text-sm text-text-secondary">
+                    Custom goal tracking
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-purple-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Progress visualization</span>
+                  <span className="text-sm text-text-secondary">
+                    Progress visualization
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-purple-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Achievement celebrations</span>
+                  <span className="text-sm text-text-secondary">
+                    Achievement celebrations
+                  </span>
                 </li>
               </ul>
             </div>
@@ -220,22 +285,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Brain className="w-6 h-6 text-blue-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">Style Analysis</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                Style Analysis
+              </h3>
               <p className="text-text-secondary mb-4">
-                Our AI analyzes your writing style to generate content that sounds authentically like you.
+                Our AI analyzes your writing style to generate content that
+                sounds authentically like you.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-blue-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Voice matching</span>
+                  <span className="text-sm text-text-secondary">
+                    Voice matching
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-blue-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Tone consistency</span>
+                  <span className="text-sm text-text-secondary">
+                    Tone consistency
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-blue-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Brand alignment</span>
+                  <span className="text-sm text-text-secondary">
+                    Brand alignment
+                  </span>
                 </li>
               </ul>
             </div>
@@ -245,22 +319,31 @@ export function LandingPage() {
               <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-pink-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-text-primary">Multi-Platform</h3>
+              <h3 className="text-xl font-semibold mb-3 text-text-primary">
+                Multi-Platform
+              </h3>
               <p className="text-text-secondary mb-4">
-                Manage Twitter, LinkedIn, and Instagram from one dashboard with platform-specific optimization.
+                Manage Twitter, LinkedIn, and Instagram from one dashboard with
+                platform-specific optimization.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-pink-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Cross-platform analytics</span>
+                  <span className="text-sm text-text-secondary">
+                    Cross-platform analytics
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-pink-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Content adaptation</span>
+                  <span className="text-sm text-text-secondary">
+                    Content adaptation
+                  </span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-pink-500 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-text-secondary">Unified dashboard</span>
+                  <span className="text-sm text-text-secondary">
+                    Unified dashboard
+                  </span>
                 </li>
               </ul>
             </div>
@@ -276,7 +359,8 @@ export function LandingPage() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto">
-              Choose the plan that fits your needs. No hidden fees, no surprises.
+              Choose the plan that fits your needs. No hidden fees, no
+              surprises.
             </p>
           </div>
 
@@ -286,7 +370,9 @@ export function LandingPage() {
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-text-primary">Free</h3>
                 <div className="mt-4 mb-6">
-                  <span className="text-4xl font-bold text-text-primary">$0</span>
+                  <span className="text-4xl font-bold text-text-primary">
+                    $0
+                  </span>
                   <span className="text-text-secondary">/month</span>
                 </div>
                 <Link href="/auth/signup" className="block">
@@ -298,19 +384,27 @@ export function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">5 AI content suggestions/day</span>
+                  <span className="text-text-secondary">
+                    5 AI content suggestions/day
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Basic analytics dashboard</span>
+                  <span className="text-text-secondary">
+                    Basic analytics dashboard
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Connect 3 social accounts</span>
+                  <span className="text-text-secondary">
+                    Connect 3 social accounts
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">7-day data history</span>
+                  <span className="text-text-secondary">
+                    7-day data history
+                  </span>
                 </div>
               </div>
             </div>
@@ -323,7 +417,9 @@ export function LandingPage() {
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-text-primary">Pro</h3>
                 <div className="mt-4 mb-6">
-                  <span className="text-4xl font-bold text-text-primary">$9.99</span>
+                  <span className="text-4xl font-bold text-text-primary">
+                    $9.99
+                  </span>
                   <span className="text-text-secondary">/month</span>
                 </div>
                 <Link href="/auth/signup" className="block">
@@ -335,15 +431,21 @@ export function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-electric-orange-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Unlimited content generation</span>
+                  <span className="text-text-secondary">
+                    Unlimited content generation
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-electric-orange-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Cross-platform adaptation</span>
+                  <span className="text-text-secondary">
+                    Cross-platform adaptation
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-electric-orange-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Advanced analytics & insights</span>
+                  <span className="text-text-secondary">
+                    Advanced analytics & insights
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-electric-orange-500 mr-3 flex-shrink-0" />
@@ -351,7 +453,9 @@ export function LandingPage() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-electric-orange-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">30-day data history</span>
+                  <span className="text-text-secondary">
+                    30-day data history
+                  </span>
                 </div>
               </div>
             </div>
@@ -361,7 +465,9 @@ export function LandingPage() {
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-text-primary">Agency</h3>
                 <div className="mt-4 mb-6">
-                  <span className="text-4xl font-bold text-text-primary">$29.99</span>
+                  <span className="text-4xl font-bold text-text-primary">
+                    $29.99
+                  </span>
                   <span className="text-text-secondary">/month</span>
                 </div>
                 <Link href="/auth/signup" className="block">
@@ -373,11 +479,15 @@ export function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-neon-cyan-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Everything in Pro plan</span>
+                  <span className="text-text-secondary">
+                    Everything in Pro plan
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-neon-cyan-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">Team collaboration</span>
+                  <span className="text-text-secondary">
+                    Team collaboration
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-neon-cyan-500 mr-3 flex-shrink-0" />
@@ -389,7 +499,9 @@ export function LandingPage() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-neon-cyan-500 mr-3 flex-shrink-0" />
-                  <span className="text-text-secondary">90-day data history</span>
+                  <span className="text-text-secondary">
+                    90-day data history
+                  </span>
                 </div>
               </div>
             </div>
@@ -405,7 +517,8 @@ export function LandingPage() {
               What Our Users Say
             </h2>
             <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto">
-              Join thousands of creators and businesses growing their social media presence with Grosonix.
+              Join thousands of creators and businesses growing their social
+              media presence with Grosonix.
             </p>
           </div>
 
@@ -417,15 +530,23 @@ export function LandingPage() {
                   <span className="text-xl font-bold text-emerald-500">S</span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-text-primary">Sarah Johnson</h4>
+                  <h4 className="font-semibold text-text-primary">
+                    Sarah Johnson
+                  </h4>
                   <p className="text-sm text-text-secondary">Content Creator</p>
                 </div>
               </div>
               <p className="text-text-secondary mb-4">
-                "Grosonix has completely transformed how I create content. The AI suggestions are spot-on and save me hours every week. My engagement has increased by 45% in just one month!"
+                "Grosonix has completely transformed how I create content. The
+                AI suggestions are spot-on and save me hours every week. My
+                engagement has increased by 45% in just one month!"
               </p>
               <div className="flex text-emerald-500">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
               </div>
             </div>
 
@@ -433,18 +554,30 @@ export function LandingPage() {
             <div className="glass-card border-electric-orange-500/20 p-6 rounded-xl hover:shadow-lg transition-all duration-300">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-electric-orange-500/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-xl font-bold text-electric-orange-500">M</span>
+                  <span className="text-xl font-bold text-electric-orange-500">
+                    M
+                  </span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-text-primary">Michael Chen</h4>
-                  <p className="text-sm text-text-secondary">Marketing Director</p>
+                  <h4 className="font-semibold text-text-primary">
+                    Michael Chen
+                  </h4>
+                  <p className="text-sm text-text-secondary">
+                    Marketing Director
+                  </p>
                 </div>
               </div>
               <p className="text-text-secondary mb-4">
-                "The cross-platform adaptation feature is a game-changer. We can create content once and optimize it for all our channels with a single click. Our team's productivity has doubled."
+                "The cross-platform adaptation feature is a game-changer. We can
+                create content once and optimize it for all our channels with a
+                single click. Our team's productivity has doubled."
               </p>
               <div className="flex text-electric-orange-500">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
               </div>
             </div>
 
@@ -452,18 +585,30 @@ export function LandingPage() {
             <div className="glass-card border-neon-cyan-500/20 p-6 rounded-xl hover:shadow-lg transition-all duration-300">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-neon-cyan-500/20 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-xl font-bold text-neon-cyan-500">A</span>
+                  <span className="text-xl font-bold text-neon-cyan-500">
+                    A
+                  </span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-text-primary">Alex Rivera</h4>
-                  <p className="text-sm text-text-secondary">Small Business Owner</p>
+                  <h4 className="font-semibold text-text-primary">
+                    Alex Rivera
+                  </h4>
+                  <p className="text-sm text-text-secondary">
+                    Small Business Owner
+                  </p>
                 </div>
               </div>
               <p className="text-text-secondary mb-4">
-                "As a small business owner, I don't have time to manage multiple social platforms. Grosonix makes it easy with smart scheduling and AI content that matches my brand voice perfectly."
+                "As a small business owner, I don't have time to manage multiple
+                social platforms. Grosonix makes it easy with smart scheduling
+                and AI content that matches my brand voice perfectly."
               </p>
               <div className="flex text-neon-cyan-500">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
               </div>
             </div>
           </div>
@@ -479,17 +624,23 @@ export function LandingPage() {
                 Ready to Transform Your Social Media Presence?
               </h2>
               <p className="text-lg sm:text-xl text-text-primary dark:text-white/90 mb-6 sm:mb-8">
-                Join thousands of creators and businesses using Grosonix to grow their audience and engagement.
+                Join thousands of creators and businesses using Grosonix to grow
+                their audience and engagement.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/signup" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto bg-white text-emerald-600 hover:bg-white/90">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto bg-white text-emerald-600 hover:bg-white/90">
                     Start Your Free Trial
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
                 <Link href="/auth/login" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto border-white text-white hover:bg-white/10">
                     Login
                   </Button>
                 </Link>
@@ -510,21 +661,31 @@ export function LandingPage() {
               <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold bg-hero-gradient bg-clip-text text-transparent">Grosonix</span>
+              <span className="text-xl font-bold bg-hero-gradient bg-clip-text text-transparent">
+                Grosonix
+              </span>
             </div>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-              <Link href="/auth/login" className="text-text-secondary hover:text-emerald-500 transition-colors">
+              <Link
+                href="/auth/login"
+                className="text-text-secondary hover:text-emerald-500 transition-colors">
                 Login
               </Link>
-              <Link href="/auth/signup" className="text-text-secondary hover:text-emerald-500 transition-colors">
+              <Link
+                href="/auth/signup"
+                className="text-text-secondary hover:text-emerald-500 transition-colors">
                 Sign Up
               </Link>
-              <a href="#" className="text-text-secondary hover:text-emerald-500 transition-colors">
+              <Link
+                href="/privacy"
+                className="text-text-secondary hover:text-emerald-500 transition-colors">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-text-secondary hover:text-emerald-500 transition-colors">
+              </Link>
+              <Link
+                href="/terms"
+                className="text-text-secondary hover:text-emerald-500 transition-colors">
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center text-sm text-text-muted">
