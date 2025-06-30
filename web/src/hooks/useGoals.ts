@@ -10,7 +10,8 @@ import {
   GoalResponse,
   ProgressResponse,
   AnalyticsResponse,
-  GoalAnalytics
+  GoalAnalytics,
+  ErrorResponse
 } from '@/types/goals';
 
 export function useGoals(initialFilters?: GoalFilters) {
@@ -30,13 +31,15 @@ export function useGoals(initialFilters?: GoalFilters) {
       if (filters.goal_type) params.append('goal_type', filters.goal_type);
 
       const response = await fetch(`/api/goals?${params.toString()}`);
-      const data: GoalsResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch goals');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch goals');
       }
 
-      setGoals(data.goals);
+      const successData = data as GoalsResponse;
+      setGoals(successData.goals);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch goals';
       setError(errorMessage);
@@ -56,15 +59,17 @@ export function useGoals(initialFilters?: GoalFilters) {
         body: JSON.stringify(goalData),
       });
 
-      const data: GoalResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create goal');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to create goal');
       }
 
-      setGoals(prev => [data.goal, ...prev]);
+      const successData = data as GoalResponse;
+      setGoals(prev => [successData.goal, ...prev]);
       toast.success('Goal created successfully!');
-      return data.goal;
+      return successData.goal;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create goal';
       toast.error(errorMessage);
@@ -82,18 +87,20 @@ export function useGoals(initialFilters?: GoalFilters) {
         body: JSON.stringify(updates),
       });
 
-      const data: GoalResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update goal');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to update goal');
       }
 
+      const successData = data as GoalResponse;
       setGoals(prev => prev.map(goal => 
-        goal.id === goalId ? { ...goal, ...data.goal } : goal
+        goal.id === goalId ? { ...goal, ...successData.goal } : goal
       ));
       
       toast.success('Goal updated successfully!');
-      return data.goal;
+      return successData.goal;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update goal';
       toast.error(errorMessage);
@@ -110,7 +117,8 @@ export function useGoals(initialFilters?: GoalFilters) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete goal');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to delete goal');
       }
 
       setGoals(prev => prev.filter(goal => goal.id !== goalId));
@@ -136,11 +144,14 @@ export function useGoals(initialFilters?: GoalFilters) {
         body: JSON.stringify(progressData),
       });
 
-      const data: ProgressResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update progress');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to update progress');
       }
+
+      const successData = data as ProgressResponse;
 
       // Update the goal in the local state
       setGoals(prev => prev.map(goal => {
@@ -148,19 +159,19 @@ export function useGoals(initialFilters?: GoalFilters) {
           return {
             ...goal,
             current_value: progressData.new_value,
-            progress_percentage: data.new_progress_percentage,
-            status: data.goal_completed ? 'completed' : goal.status,
-            completed_at: data.goal_completed ? new Date().toISOString() : goal.completed_at,
+            progress_percentage: successData.new_progress_percentage,
+            status: successData.goal_completed ? 'completed' : goal.status,
+            completed_at: successData.goal_completed ? new Date().toISOString() : goal.completed_at,
           };
         }
         return goal;
       }));
 
       // Show appropriate success message
-      if (data.goal_completed) {
+      if (successData.goal_completed) {
         toast.success('🎉 Congratulations! Goal completed!');
-      } else if (data.achieved_milestones.length > 0) {
-        toast.success(`🎯 Milestone achieved! ${data.achieved_milestones.length} milestone(s) reached.`);
+      } else if (successData.achieved_milestones.length > 0) {
+        toast.success(`🎯 Milestone achieved! ${successData.achieved_milestones.length} milestone(s) reached.`);
       } else {
         toast.success('Progress updated successfully!');
       }
@@ -236,13 +247,15 @@ export function useGoalAnalytics(timeframe: number = 30, platform?: string) {
       if (platform) params.append('platform', platform);
 
       const response = await fetch(`/api/goals/analytics?${params.toString()}`);
-      const data: AnalyticsResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch analytics');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch analytics');
       }
 
-      setAnalytics(data.analytics);
+      const successData = data as AnalyticsResponse;
+      setAnalytics(successData.analytics);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analytics';
       setError(errorMessage);
@@ -275,13 +288,15 @@ export function useGoal(goalId: string) {
       setError(null);
 
       const response = await fetch(`/api/goals/${goalId}`);
-      const data: GoalResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch goal');
+        const errorData = data as ErrorResponse;
+        throw new Error(errorData.error || errorData.message || 'Failed to fetch goal');
       }
 
-      setGoal(data.goal);
+      const successData = data as GoalResponse;
+      setGoal(successData.goal);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch goal';
       setError(errorMessage);

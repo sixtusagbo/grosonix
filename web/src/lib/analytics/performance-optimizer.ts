@@ -12,7 +12,7 @@ class SimpleLRUCache<K, V> {
   set(key: K, value: V): void {
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      this.cache.delete(firstKey!);
     }
     this.cache.set(key, { value, timestamp: Date.now(), hits: 0 });
   }

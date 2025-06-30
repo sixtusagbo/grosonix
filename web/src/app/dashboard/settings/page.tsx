@@ -5,6 +5,8 @@ import { SocialConnections } from "@/components/dashboard/SocialConnections";
 import { CacheManager } from "@/components/dashboard/CacheManager";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
   const cookieStore = cookies();
 
@@ -38,7 +40,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div className="glass-card p-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Settings</h1>
+        <h1 className="text-2xl font-semibold text-white mb-2">Settings</h1>
         <p className="text-silver">
           Manage your account settings and social media connections.
         </p>

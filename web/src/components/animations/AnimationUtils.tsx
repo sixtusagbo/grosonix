@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants, AnimationProps } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ReactNode } from 'react';
 
 // Common animation variants
@@ -28,7 +28,7 @@ export const bounceIn: Variants = {
     opacity: 1, 
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 400,
       damping: 10
     }
@@ -73,6 +73,32 @@ export const celebration: Variants = {
   }
 };
 
+// Badge-specific animation variants
+export const badgeNewVariant: Variants = {
+  initial: { scale: 0, rotate: -180 },
+  animate: { 
+    scale: 1, 
+    rotate: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 500,
+      damping: 15
+    }
+  }
+};
+
+export const badgeAchievementVariant: Variants = {
+  initial: { scale: 0, y: -50 },
+  animate: { 
+    scale: [0, 1.2, 1], 
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  }
+};
+
 // Reusable animated components
 interface AnimatedContainerProps {
   children: ReactNode;
@@ -94,9 +120,6 @@ export function AnimatedContainer({
   return (
     <motion.div
       variants={variant}
-      initial="initial"
-      animate="animate"
-      exit="exit"
       transition={{ duration, delay }}
       className={className}
       onClick={onClick}
@@ -106,7 +129,7 @@ export function AnimatedContainer({
   );
 }
 
-export function AnimatedButton({ 
+export function BaseAnimatedButton({ 
   children, 
   className = "",
   onClick,
@@ -150,64 +173,6 @@ export function AnimatedButton({
   );
 }
 
-export function AnimatedCounter({ 
-  value, 
-  duration = 1,
-  className = ""
-}: {
-  value: number;
-  duration?: number;
-  className?: string;
-}) {
-  return (
-    <motion.span
-      key={value}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration }}
-      className={className}
-    >
-      {value.toLocaleString()}
-    </motion.span>
-  );
-}
-
-export function AnimatedProgressBar({ 
-  progress, 
-  className = "",
-  showGlow = false
-}: {
-  progress: number;
-  className?: string;
-  showGlow?: boolean;
-}) {
-  return (
-    <div className={`relative overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${className}`}>
-      <motion.div
-        className={`h-full bg-gradient-to-r from-emerald-500 to-emerald-600 ${
-          showGlow ? 'shadow-lg shadow-emerald-500/50' : ''
-        }`}
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
-      />
-      {showGlow && (
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-30"
-          animate={{
-            x: ["-100%", "100%"],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
 export function AnimatedBadge({ 
   children, 
   className = "",
@@ -217,33 +182,12 @@ export function AnimatedBadge({
   className?: string;
   variant?: "default" | "new" | "achievement";
 }) {
-  const getAnimation = () => {
+  const getVariant = (): Variants => {
     switch (variant) {
       case "new":
-        return {
-          initial: { scale: 0, rotate: -180 },
-          animate: { 
-            scale: 1, 
-            rotate: 0,
-            transition: {
-              type: "spring",
-              stiffness: 500,
-              damping: 15
-            }
-          }
-        };
+        return badgeNewVariant;
       case "achievement":
-        return {
-          initial: { scale: 0, y: -50 },
-          animate: { 
-            scale: [0, 1.2, 1], 
-            y: 0,
-            transition: {
-              duration: 0.6,
-              ease: "easeOut"
-            }
-          }
-        };
+        return badgeAchievementVariant;
       default:
         return fadeInScale;
     }
@@ -251,7 +195,9 @@ export function AnimatedBadge({
 
   return (
     <motion.div
-      {...getAnimation()}
+      variants={getVariant()}
+      initial="initial"
+      animate="animate"
       className={className}
     >
       {children}

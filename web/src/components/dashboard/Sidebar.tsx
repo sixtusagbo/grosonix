@@ -19,6 +19,7 @@ import {
   ChevronRight,
   BookOpen,
   X,
+  Crown
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,12 @@ const navigation = [
 ];
 
 const bottomNavigation = [
+  {
+    name: "Subscription",
+    href: "/dashboard/subscription",
+    icon: Crown,
+    description: "Billing & plans",
+  },
   {
     name: "API Docs",
     href: "/docs",

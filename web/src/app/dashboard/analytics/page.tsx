@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AnalyticsPage() {
   const cookieStore = cookies();
 

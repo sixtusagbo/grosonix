@@ -184,7 +184,7 @@ export class CalendarService {
     try {
       const { data, error } = await this.supabase
         .from('scheduled_posts')
-        .select('platform, status')
+        .select('platform, status, scheduled_at')
         .eq('user_id', userId)
         .gte('scheduled_at', startDate)
         .lte('scheduled_at', endDate);
@@ -244,7 +244,7 @@ export class CalendarService {
         // Map recommendations to time slots for each day
         const currentDate = new Date(startDate);
         while (currentDate <= endDate) {
-          const dateKey = currentDate.toISOString().split('T')[0];
+          const dateKey = this._formatDateToLocalYYYYMMDD(currentDate);
           const dayOfWeek = currentDate.getDay();
 
           // Find recommendations for this day of week
@@ -290,9 +290,11 @@ export class CalendarService {
 
     const currentDay = new Date(startDate);
     while (currentDay <= endDate) {
-      const dateKey = currentDay.toISOString().split('T')[0];
+      const dateKey = this._formatDateToLocalYYYYMMDD(currentDay);
+      
+      // Filter events for this day using local date comparison
       const dayEvents = events.filter(event => 
-        event.scheduled_at.startsWith(dateKey)
+        this._getEventLocalYYYYMMDD(event) === dateKey
       );
 
       days.push({
@@ -368,7 +370,9 @@ export class CalendarService {
   }
 
   private isSameDay(date1: Date, date2: Date): boolean {
-    return date1.toDateString() === date2.toDateString();
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
   }
 
   private getEmptyStats(): CalendarStats {
@@ -384,5 +388,23 @@ export class CalendarService {
         instagram: 0,
       },
     };
+  }
+
+  /**
+   * Format a Date object to a YYYY-MM-DD string using local date components
+   */
+  private _formatDateToLocalYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Extract the local YYYY-MM-DD string from a CalendarEvent's scheduled_at property
+   */
+  private _getEventLocalYYYYMMDD(event: CalendarEvent): string {
+    const eventDate = new Date(event.scheduled_at);
+    return this._formatDateToLocalYYYYMMDD(eventDate);
   }
 }

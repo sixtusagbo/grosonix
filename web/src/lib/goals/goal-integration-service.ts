@@ -1,4 +1,5 @@
 import { Goal, GoalType, Platform } from '@/types/goals';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export interface SocialMetrics {
   platform: Platform;
@@ -11,6 +12,11 @@ export interface SocialMetrics {
 }
 
 export class GoalIntegrationService {
+  private supabase: SupabaseClient;
+
+  constructor(supabase: SupabaseClient) {
+    this.supabase = supabase;
+  }
 
   /**
    * Update goal progress based on current social media metrics

@@ -14,7 +14,16 @@ export type GoalPriority = 'low' | 'medium' | 'high';
 
 export type Platform = 'twitter' | 'linkedin' | 'instagram' | 'all';
 
-export type ProgressSource = 'manual' | 'automatic' | 'api_sync';
+export type ProgressSource = 'manual' | 'automatic' | 'api_sync' | 'challenge_completion';
+
+export type ChallengeFrequency = 'daily' | 'weekly' | 'one-time';
+
+export type ChallengeType = 
+  | 'content_generation'
+  | 'style_analysis'
+  | 'adapt_content'
+  | 'schedule_post'
+  | 'engage_followers';
 
 export interface Goal {
   id: string;
@@ -34,6 +43,14 @@ export interface Goal {
   updated_at: string;
   completed_at?: string;
   
+  // Challenge fields
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
+  parent_goal_title?: string;
+  
   // Computed fields
   progress_percentage?: number;
   days_remaining?: number;
@@ -41,6 +58,10 @@ export interface Goal {
   achieved_milestones?: number;
   total_milestones?: number;
   recent_progress?: GoalProgressLog[];
+  
+  // Add milestones property
+  milestones?: GoalMilestone[];
+  start_value?: number;
 }
 
 export interface GoalProgressLog {
@@ -78,6 +99,11 @@ export interface CreateGoalRequest {
     percentage: number;
     value: number;
   }>;
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
 }
 
 export interface UpdateGoalRequest {
@@ -89,6 +115,11 @@ export interface UpdateGoalRequest {
   priority?: GoalPriority;
   is_public?: boolean;
   current_value?: number;
+  is_challenge?: boolean;
+  challenge_frequency?: ChallengeFrequency;
+  challenge_type?: ChallengeType;
+  challenge_reward_xp?: number;
+  parent_goal_id?: string;
 }
 
 export interface UpdateProgressRequest {
@@ -147,6 +178,13 @@ export interface GoalFilters {
   goal_type?: GoalType;
   priority?: GoalPriority;
   search?: string;
+}
+
+// Error Response type
+export interface ErrorResponse {
+  success: false;
+  error: string;
+  message?: string;
 }
 
 // API Response types
@@ -258,3 +296,22 @@ export const PRIORITY_COLORS: Record<GoalPriority, string> = {
   medium: 'bg-blue-500',
   high: 'bg-red-500'
 };
+
+export const CHALLENGE_TYPE_LABELS: Record<string, string> = {
+  content_generation: 'Content Creation',
+  style_analysis: 'Style Analysis',
+  adapt_content: 'Content Adaptation',
+  schedule_post: 'Post Scheduling',
+  engage_followers: 'Follower Engagement'
+};
+
+export interface GoalProgress {
+  goal_id: string;
+  progress_percentage: number;
+  days_remaining: number;
+  daily_target: number;
+  current_pace: number;
+  projected_completion: string;
+  is_on_track: boolean;
+  next_milestone: GoalMilestone | null;
+}

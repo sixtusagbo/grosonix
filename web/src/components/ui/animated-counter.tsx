@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { ReactNode } from "react";
 
 interface AnimatedCounterProps {
   value: number;
@@ -82,16 +83,18 @@ export function AnimatedCounter({
   );
 }
 
-interface MetricCounterProps {
+export interface MetricCounterProps {
+  id?: string; // Make id optional
   value: number;
   previousValue?: number;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   trend?: "up" | "down" | "neutral";
   className?: string;
   showChange?: boolean;
   prefix?: string;
   suffix?: string;
+  trendValue?: number;
 }
 
 export function MetricCounter({
@@ -104,6 +107,7 @@ export function MetricCounter({
   showChange = true,
   prefix = "",
   suffix = "",
+  trendValue,
 }: MetricCounterProps) {
   const change = previousValue !== undefined ? value - previousValue : 0;
   const changePercentage = previousValue && previousValue !== 0
@@ -153,16 +157,7 @@ export function MetricCounter({
 }
 
 interface RealTimeMetricsProps {
-  metrics: Array<{
-    id: string;
-    label: string;
-    value: number;
-    previousValue?: number;
-    icon?: React.ReactNode;
-    trend?: "up" | "down" | "neutral";
-    prefix?: string;
-    suffix?: string;
-  }>;
+  metrics: Array<MetricCounterProps>;
   className?: string;
   updateInterval?: number;
 }
@@ -214,7 +209,7 @@ export function RealTimeMetrics({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => (
           <div
-            key={metric.id}
+            key={metric.id || metric.label}
             className={cn(
               "p-4 rounded-lg border transition-all duration-200",
               "bg-surface/50 border-border/50",

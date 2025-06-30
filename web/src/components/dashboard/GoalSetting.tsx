@@ -5,21 +5,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { useGoals } from "@/hooks/useGoals";
 import {
   AlertTriangle,
   Calendar,
   Check,
+  CheckCircle,
   Edit3,
+  Pause,
+  Play,
   Plus,
   Star,
   Target,
   Trash2,
-  X
+  TrendingUp,
+  Users,
+  X,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useGoals } from "@/hooks/useGoals";
+import { GoalType, GoalPriority, Platform } from "@/types/goals";
 
 interface GoalSettingProps {
   socialAccounts: any[] | null;
@@ -43,16 +49,26 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
   } = useGoals();
 
   // Enhanced goal form state for better UX
-  const [goalForm, setGoalForm] = useState({
+  const [goalForm, setGoalForm] = useState<{
+    title: string;
+    description: string;
+    goal_type: GoalType;
+    target_value: string;
+    start_value: string;
+    platform: Platform | undefined;
+    deadline: string;
+    priority: GoalPriority;
+    milestones: number[];
+  }>({
     title: "",
     description: "",
-    goal_type: "followers" as any,
+    goal_type: "followers",
     target_value: "",
     start_value: "",
-    platform: "",
+    platform: undefined,
     deadline: "",
-    priority: "medium" as any,
-    milestones: [] as number[]
+    priority: "medium",
+    milestones: []
   });
 
   // Reset form function
@@ -63,7 +79,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
       goal_type: "followers",
       target_value: "",
       start_value: "",
-      platform: "",
+      platform: undefined,
       deadline: "",
       priority: "medium",
       milestones: []
@@ -150,8 +166,8 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         description: editingGoal.description || "",
         goal_type: editingGoal.goal_type,
         target_value: editingGoal.target_value.toString(),
-        start_value: editingGoal.start_value.toString(),
-        platform: editingGoal.platform || "",
+        start_value: (editingGoal.start_value || 0).toString(),
+        platform: editingGoal.platform || undefined,
         deadline: editingGoal.target_date,
         priority: editingGoal.priority,
         milestones: editingGoal.milestones || []
@@ -170,17 +186,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     }
 
     try {
+      const targetValue = parseInt(goalForm.target_value);
+      
       const goalData = {
         title: goalForm.title,
         description: goalForm.description,
         goal_type: goalForm.goal_type,
-        target_value: parseInt(goalForm.target_value),
+        target_value: targetValue,
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
-        milestones: goalForm.milestones
+        milestones: goalForm.milestones.map(milestoneValue => ({
+          value: milestoneValue,
+          percentage: (milestoneValue / targetValue) * 100
+        }))
       };
 
       await createGoal(goalData);
@@ -205,17 +226,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
     }
 
     try {
+      const targetValue = parseInt(goalForm.target_value);
+      
       const updatedGoalData = {
         title: goalForm.title,
         description: goalForm.description,
         goal_type: goalForm.goal_type,
-        target_value: parseInt(goalForm.target_value),
+        target_value: targetValue,
         start_value: parseInt(goalForm.start_value) || 0,
         platform: goalForm.platform,
         target_date: goalForm.deadline,
         priority: goalForm.priority,
         is_public: false,
-        milestones: goalForm.milestones
+        milestones: goalForm.milestones.map(milestoneValue => ({
+          value: milestoneValue,
+          percentage: (milestoneValue / targetValue) * 100
+        }))
       };
 
       await updateGoal(editingGoal.id, updatedGoalData);
@@ -257,26 +283,24 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
   };
 
   return (
-    <Card className="glass-card border-purple-500/20">
+    <Card className="glass-card border-emerald-500/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-purple-500" />
-              Goals & Targets
-            </CardTitle>
-            {error && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs font-medium">
-                <AlertTriangle className="w-3 h-3" />
-                Error loading goals
-              </div>
-            )}
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-emerald-500" />
+            Goals & Targets
+          </CardTitle>
+          {error && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs font-medium">
+              <AlertTriangle className="w-3 h-3" />
+              Error loading goals
+            </div>
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowNewGoalForm(!showNewGoalForm)}
-            className="border-purple-500/20 hover:border-purple-500/40"
+            className="border-emerald-500/20 hover:border-emerald-500/40"
           >
             <Plus className="w-4 h-4 mr-1" />
             New Goal
@@ -329,22 +353,22 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   <label className="text-sm font-medium text-theme-primary">
                     Platform *
                   </label>
-                  <Select
-                    value={goalForm.platform}
-                    onValueChange={(value) => setGoalForm({ ...goalForm, platform: value })}
+                  <select
+                    value={goalForm.platform || ""}
+                    onChange={(e) => setGoalForm({ 
+                      ...goalForm, 
+                      platform: e.target.value === "" ? undefined : e.target.value as Platform
+                    })}
+                    className={`w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+                      validationErrors.platform ? "border-red-500" : ""
+                    }`}
                   >
-                    <SelectTrigger className={validationErrors.platform ? "border-red-500" : ""}>
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="twitter">Twitter</SelectItem>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                      <SelectItem value="youtube">YouTube</SelectItem>
-                      <SelectItem value="facebook">Facebook</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select platform</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="all">All Platforms</option>
+                  </select>
                   {validationErrors.platform && (
                     <p className="text-xs text-red-500">{validationErrors.platform}</p>
                   )}
@@ -371,22 +395,18 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   <label className="text-sm font-medium text-theme-primary">
                     Metric Type
                   </label>
-                  <Select
+                  <select
                     value={goalForm.goal_type}
-                    onValueChange={(value) => setGoalForm({ ...goalForm, goal_type: value })}
+                    onChange={(e) => setGoalForm({ ...goalForm, goal_type: e.target.value as GoalType })}
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="followers">Followers</SelectItem>
-                      <SelectItem value="engagement_rate">Engagement Rate</SelectItem>
-                      <SelectItem value="posts_count">Posts Count</SelectItem>
-                      <SelectItem value="likes">Likes</SelectItem>
-                      <SelectItem value="comments">Comments</SelectItem>
-                      <SelectItem value="shares">Shares</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="followers">Followers</option>
+                    <option value="engagement_rate">Engagement Rate</option>
+                    <option value="posts_count">Posts Count</option>
+                    <option value="likes">Likes</option>
+                    <option value="comments">Comments</option>
+                    <option value="shares">Shares</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -428,34 +448,15 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                   <label className="text-sm font-medium text-theme-primary">
                     Priority
                   </label>
-                  <Select
+                  <select
                     value={goalForm.priority}
-                    onValueChange={(value) => setGoalForm({ ...goalForm, priority: value })}
+                    onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value as GoalPriority })}
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-theme-primary placeholder:text-theme-secondary focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          Low Priority
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="medium">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                          Medium Priority
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="high">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          High Priority
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -539,7 +540,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
         <div className="space-y-6">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
               <p className="text-theme-secondary">Loading goals...</p>
             </div>
           ) : goals.length === 0 ? (
@@ -636,7 +637,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                             onClick={() => handleUpdateGoalStatus(goal.id, 'completed')}
                             className="border-emerald-500/20 hover:border-emerald-500/40"
                           >
-                            <Check className="w-4 h-4" />
+                            <CheckCircle className="w-4 h-4" />
                           </Button>
                         )}
                         <Button
@@ -681,8 +682,9 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                         <div className="space-y-2">
                           <span className="text-sm font-medium text-theme-primary">Milestones</span>
                           <div className="flex flex-wrap gap-2">
-                            {goal.milestones.map((milestone: number, index: number) => {
-                              const achieved = goal.current_value >= milestone;
+                            {goal.milestones.map((milestone: any, index: number) => {
+                              const milestoneValue = typeof milestone === 'object' ? milestone.milestone_value || milestone.value : milestone;
+                              const achieved = goal.current_value >= milestoneValue;
                               return (
                                 <div
                                   key={index}
@@ -692,7 +694,7 @@ export function GoalSetting({ socialAccounts }: GoalSettingProps) {
                                     }`}
                                 >
                                   {achieved && <Check className="w-3 h-3" />}
-                                  {milestone.toLocaleString()}
+                                  {milestoneValue.toLocaleString()}
                                 </div>
                               );
                             })}

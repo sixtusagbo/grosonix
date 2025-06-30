@@ -22,6 +22,8 @@ import {
 import { ContentSuggestion } from "@/types/ai";
 import { toast } from "sonner";
 
+export const dynamic = 'force-dynamic';
+
 export default function ContentPage() {
   const [activeTab, setActiveTab] = useState("swipe");
 

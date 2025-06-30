@@ -36,6 +36,7 @@ import {
   AlertTriangle,
   Plus,
   Minus,
+  Zap,
 } from 'lucide-react';
 import {
   Goal,
@@ -43,7 +44,8 @@ import {
   GOAL_TYPE_UNITS,
   PLATFORM_LABELS,
   STATUS_COLORS,
-  PRIORITY_COLORS
+  PRIORITY_COLORS,
+  CHALLENGE_TYPE_LABELS
 } from '@/types/goals';
 
 interface GoalCardProps {
@@ -158,6 +160,12 @@ export function GoalCard({
                       Public
                     </Badge>
                   )}
+                  {goal.is_challenge && (
+                    <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
+                      <Zap className="w-3 h-3 mr-1" />
+                      Challenge
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-text-secondary">
                   {getStatusIcon()}
@@ -245,27 +253,26 @@ export function GoalCard({
           {onUpdateProgress && goal.status === 'active' && (
             <div className="flex items-center gap-2">
               <Button
-                size="sm"
                 variant="outline"
                 onClick={() => handleQuickProgress(-1)}
                 disabled={goal.current_value <= 0}
+                className="h-9 w-9 p-0"
               >
-                <Minus className="w-3 h-3" />
+                <Minus className="w-4 h-4" />
               </Button>
               <Button
-                size="sm"
                 variant="outline"
                 onClick={() => setShowProgressUpdate(true)}
-                className="flex-1"
+                className="flex-1 text-sm"
               >
                 Update Progress
               </Button>
               <Button
-                size="sm"
                 variant="outline"
                 onClick={() => handleQuickProgress(1)}
+                className="h-9 w-9 p-0"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-4 h-4" />
               </Button>
             </div>
           )}
@@ -274,7 +281,12 @@ export function GoalCard({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <div className="text-text-secondary">Goal Type</div>
-              <div className="font-medium">{GOAL_TYPE_LABELS[goal.goal_type]}</div>
+              <div className="font-medium">
+                {goal.is_challenge && goal.challenge_type 
+                  ? CHALLENGE_TYPE_LABELS[goal.challenge_type] || goal.challenge_type
+                  : GOAL_TYPE_LABELS[goal.goal_type]
+                }
+              </div>
             </div>
             <div>
               <div className="text-text-secondary">Priority</div>

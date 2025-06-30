@@ -4,6 +4,8 @@ import { SavedContentList } from "@/components/ai/SavedContentList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default function SavedContentPage() {
   return (
     <div className="space-y-6">

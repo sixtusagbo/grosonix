@@ -55,7 +55,7 @@ export function EventModal({
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    platform: 'twitter' as 'twitter' | 'linkedin' | 'instagram',
+    platform: 'twitter' as 'twitter' | 'linkedin' | 'instagram' | 'all',
     scheduled_date: '',
     scheduled_time: '',
     status: 'scheduled' as 'draft' | 'scheduled',
@@ -280,6 +280,11 @@ export function EventModal({
                     <SelectItem value="instagram">
                       <span className="flex items-center gap-2">
                         <span>📷</span> Instagram
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="all">
+                      <span className="flex items-center gap-2">
+                        <span>📱</span> All Platforms
                       </span>
                     </SelectItem>
                   </SelectContent>

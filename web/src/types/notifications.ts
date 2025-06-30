@@ -47,6 +47,12 @@ export interface NotificationSettings {
   timezone: string;
 }
 
+export interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
 export interface BrowserNotificationOptions {
   title: string;
   body: string;

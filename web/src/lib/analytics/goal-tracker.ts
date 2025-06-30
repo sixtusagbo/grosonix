@@ -22,7 +22,7 @@ export class GoalTracker {
     );
 
     const now = new Date();
-    const deadline = new Date(goal.deadline);
+    const deadline = new Date(goal.target_date);
     const daysRemaining = Math.max(
       Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
       0
@@ -38,7 +38,7 @@ export class GoalTracker {
 
     const daysPassed = totalDays - daysRemaining;
     const currentPace = daysPassed > 0 
-      ? (goal.current_value - goal.start_value) / daysPassed
+      ? (goal.current_value - (goal.start_value || 0)) / daysPassed
       : 0;
 
     const projectedValue = goal.current_value + (currentPace * daysRemaining);
@@ -48,9 +48,9 @@ export class GoalTracker {
 
     const isOnTrack = projectedValue >= goal.target_value;
 
-    const nextMilestone = goal.milestones
-      .filter(m => m > goal.current_value)
-      .sort((a, b) => a - b)[0] || null;
+    const nextMilestone = (goal.milestones || [])
+      .filter(m => m.milestone_value > goal.current_value)
+      .sort((a, b) => a.milestone_value - b.milestone_value)[0] || null;
 
     return {
       goal_id: goal.id,

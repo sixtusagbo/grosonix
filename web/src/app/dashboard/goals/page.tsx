@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { GoalsPageClient } from '@/components/goals/GoalsPageClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function GoalsPage() {
   const cookieStore = cookies();
 

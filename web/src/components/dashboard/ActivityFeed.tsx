@@ -152,7 +152,7 @@ export function ActivityFeed() {
   // Add scheduled posts activity
   console.log('ActivityFeed: Processing data for activities:', data);
 
-  if (data?.counts.scheduled > 0) {
+  if (data?.counts?.scheduled && data.counts.scheduled > 0) {
     const nextPost = data.posts.find(p => p.status === 'scheduled');
     console.log('ActivityFeed: Found scheduled posts:', data.counts.scheduled, 'Next post:', nextPost);
 

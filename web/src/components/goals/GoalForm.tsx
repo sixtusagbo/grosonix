@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Calendar, Target, TrendingUp, Users, Lightbulb, Loader2 } from 'lucide-react';
+import { Calendar, Target, TrendingUp, Users, Lightbulb, Loader2, Zap } from 'lucide-react';
 import { useGoalIntegration } from '@/hooks/useGoalIntegration';
 import {
   Goal,
@@ -40,9 +40,17 @@ interface GoalFormProps {
   onClose: () => void;
   onSubmit: (data: CreateGoalRequest | UpdateGoalRequest) => Promise<void>;
   isLoading?: boolean;
+  parentGoals?: Goal[];
 }
 
-export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }: GoalFormProps) {
+export function GoalForm({ 
+  goal, 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  isLoading = false,
+  parentGoals = []
+}: GoalFormProps) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -52,6 +60,11 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
     target_date: '',
     priority: 'medium' as GoalPriority,
     is_public: false,
+    is_challenge: false,
+    challenge_frequency: 'daily' as 'daily' | 'weekly' | 'one-time',
+    challenge_type: 'content_generation' as string,
+    challenge_reward_xp: '50',
+    parent_goal_id: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,6 +82,11 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
         target_date: goal.target_date.split('T')[0], // Convert to YYYY-MM-DD format
         priority: goal.priority,
         is_public: goal.is_public,
+        is_challenge: goal.is_challenge || false,
+        challenge_frequency: (goal.challenge_frequency as any) || 'daily',
+        challenge_type: goal.challenge_type || 'content_generation',
+        challenge_reward_xp: goal.challenge_reward_xp?.toString() || '50',
+        parent_goal_id: goal.parent_goal_id || '',
       });
     } else {
       // Reset form for new goal
@@ -81,6 +99,11 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
         target_date: '',
         priority: 'medium',
         is_public: false,
+        is_challenge: false,
+        challenge_frequency: 'daily',
+        challenge_type: 'content_generation',
+        challenge_reward_xp: '50',
+        parent_goal_id: '',
       });
     }
     setErrors({});
@@ -109,6 +132,20 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
       }
     }
 
+    if (formData.is_challenge) {
+      if (!formData.challenge_frequency) {
+        newErrors.challenge_frequency = 'Challenge frequency is required';
+      }
+      
+      if (!formData.challenge_type) {
+        newErrors.challenge_type = 'Challenge type is required';
+      }
+      
+      if (!formData.challenge_reward_xp || parseInt(formData.challenge_reward_xp) <= 0) {
+        newErrors.challenge_reward_xp = 'Reward XP must be greater than 0';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -120,7 +157,7 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
       return;
     }
 
-    const submitData = {
+    const submitData: any = {
       title: formData.title.trim(),
       description: formData.description.trim() || undefined,
       goal_type: formData.goal_type,
@@ -130,6 +167,18 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
       priority: formData.priority,
       is_public: formData.is_public,
     };
+
+    // Add challenge fields if this is a challenge
+    if (formData.is_challenge) {
+      submitData.is_challenge = true;
+      submitData.challenge_frequency = formData.challenge_frequency;
+      submitData.challenge_type = formData.challenge_type;
+      submitData.challenge_reward_xp = parseInt(formData.challenge_reward_xp);
+      
+      if (formData.parent_goal_id) {
+        submitData.parent_goal_id = formData.parent_goal_id;
+      }
+    }
 
     try {
       await onSubmit(submitData);
@@ -177,6 +226,16 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
     }
   };
 
+  const getChallengeTypeOptions = () => {
+    return [
+      { value: 'content_generation', label: 'Content Creation' },
+      { value: 'style_analysis', label: 'Style Analysis' },
+      { value: 'adapt_content', label: 'Content Adaptation' },
+      { value: 'schedule_post', label: 'Post Scheduling' },
+      { value: 'engage_followers', label: 'Follower Engagement' }
+    ];
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -217,6 +276,19 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
                   placeholder="Describe your goal and why it's important to you..."
                   rows={3}
                 />
+              </div>
+              
+              {/* Challenge Toggle */}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is_challenge"
+                  checked={formData.is_challenge}
+                  onCheckedChange={(checked) => handleInputChange('is_challenge', checked)}
+                />
+                <Label htmlFor="is_challenge" className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  This is a challenge
+                </Label>
               </div>
             </CardContent>
           </Card>
@@ -352,6 +424,105 @@ export function GoalForm({ goal, isOpen, onClose, onSubmit, isLoading = false }:
               </div>
             </CardContent>
           </Card>
+
+          {/* Challenge Configuration (only shown if is_challenge is true) */}
+          {formData.is_challenge && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  Challenge Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="challenge_frequency">Challenge Frequency *</Label>
+                    <Select
+                      value={formData.challenge_frequency}
+                      onValueChange={(value) => handleInputChange('challenge_frequency', value)}
+                    >
+                      <SelectTrigger className={errors.challenge_frequency ? 'border-red-500' : ''}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="one-time">One-time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.challenge_frequency && (
+                      <p className="text-sm text-red-500 mt-1">{errors.challenge_frequency}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="challenge_type">Challenge Type *</Label>
+                    <Select
+                      value={formData.challenge_type}
+                      onValueChange={(value) => handleInputChange('challenge_type', value)}
+                    >
+                      <SelectTrigger className={errors.challenge_type ? 'border-red-500' : ''}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getChallengeTypeOptions().map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.challenge_type && (
+                      <p className="text-sm text-red-500 mt-1">{errors.challenge_type}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="challenge_reward_xp">Reward XP *</Label>
+                    <Input
+                      id="challenge_reward_xp"
+                      type="number"
+                      min="1"
+                      value={formData.challenge_reward_xp}
+                      onChange={(e) => handleInputChange('challenge_reward_xp', e.target.value)}
+                      className={errors.challenge_reward_xp ? 'border-red-500' : ''}
+                    />
+                    {errors.challenge_reward_xp && (
+                      <p className="text-sm text-red-500 mt-1">{errors.challenge_reward_xp}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="parent_goal_id">Parent Goal (Optional)</Label>
+                    <Select
+                      value={formData.parent_goal_id}
+                      onValueChange={(value) => handleInputChange('parent_goal_id', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a parent goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {parentGoals
+                          .filter(pg => !pg.is_challenge) // Only non-challenge goals can be parents
+                          .map(pg => (
+                            <SelectItem key={pg.id} value={pg.id}>
+                              {pg.title}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Completing this challenge will contribute to the selected goal's progress
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Form Actions */}
           <div className="flex justify-end gap-3">

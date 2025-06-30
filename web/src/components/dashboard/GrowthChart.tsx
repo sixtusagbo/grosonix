@@ -335,7 +335,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
               : "#8B5CF6",
           font: {
             size: 12,
-            weight: "bold",
+            weight: "bold" as const,
           },
         },
       },
@@ -359,7 +359,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
           color: "#F59E0B",
           font: {
             size: 12,
-            weight: "bold",
+            weight: "bold" as const,
           },
         },
       },
@@ -382,7 +382,7 @@ export function GrowthChart({ socialAccounts }: GrowthChartProps) {
     <Card className="glass-card border-emerald-500/20">
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-          <CardTitle className="flex items-center gap-2 text-theme-primary mb-2 md:mb-0">
+          <CardTitle className="flex items-center gap-2 text-theme-primary">
             <TrendingUp className="w-5 h-5 text-emerald-500" />
             Growth Analytics
           </CardTitle>

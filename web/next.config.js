@@ -37,6 +37,9 @@ const nextConfig = {
       },
     ];
   },
+  
+  // Add output option to export
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
