@@ -6,7 +6,9 @@
     "dev": "next dev -p 4001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "npm run build && netlify deploy --prod --dir=.next",
+    "deploy:draft": "npm run build && netlify deploy --dir=.next"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
