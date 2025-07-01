@@ -522,13 +522,13 @@ If you encounter issues:
 
 For production deployment:
 
-1. **Build the application**:
+1. **Set production environment variables**
+2. **Build the application**:
 
    ```bash
    npm run build
    ```
 
-2. **Set production environment variables**
 3. **Deploy to your preferred platform** (Vercel, Netlify, etc.)
 
    ```
